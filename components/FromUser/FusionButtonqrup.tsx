@@ -65,7 +65,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
     return (
         <div className="">
             {/* ปุ่มสร้าง QR Code */}
-            <div className="bg-amber-600 h-0 w-0 md:flex md:flex-col md:-mx-34 md:-mt-40 max-md:mx-5 max-md:flex max-md:flex-row max-md:justify-center max-md:items-center max-md:gap-2 max-md:-mt-70 max-md:mb-26 max-md:ml-50 max-md:h-0 ">
+            <div className="h-0 md:flex md:flex-col md:-mx-34 md:-mt-20 max-md:mx-5 max-md:flex max-md:flex-row max-md:justify-center max-md:items-center max-md:gap-2 max-md:-mt-26 max-md:mb-26 max-md:h-0">
                 <button
                    className="w-20 h-auto border-purple-600 text-purple-600 py-1 rounded-2xl hover:bg-purple-100 md:mb-2 border md:ml-2"
                     onClick={handleCreateQR}

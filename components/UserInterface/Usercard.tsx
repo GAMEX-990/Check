@@ -35,8 +35,8 @@ const Usercard = () => {
                 {/* ข้อมูลชื่อ อีเมล์ */}
                 <div className="text-center mt-4">
                     <h2 className="text-purple-700 font-bold"><GetUserDetails /></h2>
-                    <hr className="my-2 border-purple-300" />
-                    <h1 className="text-purple-700"><GetUserEmail /></h1>
+                    <hr className="my-2 border-purple-700 border-1" />
+                    <h1 className="text-purple-700 font-bold"><GetUserEmail /></h1>
                     
                 </div>
                 {/* ปุ่ม */}

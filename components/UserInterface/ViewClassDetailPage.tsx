@@ -47,7 +47,7 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
         </button>
         <h2 className="text-2xl font-bold text-purple-800 text-center flex-grow">{classData.name}</h2>
       </div>
-
+      <CreateQRCodeAndUpload classId={classData.id}/>
       {/* ดูสรุปการเข้าเรียน */}
       <div className="text-purple-800 flex justify-between mx-10">
         <p className="">ชื่อ-สกุล</p>
@@ -79,9 +79,6 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
             <span className="text-green-600">✓ เช็คชื่อแล้ว</span>
           </div>
         ))}
-      </div>
-      <div className="-mt-20">
-        <CreateQRCodeAndUpload classId={classData.id}/>
       </div>
     </div>
   );

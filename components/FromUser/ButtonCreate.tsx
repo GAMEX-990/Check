@@ -22,6 +22,8 @@ import { FaTimes } from "react-icons/fa";
 // นำเข้าฟังก์ชันต่างๆ สำหรับจัดการกล้องและสแกน QR Code
 import { openCamera, scanQRCode, stopCamera } from "@/utils/camera";
 
+
+
 // กำหนด Interface สำหรับ Props ของ Component
 interface AddClassPopupProps {
   onScanSuccess?: () => void; // ฟังก์ชันที่จะเรียกเมื่อสแกน QR Code สำเร็จ (optional)
@@ -33,6 +35,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   //------------------------------------------------------------------------------------------------
   // สร้าง Reference สำหรับ Canvas element ที่ใช้ในการแสดงผลการสแกน QR Code
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
 
   //------------------------------------------------------------------------------------------------
 
@@ -107,10 +110,10 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
         const checkedInMembers = classData.checkedInMembers || [];
 
         // ตรวจสอบว่าผู้ใช้เช็คชื่อไปแล้วหรือยัง
-        // if (checkedInMembers.includes(user.id)) {
-        //   alert('คุณได้เช็คชื่อไปแล้ว!'); // แสดงข้อความแจ้งเตือน
-        //   return; // หยุดการทำงาน
-        // }
+        if (checkedInMembers.includes(user.id)) {
+          alert('คุณได้เช็คชื่อไปแล้ว!'); // แสดงข้อความแจ้งเตือน
+          return; // หยุดการทำงาน
+        }
 
         // อัปเดตข้อมูลคลาสในฐานข้อมูล
         await updateDoc(classRef, {
@@ -121,8 +124,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
           // บันทึกเวลาที่เช็คชื่อล่าสุด
           lastCheckedIn: Timestamp.now()
         });
-
-        // alert('เช็คชื่อสำเร็จ!'); // แสดงข้อความแจ้งความสำเร็จ
+        alert('เช็คชื่อสำเร็จ!'); // แสดงข้อความแจ้งความสำเร็จ
         onScanSuccess?.(); // เรียกฟังก์ชัน callback (หากมี) เมื่อสแกนสำเร็จ
       }
     } catch (error) {

@@ -12,6 +12,7 @@ const Navbar = () => {
                 <Logo/>
 
                 <div className='flex gap-20 border-b-2 border-purple-600 pb-2 text-purple-600 text-8'>
+                    {/* เปลี่ยนเป็นล็อกอินด้วย Goole */}
                     <SignedIn>
                     <Link href={'/dashboard'}>Home</Link>
                     <Link href={'/about'}>About Us</Link>
@@ -21,6 +22,7 @@ const Navbar = () => {
                     <Link href={'/'}>Home</Link>
                     <Link href={'/about'}>About Us</Link>
                     <Link href={'/contact'}>Contact</Link>
+                    <Link href={'/login'}>Login</Link>
                     <SignedInLinks/>
                     </SignedOut>
                        

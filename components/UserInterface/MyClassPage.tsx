@@ -1,6 +1,5 @@
-import { useUser } from "@clerk/clerk-react";
 import { useState, useEffect, useCallback } from "react";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { 
   collection, 
   query, 
@@ -13,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { ArrowRight } from "lucide-react";
 import AddClassPopup from "../FromUser/ButtonCreate";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 interface MyClassPageProps {
   onNext: () => void;
@@ -21,20 +21,29 @@ interface MyClassPageProps {
 
 // -- หน้าที่ 1: MyClassPage
 const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [classes, setClasses] = useState<any[]>([]);
   const [hasScanned, setHasScanned] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() =>{
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
   // ฟังก์ชันสำหรับดึงสถานะ hasScanned จาก Firestore
   const fetchUserScanStatus = useCallback(async () => {
-    if (!user?.id) {
+    if (!user?.uid) {
       setLoading(false);
       return;
     }
 
     try {
-      const userDocRef = doc(db, "userSettings", user.id);
+      const userDocRef = doc(db, "userSettings", user.uid);
       const userDoc = await getDoc(userDocRef);
       
       if (userDoc.exists()) {
@@ -44,7 +53,7 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
         // ถ้าไม่มี document สร้างใหม่
         await setDoc(userDocRef, {
           hasScanned: false,
-          userId: user.id,
+          userId: user.uid,
           createdAt: new Date(),
           updatedAt: new Date()
         });
@@ -56,13 +65,13 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.uid]);
 
   // ฟังก์ชันสำหรับอัพเดตสถานะ hasScanned ใน Firestore
   const updateScanStatus = useCallback(async (newStatus: boolean) => {
-    if (!user?.id) return;
+    if (!user?.uid) return;
 
-    const userDocRef = doc(db, "userSettings", user.id);
+    const userDocRef = doc(db, "userSettings", user.uid);
 
     try {
       await updateDoc(userDocRef, {
@@ -76,7 +85,7 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
       try {
         await setDoc(userDocRef, {
           hasScanned: newStatus,
-          userId: user.id,
+          userId: user.uid,
           createdAt: new Date(),
           updatedAt: new Date()
         });
@@ -85,7 +94,7 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
         console.error("Error creating user document:", createError);
       }
     }
-  }, [user?.id]);
+  }, [user?.uid]);
 
   // ดึงสถานะ hasScanned เมื่อ component โหลด
   useEffect(() => {
@@ -94,12 +103,12 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
 
   // ดึงข้อมูลคลาสที่เป็นเจ้าของ (owner)
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || !user || loading) return;
+    if (authLoading || !user || loading) return;
 
-    console.log("Setting up owner classes listener for user:", user.primaryEmailAddress?.emailAddress);
+    console.log("Setting up owner classes listener for user:", user.email);
 
     const classesRef = collection(db, "classes");
-    const q = query(classesRef, where("owner_email", "==", user.primaryEmailAddress?.emailAddress));
+    const q = query(classesRef, where("owner_email", "==", user.email));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const classList: any[] = [];
@@ -116,7 +125,7 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
       console.log("Cleaning up owner classes listener");
       unsubscribe();
     };
-  }, [isLoaded, isSignedIn, user, loading]);
+  }, [authLoading, user, loading]);
 
   // แสดง loading ขณะกำลังโหลดข้อมูล
   if (loading) {

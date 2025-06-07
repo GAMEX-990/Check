@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar/Navbar";
-import { ClerkProvider } from "@clerk/nextjs";  
 import { Toaster } from "@/components/ui/sonner"
 
 const geistSans = Geist({
@@ -27,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     // อยากใ้ห้อะไรอยู่ทุกหน้าเอาฟังชั่นมาใส่ตรงนี้ เช่น Navbar
-    <ClerkProvider>
+  
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -38,6 +37,6 @@ export default function RootLayout({
         
       </body>
     </html>
-        </ClerkProvider>
+
   );
 }

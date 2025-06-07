@@ -1,23 +1,36 @@
-import { useEffect } from "react";
-import { useUser } from "@clerk/clerk-react";
-import { db } from "@/lib/firebase";
+import { useEffect, useState } from "react";
+import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 export const SyncUserToFirebase = () => {
-  const { isLoaded, isSignedIn, user } = useUser();
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (isLoaded && isSignedIn && user) {
-      const userData = {
-        id: user.id,
-        name: user.fullName,
-        email: user.primaryEmailAddress?.emailAddress,
-      };
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+            setLoading(false);
 
-      const docRef = doc(db, "users", user.id);
-      setDoc(docRef, userData, { merge: true });
-    }
-  }, [isLoaded, isSignedIn, user]);
+            if (currentUser) {
+                const userData = {
+                    id: currentUser.uid,
+                    name: currentUser.displayName,
+                    email: currentUser.email,
+                    photoURL: currentUser.photoURL,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
 
-  return null;
+                }
+
+                const docRef = doc(db, "users", currentUser.uid);
+                setDoc(docRef, userData, { merge: true });
+            }
+        });
+
+        return () => unsubscribe();
+
+    }, []);
+
+    return null;
 };

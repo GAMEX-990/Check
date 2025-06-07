@@ -5,7 +5,7 @@
 import { useState, useEffect, useRef, ChangeEvent } from "react";
 
 // นำเข้าการเชื่อมต่อฐานข้อมูล Firebase
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 
 // นำเข้าฟังก์ชันต่างๆ จาก Firestore สำหรับการดำเนินการกับข้อมูล
 import { collection, addDoc, Timestamp, updateDoc, arrayUnion, doc, getDoc } from "firebase/firestore";
@@ -14,13 +14,14 @@ import { collection, addDoc, Timestamp, updateDoc, arrayUnion, doc, getDoc } fro
 import Image from "next/image";
 
 // นำเข้า Hook สำหรับจัดการข้อมูลผู้ใช้จาก Clerk Authentication
-import { useUser } from "@clerk/nextjs";
+
 
 // นำเข้าไอคอนปิดจาก React Icons
 import { FaTimes } from "react-icons/fa";
 
 // นำเข้าฟังก์ชันต่างๆ สำหรับจัดการกล้องและสแกน QR Code
 import { openCamera, scanQRCode, stopCamera } from "@/utils/camera";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 
 
@@ -42,6 +43,10 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   // สร้าง Reference สำหรับ Video element ที่ใช้แสดงภาพจากกล้อง
   const videoRef = useRef<HTMLVideoElement>(null);
 
+// State สำหรับเก็บข้อมูล Firebase Auth user
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  
   // State สำหรับควบคุมสถานะการสแกน QR Code (เปิด/ปิด)
   const [scanning, setScanning] = useState(false);
 
@@ -61,12 +66,19 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   const [classId, setClassId] = useState<string | null>(null);
 
   // ดึงข้อมูลผู้ใช้และสถานะการล็อกอินจาก Clerk
-  const { user, isSignedIn } = useUser();
+  // const { user, isSignedIn } = useUser();
+
+  useEffect(()=>{
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // ฟังก์ชันสำหรับจัดการเมื่อสแกน QR Code สำเร็จ
   const handleQRDetected = async (result: { data: string }) => {
-
-
 
     try {
 
@@ -110,7 +122,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
         const checkedInMembers = classData.checkedInMembers || [];
 
         // ตรวจสอบว่าผู้ใช้เช็คชื่อไปแล้วหรือยัง
-        if (checkedInMembers.includes(user.id)) {
+        if (checkedInMembers.includes(user.uid)) {
           alert('คุณได้เช็คชื่อไปแล้ว!'); // แสดงข้อความแจ้งเตือน
           return; // หยุดการทำงาน
         }
@@ -118,7 +130,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
         // อัปเดตข้อมูลคลาสในฐานข้อมูล
         await updateDoc(classRef, {
           // เพิ่ม ID ผู้ใช้เข้าไปในรายชื่อที่เช็คชื่อแล้ว
-          checkedInMembers: arrayUnion(user.id),
+          checkedInMembers: arrayUnion(user.uid),
           // อัปเดตจำนวนคนที่เช็คชื่อแล้ว
           checkedInCount: checkedInMembers.length + 1,
           // บันทึกเวลาที่เช็คชื่อล่าสุด
@@ -196,7 +208,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
     }
 
     // ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
-    if (!isSignedIn || !user) {
+    if (!user) {
       setError("คุณยังไม่ได้ล็อกอิน"); // ตั้งค่าข้อความผิดพลาด
       return; // หยุดการทำงาน
     }
@@ -206,8 +218,8 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
       setError(null); // ล้างข้อความผิดพลาดก่อนหน้า
 
       // ดึงข้อมูลผู้ใช้
-      const userId = user.id; // ID ของผู้ใช้
-      const userEmail = user.primaryEmailAddress?.emailAddress || ""; // อีเมลของผู้ใช้
+      const userId = user.uid; // ID ของผู้ใช้
+      const userEmail = user.email || ""; // อีเมลของผู้ใช้
 
       // สร้างเอกสารคลาสใหม่ใน Firestore collection "classes"
       const docRef = await addDoc(collection(db, "classes"), {

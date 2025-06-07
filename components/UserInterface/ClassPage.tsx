@@ -1,37 +1,47 @@
-import { useUser } from "@clerk/clerk-react";
 import { useState, useEffect, useCallback } from "react";
-import { db } from "@/lib/firebase";
-import { 
-  collection, 
-  query, 
-  where, 
-  onSnapshot, 
-  doc, 
-  getDoc, 
+import { auth, db } from "@/lib/firebase";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  getDoc,
   setDoc,
-  updateDoc 
+  updateDoc
 } from "firebase/firestore";
 import { ArrowLeft } from "lucide-react";
 import AddClassPopup from "../FromUser/ButtonCreate";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClass: (classData: any) => void }) => {
-  const { user } = useUser();
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [joinedClasses, setJoinedClasses] = useState<any[]>([]);
   const [hasScanned, setHasScanned] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [userLoading, setUserLoading] = useState(true);
   const [classesLoading, setClassesLoading] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setAuthLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // ฟังก์ชันสำหรับดึงสถานะ hasScanned จาก Firestore
   const fetchUserScanStatus = useCallback(async () => {
-    if (!user?.id) {
-      setLoading(false);
+    if (!user?.uid) {
+      setUserLoading(false);
       return;
     }
 
     try {
-      const userDocRef = doc(db, "userSettings", user.id);
+      const userDocRef = doc(db, "userSettings", user.uid);
       const userDoc = await getDoc(userDocRef);
-      
+
       if (userDoc.exists()) {
         const userData = userDoc.data();
         setHasScanned(userData.hasScanned || false);
@@ -39,7 +49,9 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
         // ถ้าไม่มี document สร้างใหม่
         await setDoc(userDocRef, {
           hasScanned: false,
-          userId: user.id,
+          userId: user.uid,
+          email: user.email,
+          name: user.displayName,
           createdAt: new Date(),
           updatedAt: new Date()
         });
@@ -49,15 +61,15 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
       console.error("Error fetching user scan status:", error);
       setHasScanned(false);
     } finally {
-      setLoading(false);
+      setUserLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.uid, user?.email, user?.displayName]);
 
   // ฟังก์ชันสำหรับอัพเดตสถานะ hasScanned ใน Firestore
   const updateScanStatus = useCallback(async (newStatus: boolean) => {
-    if (!user?.id) return;
+    if (!user?.uid) return;
 
-    const userDocRef = doc(db, "userSettings", user.id);
+    const userDocRef = doc(db, "userSettings", user.uid);
 
     try {
       await updateDoc(userDocRef, {
@@ -71,7 +83,9 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
       try {
         await setDoc(userDocRef, {
           hasScanned: newStatus,
-          userId: user.id,
+          userId: user.uid,
+          email: user.email,
+          name: user.displayName,
           createdAt: new Date(),
           updatedAt: new Date()
         });
@@ -80,16 +94,18 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
         console.error("Error creating user document:", createError);
       }
     }
-  }, [user?.id]);
+  }, [user?.uid, user?.email, user?.displayName]);
 
   // ดึงสถานะ hasScanned เมื่อ component โหลด
   useEffect(() => {
-    fetchUserScanStatus();
-  }, [fetchUserScanStatus]);
+    if (!authLoading) {
+      fetchUserScanStatus();
+    }
+  }, [fetchUserScanStatus, authLoading]);
 
   // ดึงข้อมูลคลาส
   useEffect(() => {
-    if (!user?.id || loading) {
+    if (!user?.uid || userLoading || authLoading) {
       return;
     }
 
@@ -98,13 +114,13 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
       return;
     }
 
-    console.log("Setting up classes listener for user:", user.id);
+    console.log("Setting up classes listener for user:", user.uid);
     setClassesLoading(true);
 
     const classesRef = collection(db, "classes");
     const q = query(
       classesRef,
-      where("checkedInMembers", "array-contains", user.id)
+      where("checkedInMembers", "array-contains", user.uid)
     );
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -124,10 +140,10 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
       console.log("Cleaning up classes listener");
       unsubscribe();
     };
-  }, [user?.id, hasScanned, loading]);
+  }, [user?.uid, hasScanned, userLoading, authLoading]);
 
   // แสดง loading ขณะกำลังโหลดข้อมูล
-  if (loading) {
+  if (authLoading || userLoading) {
     return (
       <div className="border-2 border-purple-500 rounded-2xl p-4 h-95 md:w-150 md:h-150 md:ml-160 md:-mt-101 md:flex md:flex-col">
         <div className="flex justify-center items-center h-full">
@@ -146,7 +162,7 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
           <ArrowLeft size={28} />
         </button>
       </div>
-      
+
       {!hasScanned ? (
         <div className="">
           <AddClassPopup onScanSuccess={() => updateScanStatus(true)} />
@@ -174,7 +190,7 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
                         <p className="text-sm text-purple-600">สร้างโดย: {cls.owner_email}</p>
                       </div>
                     </div>
-                    {cls.checkedInMembers?.includes(user?.id) && (
+                    {cls.checkedInMembers?.includes(user?.uid) && (
                       <span className="text-green-600">✓ เช็คชื่อแล้ว</span>
                     )}
                   </div>

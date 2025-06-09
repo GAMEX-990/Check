@@ -27,72 +27,72 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
         setShowQRModal(false);
     };
 
-    // ฟังก์ชันสำหรับอัปโหลดไฟล์ CSV และบันทึกข้อมูลนักเรียนลง Firebase
-    const handleUploadCSV = async (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return; // ถ้าไม่มีไฟล์ให้หยุดทำงาน
+    // // ฟังก์ชันสำหรับอัปโหลดไฟล์ CSV และบันทึกข้อมูลนักเรียนลง Firebase
+    // const handleUploadCSV = async (event: ChangeEvent<HTMLInputElement>) => {
+    //     const file = event.target.files?.[0];
+    //     if (!file) return; // ถ้าไม่มีไฟล์ให้หยุดทำงาน
 
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const text = e.target?.result;
-            if (typeof text !== 'string') return; // ตรวจสอบว่าข้อมูลเป็น string
+    //     const reader = new FileReader();
+    //     reader.onload = async (e) => {
+    //         const text = e.target?.result;
+    //         if (typeof text !== 'string') return; // ตรวจสอบว่าข้อมูลเป็น string
 
-            // แยกข้อมูลแต่ละบรรทัด
-            const lines = text.split('\n');
-            
-            // วนลูปผ่านแต่ละบรรทัดเพื่อดึงข้อมูลนักเรียน
-            for (const line of lines) {
-                const [name, studentId, major] = line.trim().split(',');
+    //         // แยกข้อมูลแต่ละบรรทัด
+    //         const lines = text.split('\n');
 
-                // ตรวจสอบว่ามีข้อมูลครบถ้วน
-                if (name && studentId && major) {
-                    // บันทึกข้อมูลนักเรียนลง Firestore
-                    await addDoc(collection(db, 'students'), {
-                        name,        // ชื่อนักเรียน
-                        studentId,   // รหัสนักเรียน
-                        major,       // สาขาวิชา
-                        classId,     // ID ของคลาสเรียน
-                        createdAt: Timestamp.now(), // เวลาที่สร้างข้อมูล
-                    });
-                }
-            }
-            alert('อัปโหลดข้อมูลนักเรียนสำเร็จ!');
-        };
+    //         // วนลูปผ่านแต่ละบรรทัดเพื่อดึงข้อมูลนักเรียน
+    //         for (const line of lines) {
+    //             const [name, studentId, major] = line.trim().split(',');
 
-        reader.readAsText(file); // อ่านไฟล์เป็น text
-    };
+    //             // ตรวจสอบว่ามีข้อมูลครบถ้วน
+    //             if (name && studentId && major) {
+    //                 // บันทึกข้อมูลนักเรียนลง Firestore
+    //                 await addDoc(collection(db, 'students'), {
+    //                     name,        // ชื่อนักเรียน
+    //                     studentId,   // รหัสนักเรียน
+    //                     classId,     // ID ของคลาสเรียน
+    //                     createdAt: Timestamp.now(), // เวลาที่สร้างข้อมูล
+    //                 });
+    //             }
+    //         }
+    //         alert('อัปโหลดข้อมูลนักเรียนสำเร็จ!');
+    //     };
+
+    //     reader.readAsText(file); // อ่านไฟล์เป็น text
+    // };
 
     return (
-        <div className="">
-            {/* ปุ่มสร้าง QR Code */}
-            <div className="h-0 md:flex md:flex-col md:-mx-34 md:-mt-20 max-md:mx-5 max-md:flex max-md:flex-row max-md:justify-center max-md:items-center max-md:gap-2 max-md:-mt-26 max-md:mb-26 max-md:h-0">
-                <button
-                   className="w-20 h-auto border-purple-600 text-purple-600 py-1 rounded-2xl hover:bg-purple-100 md:mb-2 border md:ml-2"
-                    onClick={handleCreateQR}
-                >
-                    Create QR
-                </button>
-
-                   {/* ปุ่มอัปโหลด CSV */}
-                   <button
+        <div>
+            <div className="flex flex-col gap-2 items-center">
+                <div>
+                    <button
+                        className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
+                        onClick={handleCreateQR}
+                    >
+                        Create QR
+                    </button>
+                </div>
+                <div>
+                    <button
                         onClick={() => document.getElementById('csv-upload')?.click()}
-                        className="w-25 h-auto border border-purple-600 text-purple-600 py-1 rounded-2xl hover:bg-purple-100 "
+                        className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 "
                     >
                         Upload CSV
                     </button>
+                </div>
             </div>
 
             {/* Modal สำหรับแสดง QR Code */}
             {showQRModal && qrCode && (
-                <div className="fixed inset-0 flex items-center justify-center ">
+                <div className="fixed inset-0 flex items-center justify-center z-10">
                     {/* พื้นหลังสีเทาโปร่งใส */}
                     <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}></div>
-                    
+
                     {/* กล่อง modal */}
                     <div className="relative bg-white rounded-4xl p-12 w-250 h-150 mx-4 shadow-lg overflow-hidden">
                         {/* วงกลมสีม่วงที่มุมขวาบน */}
                         <div className="absolute -top-16 -right-16 w-40 h-40 bg-purple-500 rounded-full"></div>
-                        
+
                         {/* ปุ่มปิด modal - วางไว้บนวงกลมสีม่วง */}
                         <button
                             onClick={handleCloseQR}
@@ -102,7 +102,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </button>
-                        
+
                         {/* ส่วนแสดง QR Code */}
                         <div className="flex items-center justify-center p-25">
                             <QRCode value={qrCode} size={280} />
@@ -114,14 +114,14 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
             {/* ส่วนอัปโหลดไฟล์ CSV */}
             <div>
                 <div className="h-0 w-0">
-                 
+
                 </div>
                 {/* input file ที่ซ่อนไว้ */}
                 <input
                     id="csv-upload"
                     type="file"
                     accept=".csv"
-                    onChange={handleUploadCSV}
+                    // onChange={handleUploadCSV}
                     className="hidden"
                 />
             </div>

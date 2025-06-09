@@ -1,21 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { SyncUserToFirebase } from "@/utils/userSync";
 import MyClassPage from "./MyClassPage";
 import ClassPage from "./ClassPage";
 import { ViewClassDetailPage } from "./ViewClassDetailPage";
+import { SyncUserToFirebase } from "@/utils/userSync";
+
+interface ClassSectionProps {
+  onPageChange?: (page: "myclass" | "class" | "view") => void;
+  onClassSelect?: (classData: any) => void;
+}
 
 //ส่วนเอาไว้เลื่อนคลาสต่างๆ
-const ClassSection = () => {
+const ClassSection = ({ onPageChange, onClassSelect }: ClassSectionProps) => {
   const [page, setPage] = useState<"myclass" | "class" | "view">("myclass");
   const [selectedClass, setSelectedClass] = useState<any>(null);
 
-  const handleNext = () => setPage("class");
-  const handleBack = () => setPage("myclass");
+  const handleNext = () => {
+    setPage("class");
+    onPageChange?.("class");
+  } 
+  const handleBack = () => {
+    setPage("myclass");
+    onPageChange?.("myclass");
+  }
   const handleSelectClass = (classData: any) => {
     setSelectedClass(classData);
     setPage("view");
+    onPageChange?.("view");
+    onClassSelect?.(classData);
   };
 
 //ส่วนนี้คือหน้าที่ User เห็น

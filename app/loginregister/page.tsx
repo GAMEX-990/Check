@@ -47,16 +47,17 @@ export default function LoginRegisterPage() {
       // อัพเดท profile
       await updateProfile(linkedUser, {
         displayName: fullname,
-        photoURL: user.photoURL || null
+        photoURL: user.photoURL 
       });
   
       // บันทึกลง Firestore
-      await setDoc(doc(db, "students", linkedUser.uid), {
-        fullname,
+      await setDoc(doc(db, "users", linkedUser.uid), {
+        name: fullname,
         studentId,
         email: user.email,
-        photoURL: user.photoURL || null,
-        uid: linkedUser.uid,
+        photoURL: user.photoURL,
+        id: linkedUser.uid,
+        updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString()
       });
   

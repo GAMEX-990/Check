@@ -77,9 +77,10 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
           </div>
           {/* Class List - แสดงเฉพาะคลาสที่เป็นเจ้าของ */}
           <div className="overflow-scroll h-80">
+            <div className="flex flex-col gap-4">
             {classes.length > 0 &&
               classes.map((cls) => (
-                <div>
+                <div key={cls.id}>
                   <div
                     key={cls.id}
                     className="flex justify-between items-center bg-purple-200 hover:bg-purple-300 p-4 rounded-4xl cursor-pointer"
@@ -93,6 +94,7 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
                 </div>
               ))
             }
+          </div>
           </div>
         </div>
       </div>

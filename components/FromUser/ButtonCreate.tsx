@@ -1,15 +1,13 @@
 "use client"; // บอกให้ Next.js รู้ว่านี่เป็น Client Component
 
-import { useState, useEffect, useRef } from "react";
-import { auth, db } from "@/lib/firebase";
-import { collection, addDoc, Timestamp, } from "firebase/firestore";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { FaTimes } from "react-icons/fa";
-import { openCamera, scanQRCode, stopCamera } from "@/utils/camera";
+import { stopCamera } from "@/utils/camera";
 import { handleQRDetected as handleQRUtility } from "@/utils/qrScanner";
-
 import { useHasScanned } from "@/utils/hasScanned";
 import { handleCreateClass } from "@/utils/CreateClass";
+import { useCameraScanner } from "@/utils/useQRScanner";
 
 interface AddClassPopupProps {
   onScanSuccess?: () => void;
@@ -35,8 +33,6 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   const [loading, setLoading] = useState(false);
   // State สำหรับเก็บข้อความแสดงข้อผิดพลาด
   const [error, setError] = useState<string | null>(null);
-  // State สำหรับเก็บ ID ของคลาสที่สร้างขึ้น
-  const [classId, setClassId] = useState<string | null>(null);
   //------------------------------------------------------------------------------------------------
 
 //สร้างคลาส
@@ -66,95 +62,16 @@ const handleCreate = async () => {
     });
   };
 
-  // useEffect Hook สำหรับจัดการการเปิด/ปิดกล้องและการสแกน QR Code
-  useEffect(() => {
-    // ตัวแปรสำหรับเก็บ Media Stream ปัจจุบัน
-    let currentStream: MediaStream | null = null;
-
-    // ตรวจสอบว่าอยู่ในสถานะการสแกนและมี video, canvas elements
-    if (scanning && videoRef.current && canvasRef.current) {
-      // เปิดกล้องและเริ่มการสแกน
-      openCamera(videoRef.current).then((stream) => {
-        // เริ่มการสแกน QR Code โดยส่ง elements และ callback functions
-        const scanner = scanQRCode(
-          videoRef.current!, // Video element (! หมายถึงมั่นใจว่าไม่เป็น null)
-          canvasRef.current!, // Canvas element
-          handleQRDetected, // ฟังก์ชันที่จะเรียกเมื่อสแกนสำเร็จ
-          (error: any) => { // ฟังก์ชันที่จะเรียกเมื่อเกิดข้อผิดพลาด
-            console.error("เกิดข้อผิดพลาดในการสแกน:", error);
-            alert(error);
-          }
-        );
-
-        // ฟังก์ชัน Cleanup เมื่อปิดการสแกน
-        return () => {
-          // หยุดการทำงานของ scanner หากมี
-          if (scanner) {
-            scanner.stop();
-          }
-          // หยุดการทำงานของกล้องหากมี stream
-          if (currentStream) {
-            stopCamera(currentStream);
-            currentStream = null;
-          }
-        };
-      }).catch((error) => {
-        // จัดการข้อผิดพลาดการเปิดกล้อง
-        console.error("ไม่สามารถเปิดกล้องได้:", error);
-        alert("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบการอนุญาตการใช้งานกล้อง");
-        setScanning(false); // ปิดสถานะการสแกน
-      });
-
-      // ฟังก์ชัน Cleanup ของ useEffect
-      return () => {
-        // หยุดกล้องหากมี stream ทำงานอยู่
-        if (currentStream) {
-          stopCamera(currentStream);
-          currentStream = null;
-        }
-      };
-    }
-  }, [scanning]); // dependency array - useEffect จะทำงานเมื่อ scanning state เปลี่ยน
-
-
-  // ส่วนนี้เป็น comment ของฟังก์ชันอัปโหลด CSV (ถูก comment ทั้งหมด)
-  // // ฟังก์ชันสำหรับอัปโหลดไฟล์ CSV ข้อมูลนักเรียน
-  // const handleUploadCSV = async (event: ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0];
-  //   if (!file) return; // ถ้าไม่มีไฟล์ให้หยุด
-
-  //   // ตรวจสอบว่ามี classId หรือไม่
-  //   if (!classId) {
-  //     alert("กรุณาสร้างคลาสก่อนอัปโหลดนักเรียน");
-  //     return;
-  //   }
-
-  //   const reader = new FileReader();
-  //   reader.onload = async (e) => {
-  //     const text = e.target?.result;
-  //     if (typeof text !== "string") return;
-
-  //     // แยกข้อมูลแต่ละบรรทัดใน CSV
-  //     const lines = text.split("\n");
-  //     for (const line of lines) {
-  //       const [name, studentId, major] = line.trim().split(",");
-
-  //       // ถ้ามีข้อมูลครบถ้วนให้บันทึกลง Firebase
-  //       if (name && studentId && major) {
-  //         await addDoc(collection(db, "students"), {
-  //           name, // ชื่อนักเรียน
-  //           studentId, // รหัสนักเรียน
-  //           major, // สาขาวิชา
-  //           classId, // ID ของคลาส
-  //           createdAt: Timestamp.now(), // วันที่สร้าง
-  //         });
-  //       }
-  //     }
-  //     alert("อัปโหลดข้อมูลนักเรียนสำเร็จ!");
-  //   };
-
-  //   reader.readAsText(file); // อ่านไฟล์เป็นข้อความ
-  // };
+  useCameraScanner({
+    scanning,
+    videoRef,
+    canvasRef,
+    onQRDetected: handleQRDetected,
+    onError: (error) => {
+      console.error("เกิดข้อผิดพลาดในการสแกน:", error);
+      alert(error);
+    },
+  });
 
   // ฟังก์ชันสำหรับปิด popup สร้างคลาส
   const closePopup = () => {

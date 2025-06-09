@@ -83,14 +83,14 @@ export const handleQRDetected = async ({
 
       // อัปเดตข้อมูลคลาสในฐานข้อมูล
       await updateDoc(classRef, {
-        checkedInRecord: arrayUnion({
+        [`checkedInRecord.${user.uid}`]: {
           uid: user.uid,
           studentId: userData?.studentId || "",
           timestamp: Timestamp.now(),
           name: user.displayName || user.email || "",
           email: user.email || "",
-          
-        }),
+        },
+
         checkedInMembers: arrayUnion(user.uid),
         checkedInCount: checkedInMembers.length + 1,
         lastCheckedIn: Timestamp.now(),

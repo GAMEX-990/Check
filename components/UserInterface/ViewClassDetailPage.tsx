@@ -1,39 +1,63 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 interface ViewClassDetailPageProps {
   classData: any;
   onBack: () => void;
+
 }
 
 export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPageProps) => {
   const [checkedInUsers, setCheckedInUsers] = useState<any[]>([]);
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
+  const currentUid = currentUser?.uid;
 
-// ดึงข้อมูลผู้เข้าเรียน
-useEffect(() => {
-  const fetchCheckedInUsers = async () => {
-    try {
-      if (!classData.checkedInRecord) return;
 
-      const usersList = Object.values(classData.checkedInRecord)
-        .map((user: any) => ({
-          ...user,
-          timestamp: user.timestamp.toDate(), // แปลง Timestamp → Date
-        }))
-        .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  // ดึงข้อมูลผู้เข้าเรียน
+  useEffect(() => {
+    const fetchCheckedInUsers = async () => {
+      try {
+        if (!classData.checkedInRecord || !currentUid) return;
 
-      setCheckedInUsers(usersList);
-    } catch (error) {
-      console.error("Error fetching checked-in users:", error);
-    }
-  };
+        const isOwner = classData.created_by === currentUid;
 
-  fetchCheckedInUsers();
-}, [classData.checkedInRecord]);
+        let usersList;
 
+        if (isOwner) {
+          // ✅ แสดงทุกคน
+          usersList = Object.values(classData.checkedInRecord).map((user: any) => ({
+            ...user,
+            timestamp: user.timestamp.toDate(),
+          }));
+        } else {
+          // ✅ แสดงเฉพาะคนเดียว
+          const user = classData.checkedInRecord[currentUid];
+          if (!user) return;
+
+          usersList = [{
+            ...user,
+            timestamp: user.timestamp.toDate(),
+          }];
+        }
+
+        // ✅ เรียงตามเวลา
+        usersList.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+        setCheckedInUsers(usersList);
+      } catch (error) {
+        console.error("Error fetching check-in users:", error);
+      }
+    };
+
+    fetchCheckedInUsers();
+  }, [classData.checkedInRecord]);
   
+  
+  
+
+
 
   return (
     <div>
@@ -76,9 +100,9 @@ useEffect(() => {
             <div className=" overflow-scroll h-80 relative">
               <div className="  ">
                 {checkedInUsers.map((user) => (
-                  <div>
+                  <div key={user.uid}>
                     <div>
-                      <p className="text-sm text-purple-900">{user.timestamp.toLocaleString("th-TH",{
+                      <p className="text-sm text-purple-900">{user.timestamp.toLocaleString("th-TH", {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
@@ -86,14 +110,14 @@ useEffect(() => {
                         minute: "2-digit",
                       })}</p>
                     </div>
-                  <div className="flex flex-row justify-between mt-2">
-                    <div>
-                      <p className="text-sm  text-purple-900">{user.name}</p>
+                    <div className="flex flex-row justify-between mt-2">
+                      <div>
+                        <p className="text-sm  text-purple-900">{user.name}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-purple-900">{user.studentId}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-purple-900">{user.studentId}</p>
-                    </div>
-                  </div>
                   </div>
                 ))}
               </div>

@@ -86,7 +86,7 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
                 ) : (
                   <>
                     {joinedClasses.map((cls) => (
-                      <div>
+                      <div key={cls.id}>
                         <div
                           key={cls.id}
                           className="flex justify-between items-center bg-purple-200 hover:bg-purple-300 p-4 rounded-4xl cursor-pointer"

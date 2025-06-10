@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { fetchCheckedInUsers } from "@/utils/fetchCheckedInUsers";
 
 interface ViewClassDetailPageProps {
   classData: any;
@@ -15,48 +16,14 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
   const currentUid = currentUser?.uid;
 
 
-  // ดึงข้อมูลผู้เข้าเรียน
   useEffect(() => {
-    const fetchCheckedInUsers = async () => {
-      try {
-        if (!classData.checkedInRecord || !currentUid) return;
-
-        const isOwner = classData.created_by === currentUid;
-
-        let usersList;
-
-        if (isOwner) {
-          // ✅ แสดงทุกคน
-          usersList = Object.values(classData.checkedInRecord).map((user: any) => ({
-            ...user,
-            timestamp: user.timestamp.toDate(),
-          }));
-        } else {
-          // ✅ แสดงเฉพาะคนเดียว
-          const user = classData.checkedInRecord[currentUid];
-          if (!user) return;
-
-          usersList = [{
-            ...user,
-            timestamp: user.timestamp.toDate(),
-          }];
-        }
-
-        // ✅ เรียงตามเวลา
-        usersList.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-
-        setCheckedInUsers(usersList);
-      } catch (error) {
-        console.error("Error fetching check-in users:", error);
-      }
+    const loadCheckedInUsers = async () => {
+      const users = await fetchCheckedInUsers(classData, currentUid);
+      setCheckedInUsers(users);
     };
 
-    fetchCheckedInUsers();
-  }, [classData.checkedInRecord]);
-  
-  
-  
-
+    loadCheckedInUsers();
+  }, [classData.checkedInRecord, currentUid]);
 
 
   return (

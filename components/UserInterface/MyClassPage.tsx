@@ -1,18 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { auth, db } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import {
   collection,
   query,
   where,
   onSnapshot,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc
 } from "firebase/firestore";
 import { ArrowRight } from "lucide-react";
-import AddClassPopup from "../FromUser/ButtonCreate";
-import { onAuthStateChanged, User } from "firebase/auth";
 import { useHasScanned } from "@/utils/hasScanned";
 
 interface MyClassPageProps {

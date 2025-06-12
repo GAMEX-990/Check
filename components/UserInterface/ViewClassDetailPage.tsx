@@ -1,11 +1,8 @@
+
 import { useState, useEffect } from "react";
-import { ArrowLeft, Download } from "lucide-react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { ArrowLeft } from "lucide-react";
+import { getAuth } from "firebase/auth";
 import { fetchCheckedInUsers } from "@/utils/fetchCheckedInUsers";
-
-
-
-
 interface ViewClassDetailPageProps {
   classData: any;
   onBack: () => void;
@@ -13,11 +10,11 @@ interface ViewClassDetailPageProps {
 }
 
 export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPageProps) => {
+
   const [checkedInUsers, setCheckedInUsers] = useState<any[]>([]);
   const auth = getAuth();
   const currentUser = auth.currentUser;
   const currentUid = currentUser?.uid;
-
 
 
   useEffect(() => {
@@ -28,6 +25,7 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
 
     loadCheckedInUsers();
   }, [classData.checkedInRecord, currentUid]);
+
 
 
   return (
@@ -45,8 +43,6 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
               </button>
             </div>
           </div>
-
-          
           {/* ดูสรุปการเข้าเรียน */}
           <div className="text-purple-800 flex justify-between m-4">
             <div>
@@ -96,6 +92,7 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
               </div>
             </div>
           </div>
+          {/* --------------------------------------------------*/}
         </div>
       </div>
     </div>

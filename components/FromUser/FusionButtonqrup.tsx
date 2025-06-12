@@ -1,3 +1,4 @@
+import { handleExportPDF } from '@/utils/exportPDFHandler';
 import { uploadStudentsFromFile } from '@/utils/parseCSVFile';
 import React, { useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
@@ -27,7 +28,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [showQRModal, setShowQRModal] = useState(false);
-   
+
 
     // ฟังก์ชันสำหรับสร้าง QR Code
     const handleCreateQR = () => {
@@ -47,7 +48,6 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
         fileInputRef.current?.click();
     };
 
-    
 
     return (
         <div>
@@ -77,7 +77,14 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
                         Upload CSV
                     </button>
                 </div>
-               
+                <div>
+                </div>
+                <button
+                    onClick={() => handleExportPDF(classId)}
+                    className="border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
+                >
+                    Export PDF
+                </button>
             </div>
 
             {/* Modal สำหรับแสดง QR Code */}

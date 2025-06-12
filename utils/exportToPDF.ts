@@ -96,7 +96,7 @@ export const exportAttendanceToPDF = async (
     const finalY = (doc as any).lastAutoTable.finalY + 15;
     doc.setFontSize(10);
     doc.text(`จำนวนรายการทั้งหมด: ${checkedInUsers.length}`, 20, finalY);
-    doc.text(`สร้างโดย: ระบบบันทึกการเข้าเรียน v1.0`, 20, finalY + 10);
+    doc.text(`สร้างโดย: ระบบบันทึกการเข้าเรียน Ckeck-In`, 20, finalY + 10);
     
     // สร้างชื่อไฟล์
     const dateStr = new Date().toISOString().split('T')[0];

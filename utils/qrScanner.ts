@@ -1,8 +1,8 @@
-import { doc, getDoc, updateDoc, arrayUnion, Timestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase"; // อย่าลืม import Firebase configuration ของคุณ
+import { doc, getDoc, updateDoc, arrayUnion, Timestamp, collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 /**
- * ฟังก์ชันสำหรับจัดการการสแกน QR Code
+ * ฟังก์ชันสำหรับจัดการการสแกน QR Code (แก้ไขให้ตรวจสอบรายชื่อจากไฟล์ CSV)
  * @param result ผลลัพธ์จากการสแกน QR Code
  * @param videoRef Reference ไปยัง video element ของกล้อง
  * @param user ข้อมูลผู้ใช้ปัจจุบัน
@@ -26,7 +26,7 @@ export const handleQRDetected = async ({
 }: {
   result: { data: string };
   videoRef: React.RefObject<HTMLVideoElement | null>;
-  user: any; // ควรเปลี่ยนเป็น type ที่เหมาะสมสำหรับผู้ใช้ของคุณ
+  user: any;
   setScanning: (scanning: boolean) => void;
   setLoading: (loading: boolean) => void;
   hasScanned: boolean;
@@ -60,9 +60,33 @@ export const handleQRDetected = async ({
     // เริ่มสถานะการโหลด
     setLoading(true);
 
+    // ดึงข้อมูลผู้ใช้
     const userDoc = await getDoc(doc(db, "users", user.uid));
     const userData = userDoc.data();
     const studentId = userData?.studentId || "";
+
+    // ตรวจสอบว่าผู้ใช้มี studentId หรือไม่
+    if (!studentId) {
+      alert('ไม่พบรหัสนักศึกษาของคุณ กรุณาติดต่อผู้ดูแลระบบ');
+      return;
+    }
+
+    // ตรวจสอบว่านักศึกษาคนนี้มีชื่ออยู่ในรายชื่อของคลาสนี้หรือไม่
+    const studentsQuery = query(
+      collection(db, "students"),
+      where("classId", "==", classId),
+      where("studentId", "==", studentId)
+    );
+    
+    const studentsSnapshot = await getDocs(studentsQuery);
+    
+    if (studentsSnapshot.empty) {
+      alert('คุณไม่อยู่ในรายชื่อของคลาสนี้ ไม่สามารถเช็คชื่อได้');
+      return;
+    }
+
+    // ดึงข้อมูลนักศึกษาจากรายชื่อ
+    const studentData = studentsSnapshot.docs[0].data();
 
     // สร้าง Reference ไปยังเอกสารคลาสใน Firestore
     const classRef = doc(db, "classes", classId);
@@ -85,10 +109,11 @@ export const handleQRDetected = async ({
       await updateDoc(classRef, {
         [`checkedInRecord.${user.uid}`]: {
           uid: user.uid,
-          studentId: userData?.studentId || "",
+          studentId: studentId,
           timestamp: Timestamp.now(),
-          name: user.displayName || user.email || "",
+          name: studentData.name || user.displayName || user.email || "", // ใช้ชื่อจากรายชื่อที่อัปโหลด
           email: user.email || "",
+          status: studentData.status || "", // เพิ่มสถานะจากรายชื่อ
         },
 
         checkedInMembers: arrayUnion(user.uid),
@@ -100,8 +125,10 @@ export const handleQRDetected = async ({
         await updateScanStatus(true);
       }
 
-      alert('เช็คชื่อสำเร็จ!');
+      alert(`เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}`);
       onScanSuccess?.();
+    } else {
+      alert('ไม่พบข้อมูลคลาสนี้');
     }
   } catch (error) {
     console.error('Error:', error);

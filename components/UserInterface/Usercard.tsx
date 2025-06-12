@@ -36,6 +36,7 @@ const Usercard = () => {
         router.push("/");
     };
 
+    
     if (!data) return <p>Loading...</p>;
 
     return (

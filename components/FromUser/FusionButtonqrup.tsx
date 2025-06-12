@@ -1,7 +1,5 @@
-// src/components/CreateQRCodeAndUpload.tsx
-import { db } from '@/lib/firebase';
-import { addDoc, collection, Timestamp } from 'firebase/firestore';
-import React, { ChangeEvent, useState } from 'react';
+import { uploadStudentsFromFile } from '@/utils/parseCSVFile';
+import React, { useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 
 // กำหนด props สำหรับ component
@@ -9,10 +7,27 @@ interface CreateQRCodeAndUploadProps {
     classId: string; // ID ของคลาสเรียน
 }
 
+const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, classId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const result = await uploadStudentsFromFile(file, classId);
+
+    if (result.success) {
+        alert("อัปโหลดข้อมูลนักเรียนสำเร็จ!");
+    } else {
+        alert("เกิดข้อผิดพลาดในการอัปโหลด");
+    }
+};
+
+
 const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }) => {
     // state สำหรับเก็บค่า QR code และสถานะการแสดง modal
+    // สร้าง ref สำหรับ input file
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [showQRModal, setShowQRModal] = useState(false);
+   
 
     // ฟังก์ชันสำหรับสร้าง QR Code
     const handleCreateQR = () => {
@@ -27,39 +42,12 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
         setShowQRModal(false);
     };
 
-    // // ฟังก์ชันสำหรับอัปโหลดไฟล์ CSV และบันทึกข้อมูลนักเรียนลง Firebase
-    // const handleUploadCSV = async (event: ChangeEvent<HTMLInputElement>) => {
-    //     const file = event.target.files?.[0];
-    //     if (!file) return; // ถ้าไม่มีไฟล์ให้หยุดทำงาน
+    // เมื่อกดปุ่ม Upload CSV ให้เปิด input file
+    const onUploadButtonClick = () => {
+        fileInputRef.current?.click();
+    };
 
-    //     const reader = new FileReader();
-    //     reader.onload = async (e) => {
-    //         const text = e.target?.result;
-    //         if (typeof text !== 'string') return; // ตรวจสอบว่าข้อมูลเป็น string
-
-    //         // แยกข้อมูลแต่ละบรรทัด
-    //         const lines = text.split('\n');
-
-    //         // วนลูปผ่านแต่ละบรรทัดเพื่อดึงข้อมูลนักเรียน
-    //         for (const line of lines) {
-    //             const [name, studentId, major] = line.trim().split(',');
-
-    //             // ตรวจสอบว่ามีข้อมูลครบถ้วน
-    //             if (name && studentId && major) {
-    //                 // บันทึกข้อมูลนักเรียนลง Firestore
-    //                 await addDoc(collection(db, 'students'), {
-    //                     name,        // ชื่อนักเรียน
-    //                     studentId,   // รหัสนักเรียน
-    //                     classId,     // ID ของคลาสเรียน
-    //                     createdAt: Timestamp.now(), // เวลาที่สร้างข้อมูล
-    //                 });
-    //             }
-    //         }
-    //         alert('อัปโหลดข้อมูลนักเรียนสำเร็จ!');
-    //     };
-
-    //     reader.readAsText(file); // อ่านไฟล์เป็น text
-    // };
+    
 
     return (
         <div>
@@ -73,13 +61,23 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
                     </button>
                 </div>
                 <div>
+                    {/* ซ่อน input ไฟล์ไว้ */}
+                    <input
+                        type="file"
+                        accept=".csv"
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                        onChange={(e) => handleFileUpload(e, classId)}
+                    />
+                    {/* ปุ่มเดียวที่ใช้เปิด input file */}
                     <button
-                        onClick={() => document.getElementById('csv-upload')?.click()}
-                        className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 "
+                        onClick={onUploadButtonClick}
+                        className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
                     >
                         Upload CSV
                     </button>
                 </div>
+               
             </div>
 
             {/* Modal สำหรับแสดง QR Code */}

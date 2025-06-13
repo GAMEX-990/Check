@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { getAuth } from "firebase/auth";
 import { fetchCheckedInUsers } from "@/utils/fetchCheckedInUsers";
+import { createAttendanceSummary } from "@/utils/Summary";
+import AttendanceSummaryModal from "./AttenSummary";
 interface ViewClassDetailPageProps {
   classData: any;
   onBack: () => void;
@@ -10,7 +12,8 @@ interface ViewClassDetailPageProps {
 }
 
 export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPageProps) => {
-
+  const [showSummary, setShowSummary] = useState(false);
+  const [attendanceSummary, setAttendanceSummary] = useState<any[]>([]);
   const [checkedInUsers, setCheckedInUsers] = useState<any[]>([]);
   const auth = getAuth();
   const currentUser = auth.currentUser;
@@ -21,11 +24,21 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
     const loadCheckedInUsers = async () => {
       const users = await fetchCheckedInUsers(classData, currentUid);
       setCheckedInUsers(users);
+
+      const summary = createAttendanceSummary(users);
+      setAttendanceSummary(summary);
     };
 
     loadCheckedInUsers();
   }, [classData.checkedInRecord, currentUid]);
 
+  const handleShowSummary = () => {
+    setShowSummary(true);
+  };
+
+  const handleCloseSummary = () => {
+    setShowSummary(false);
+  };
 
 
   return (
@@ -49,7 +62,8 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
               <p className="">ชื่อ-สกุล</p>
             </div>
             <div>
-              <button className="border-1 border-purple-700 p-1 rounded-4xl">
+              <button className="border-1 border-purple-700 p-1 rounded-4xl cursor-pointer"
+              onClick={handleShowSummary}>
                 ดูสรุปการเข้าเรียน
               </button>
             </div>
@@ -95,6 +109,13 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
           {/* --------------------------------------------------*/}
         </div>
       </div>
+       {/* Modal สรุปการเข้าเรียน */}
+       <AttendanceSummaryModal
+        isOpen={showSummary}
+        onClose={handleCloseSummary}
+        classData={classData}
+        attendanceSummary={attendanceSummary}
+      />
     </div>
   );
 };

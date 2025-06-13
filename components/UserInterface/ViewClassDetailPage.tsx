@@ -1,17 +1,20 @@
 
 import { useState, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
 import { getAuth } from "firebase/auth";
 import { fetchCheckedInUsers } from "@/utils/fetchCheckedInUsers";
 import { createAttendanceSummary } from "@/utils/Summary";
+import DeleteClassModal from "./DeleteClassModal"; // เพิ่ม import
 import AttendanceSummaryModal from "./AttenSummary";
+import { ArrowLeft, Trash2 } from "lucide-react";
 interface ViewClassDetailPageProps {
   classData: any;
   onBack: () => void;
+  onDeleteSuccess?: () => void;
 
 }
 
-export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPageProps) => {
+export const ViewClassDetailPage = ({ classData, onBack, onDeleteSuccess }: ViewClassDetailPageProps) => {
+  const [shoewDeleteModal, setShowDeleteModal] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [attendanceSummary, setAttendanceSummary] = useState<any[]>([]);
   const [checkedInUsers, setCheckedInUsers] = useState<any[]>([]);
@@ -40,6 +43,25 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
     setShowSummary(false);
   };
 
+  const handlsShowDeleteModal = () => {
+    setShowDeleteModal(true);
+    
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+  };
+
+  const handleDeleteSuccess  = () => {
+    if (onDeleteSuccess) {
+      onDeleteSuccess();
+    }
+    onBack();
+  }
+
+  // ตรวจสอบว่าผู้ใช้ปัจจุบันเป็นคนสร้างคลาสหรือไม่
+const isClassOwner = classData.owner_email === currentUser?.email;
+  
 
   return (
     <div>
@@ -51,6 +73,16 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
               <h1 className="text-2xl font-bold text-purple-800 text-center flex-grow">{classData.name}</h1>
             </div>
             <div className=" absolute right-0">
+                {/* ปุ่มลบคลาส - แสดงเฉพาะคนสร้างเท่านั้น */}
+              {isClassOwner && (
+                <button 
+                  className="text-red-500 hover:text-red-700 p-1"
+                  onClick={handlsShowDeleteModal}
+                  title="ลบคลาส"
+                >
+                  <Trash2 size={24} />
+                </button>
+              )}
               <button className="text-2xl text-purple-600" onClick={onBack}>
                 <ArrowLeft size={28} />
               </button>
@@ -115,6 +147,18 @@ export const ViewClassDetailPage = ({ classData, onBack }: ViewClassDetailPagePr
         onClose={handleCloseSummary}
         classData={classData}
         attendanceSummary={attendanceSummary}
+      />
+       {/* Modal ลบคลาส */}
+       <DeleteClassModal
+        isOpen={shoewDeleteModal}
+        onClose={handleCloseDeleteModal}
+        classData={{
+          id: classData.id,
+          name: classData.name,
+          memberCount: classData.checkedInCount
+        }}
+        user={currentUser}
+        onDeleteSuccess={handleDeleteSuccess}
       />
     </div>
   );

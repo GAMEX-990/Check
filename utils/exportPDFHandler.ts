@@ -20,8 +20,14 @@ interface ClassData {
   checkedInCount?: number;
 }
 
-export const handleExportPDF = async (classId: string): Promise<void> => {
+export const handleExportPDF = async (classId: string,currentUser: {uid: string} | null): Promise<void> => {
   try {
+
+if (!currentUser) {
+  alert('คุณยังไม่ได้ล็อกอิน');
+  return;
+}
+
     const classRef = doc(db, 'classes', classId);
     const classSnap = await getDoc(classRef);
 
@@ -31,6 +37,13 @@ export const handleExportPDF = async (classId: string): Promise<void> => {
     }
 
     const classDataFromDB = classSnap.data();
+
+    if (
+      classDataFromDB.created_by !== currentUser.uid) {
+      alert('คุณไม่มีสิทธิ์ในการ Export ข้อมูล');
+      return;
+    } 
+
 
     const classData: ClassData = {
       name: classDataFromDB.name || 'ไม่ทราบชื่อคลาส',

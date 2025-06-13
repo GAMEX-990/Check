@@ -6,6 +6,7 @@ import QRCode from 'react-qr-code';
 // กำหนด props สำหรับ component
 interface CreateQRCodeAndUploadProps {
     classId: string; // ID ของคลาสเรียน
+    currentUser: {uid: string} | null; // ข้อมูลผู้ใช้ปัจจุบัน
 }
 
 const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, classId: string) => {
@@ -22,7 +23,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, classId:
 };
 
 
-const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }) => {
+const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, currentUser }) => {
     // state สำหรับเก็บค่า QR code และสถานะการแสดง modal
     // สร้าง ref สำหรับ input file
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -47,6 +48,10 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
     const onUploadButtonClick = () => {
         fileInputRef.current?.click();
     };
+
+    const handleExportClick = async () => {
+        handleExportPDF(classId, currentUser);
+    }
 
 
     return (
@@ -80,7 +85,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId }
                 <div>
                 </div>
                 <button
-                    onClick={() => handleExportPDF(classId)}
+                    onClick={handleExportClick}
                     className="border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
                 >
                     Export PDF

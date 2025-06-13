@@ -4,14 +4,16 @@ import React, { useEffect, useState } from 'react'
 import ClassSection from '@/components/UserInterface/ClassSection';
 import AddClassPopup from '@/components/FromUser/ButtonCreate';
 import CreateQRCodeAndUpload from '@/components/FromUser/FusionButtonqrup';
+import { auth } from '@/lib/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
+
 
 
 
 export default function DashboardPage() {
   const [currectPang, SetCurrectPang] = useState<"myclass" | "class" | "view">("myclass");
   const [selectedClass, setSelectedClass] = useState<any>(null);
-
-
+  const [user, loading, error] = useAuthState(auth);
   const handlePageChange = (page: "myclass" | "class" | "view") => {
     SetCurrectPang(page);
   };
@@ -19,6 +21,16 @@ export default function DashboardPage() {
   const handleSelectClass = (classData: any) => {
     setSelectedClass(classData);
   };
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+
+  // แสดงข้อผิดพลาดถ้ามี
+  if (error) {
+    return <div className="flex justify-center items-center h-screen">Error: {error.message}</div>;
+  }
+
 
   return (
     <div>
@@ -32,8 +44,11 @@ export default function DashboardPage() {
           </div>
         )}
         {currectPang === "view" && selectedClass && (
-          <div>
-             <CreateQRCodeAndUpload classId={selectedClass.id} />
+            <div>
+            <CreateQRCodeAndUpload 
+              classId={selectedClass.id} 
+              currentUser={user ? { uid: user.uid } : null} 
+            />
           </div>
         )}
         <div>

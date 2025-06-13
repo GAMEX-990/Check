@@ -3,15 +3,6 @@ import { db } from "@/lib/firebase";
 
 /**
  * ฟังก์ชันสำหรับจัดการการสแกน QR Code (แก้ไขให้ตรวจสอบรายชื่อจากไฟล์ CSV)
- * @param result ผลลัพธ์จากการสแกน QR Code
- * @param videoRef Reference ไปยัง video element ของกล้อง
- * @param user ข้อมูลผู้ใช้ปัจจุบัน
- * @param setScanning ฟังก์ชันสำหรับตั้งค่าสถานะการสแกน
- * @param setLoading ฟังก์ชันสำหรับตั้งค่าสถานะการโหลด
- * @param hasScanned สถานะว่าผู้ใช้เคยสแกนแล้วหรือไม่
- * @param updateScanStatus ฟังก์ชันสำหรับอัปเดตสถานะการสแกน
- * @param onScanSuccess callback เมื่อสแกนสำเร็จ
- * @param stopCamera ฟังก์ชันสำหรับหยุดการทำงานของกล้อง
  */
 export const handleQRDetected = async ({
   result,
@@ -71,28 +62,69 @@ export const handleQRDetected = async ({
       return;
     }
 
-    // ตรวจสอบว่านักศึกษาคนนี้มีชื่ออยู่ในรายชื่อของคลาสนี้หรือไม่
-    const studentsQuery = query(
-      collection(db, "students"),
-      where("classId", "==", classId),
+    console.log("Searching for student:", { classId, studentId }); // Debug log
+
+    // ปรับปรุงการตรวจสอบว่านักศึกษาคนนี้มีชื่ออยู่ในรายชื่อของคลาสนี้หรือไม่
+    // ใช้ subcollection แทน
+    const classRef = doc(db, "classes", classId);
+    const studentsCollectionRef = collection(classRef, "students");
+    
+    let studentsQuery = query(
+      studentsCollectionRef,
       where("studentId", "==", studentId)
     );
     
-    const studentsSnapshot = await getDocs(studentsQuery);
+    let studentsSnapshot = await getDocs(studentsQuery);
+    
+    // ถ้าไม่เจอ ลองค้นหาแบบ string conversion
+    if (studentsSnapshot.empty) {
+      console.log("First query empty, trying string conversion");
+      studentsQuery = query(
+        studentsCollectionRef,
+        where("studentId", "==", String(studentId))
+      );
+      studentsSnapshot = await getDocs(studentsQuery);
+    }
+
+    // ถ้ายังไม่เจอ ลองค้นหาทุกคนในคลาสแล้วหาด้วย includes หรือ loose comparison
+    if (studentsSnapshot.empty) {
+      console.log("Second query empty, trying loose search");
+      const allStudentsSnapshot = await getDocs(studentsCollectionRef);
+      console.log("All students in class:", allStudentsSnapshot.docs.map(doc => doc.data()));
+      
+      // ค้นหาแบบ loose comparison
+      const matchedStudent = allStudentsSnapshot.docs.find(doc => {
+        const data = doc.data();
+        return String(data.studentId).trim() === String(studentId).trim() ||
+               String(data.studentId).replace(/\s+/g, '') === String(studentId).replace(/\s+/g, '');
+      });
+
+      if (matchedStudent) {
+        studentsSnapshot = { docs: [matchedStudent], empty: false } as any;
+      }
+    }
     
     if (studentsSnapshot.empty) {
-      alert('คุณไม่อยู่ในรายชื่อของคลาสนี้ ไม่สามารถเช็คชื่อได้');
+      // แสดงข้อมูล debug เพื่อช่วยแก้ปัญหา
+      const allStudents = await getDocs(studentsCollectionRef);
+      const studentIds = allStudents.docs.map(doc => doc.data().studentId);
+      
+      console.log("Available student IDs:", studentIds);
+      console.log("Searching for:", studentId);
+      
+      alert(`คุณไม่อยู่ในรายชื่อของคลาสนี้\nรหัสของคุณ: ${studentId}\nกรุณาติดต่อวัยรุ่น Check-IN`);
       return;
     }
 
     // ดึงข้อมูลนักศึกษาจากรายชื่อ
     const studentData = studentsSnapshot.docs[0].data();
+    console.log("Found student data:", studentData); // Debug log
 
     // สร้าง Reference ไปยังเอกสารคลาสใน Firestore
-    const classRef = doc(db, "classes", classId);
+    const classDocRef = doc(db, "classes", classId);
 
     // ดึงข้อมูลคลาสจาก Firestore
-    const classDoc = await getDoc(classRef);
+    const classDoc = await getDoc(classDocRef);
 
     // ตรวจสอบว่าคลาสมีอยู่จริงหรือไม่
     if (classDoc.exists()) {
@@ -111,9 +143,9 @@ export const handleQRDetected = async ({
           uid: user.uid,
           studentId: studentId,
           timestamp: Timestamp.now(),
-          name: studentData.name || user.displayName || user.email || "", // ใช้ชื่อจากรายชื่อที่อัปโหลด
+          name: studentData.name || user.displayName || user.email || "",
           email: user.email || "",
-          status: studentData.status || "", // เพิ่มสถานะจากรายชื่อ
+          status: studentData.status || "active",
         },
 
         checkedInMembers: arrayUnion(user.uid),
@@ -125,14 +157,14 @@ export const handleQRDetected = async ({
         await updateScanStatus(true);
       }
 
-      alert(`เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}`);
+      alert(`เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}\nสถานะ: ${studentData.status || 'active'}`);
       onScanSuccess?.();
     } else {
       alert('ไม่พบข้อมูลคลาสนี้');
     }
   } catch (error) {
-    console.error('Error:', error);
-    alert('เกิดข้อผิดพลาดในการเช็คชื่อ');
+    console.error('Error details:', error);
+    alert(`เกิดข้อผิดพลาดในการเช็คชื่อ: ${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
     setLoading(false);
   }
@@ -140,7 +172,6 @@ export const handleQRDetected = async ({
 
 /**
  * ฟังก์ชันสำหรับหยุดการทำงานของกล้อง
- * @param stream MediaStream object ของกล้อง
  */
 export const stopCamera = (stream: MediaStream) => {
   stream.getTracks().forEach((track) => {

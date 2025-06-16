@@ -143,7 +143,7 @@ export default function LoginPage() {
           <button
             onClick={handleGoogleLogin}
             disabled={isLoggingIn}
-            className={`cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-6 cursor-pointer ${
+            className={`cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-6 ${
               isLoggingIn ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md'
             }`}
           >
@@ -202,11 +202,11 @@ export default function LoginPage() {
           <div className="flex items-center justify-between mt-6 mb-8 cursor-pointer">
             <button 
               onClick={() => router.push('/register')}
-              className="cursor-pointer text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200 cursor-pointer"
+              className=" text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200 cursor-pointer"
             >
               สร้างบัญชีใหม่
             </button>
-            <button className="cursor-pointer text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200 cursor-pointer">
+            <button className=" text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200 cursor-pointer">
               ลืมรหัสผ่าน?
             </button>
           </div>

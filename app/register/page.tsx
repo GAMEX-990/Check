@@ -1,8 +1,6 @@
 'use client'
 
-import { Input } from '@/components/ui/input';
 import { auth, db, provider } from '@/lib/firebase';
-import { Label } from "@/components/ui/label";
 import { signInWithPopup } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { ChevronLeft } from 'lucide-react';
@@ -12,12 +10,9 @@ import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
-
-  // Using only the state values without setters since this page now only uses Google login
-  const [email] = useState("");
   const [error, setError] = useState("");
 
-  // ✅ Google login
+  // Google login
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -40,98 +35,109 @@ export default function RegisterPage() {
     }
   };
 
-  // handleRegister function removed as it's not being used
-  // The page now only uses Google login
-
   return (
-    <div>
-      {/* -----------------------ตัวกาตูนน่าโง่กูนั่งจัดตั้งนานควยถอก------------------------- */}
-      <div className='absolute w-90 h-90 bottom-0 left-0 overflow-hidden'>
-        <div className='relative z-10 -bottom-15 shadow-2xl'>
-          <Image src="/assets/images/personlookblook.png" alt="Login" width={240} height={240} />
-        </div>
-        <div className="absolute -left-30 -bottom-20 w-80 h-80  bg-purple-500 rounded-full z-0 shadow-2xl"></div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 flex items-center justify-center p-4">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
       </div>
-      {/* --------------------------------------------------------------------------- */}
-      <div className=' flex flex-row-reverse'>
-        <div className='border-2 border-purple-500 rounded-4xl w-90 h-170 overflow-hidden relative mx-10 '>
-          {/* วงกลมสีม่วง */}
-          <div className="absolute left-73 -top-10 w-30 h-30  bg-purple-500 rounded-full"></div>
-          <div>
-            <button className='absolute cursor-pointer' onClick={() => router.push('/login')}>
-              <ChevronLeft className='text-purple-500' size={40} />
-            </button>
+
+      {/* Character illustration */}
+      <div className="absolute bottom-0 left-0 hidden lg:block">
+        <div className="relative">
+          <div className="w-64 h-64 bg-gradient-to-tr from-purple-400 to-purple-600 rounded-full opacity-20 blur-2xl"></div>
+          <div className="absolute inset-0 flex items-end justify-center">
+            <Image 
+              src="/assets/images/personlookblook.png" 
+              alt="Welcome illustration" 
+              width={800} 
+              height={800}
+              className="drop-shadow-2xl"
+            />
           </div>
-          <div className=' flex flex-col items-center space-y-5 pt-4 h-full'>
-            <div className='text-2xl font-bold text-purple-700'>
-              <h1>REGISTER</h1>
+        </div>
+      </div>
+
+      {/* Main register card */}
+      <div className="relative w-full max-w-md">
+        {/* Back button */}
+        <button 
+          onClick={() => router.push('/login')}
+          className="cursor-pointer absolute -top-12 left-0 flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
+        >
+          <ChevronLeft size={24} />
+          <span className="ml-1 text-sm font-medium">กลับ</span>
+        </button>
+
+        {/* Register card */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">สร้างบัญชี</h1>
+            <p className="text-gray-600">เริ่มต้นการใช้งานของคุณ</p>
+          </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
-            <div className=''>
-              <button
-                onClick={handleGoogleLogin}
-                className="text-purple-700 border-2 border-purple-500 rounded-lg p-2 flex w-60 justify-center cursor-pointer"
+          )}
+
+          {/* Google signup button */}
+          <button
+            onClick={handleGoogleLogin}
+            className="cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-8"
+          >
+            <Image 
+              src="/assets/images/google.png" 
+              alt="Google" 
+              width={20} 
+              height={20} 
+              className="mr-3" 
+            />
+            สร้างบัญชีด้วย Google
+          </button>
+
+          {/* Welcome message */}
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full mb-4">
+              <span className="text-2xl">👋</span>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">ยินดีต้อนรับ!</h2>
+            <p className="text-gray-600 text-sm">
+              คลิกปุ่มด้านบนเพื่อเริ่มต้นสร้างบัญชีของคุณ
+            </p>
+          </div>
+
+          {/* Features list */}
+          <div className="space-y-3 mb-8">
+            <div className="flex items-center text-sm text-gray-600">
+              <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+              <span>เข้าร่วมและจัดการชั้นเรียนได้อย่างง่ายดาย</span>
+            </div>
+            <div className="flex items-center text-sm text-gray-600">
+              <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+              <span>ติดตามการเข้าเรียนแบบเรียลไทม์</span>
+            </div>
+            <div className="flex items-center text-sm text-gray-600">
+              <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+              <span>ระบบปลอดภัยด้วย Google Authentication</span>
+            </div>
+          </div>
+
+          {/* Login link */}
+          <div className="text-center">
+            <p className="text-sm text-gray-600 cursor-pointer">
+              มีบัญชีอยู่แล้ว?{' '}
+              <button 
+                onClick={() => router.push('/login')}
+                className="cursor-pointer font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200"
               >
-                <Image src="/assets/images/google.png" alt="Google" width={25} height={20} />
-                Sign in with Google
+                เข้าสู่ระบบ
               </button>
-            </div>
-            <div className='border-1 border-purple-600 w-70'></div>
-            <div>
-              <h1 className='text-purple-700 text-xl font-bold'>ยินดีต้อนรับ</h1>
-            </div>
-            {/* Form */}
-            <div className="w-60 max-w-sm items-center space-y-2">
-              {/* <Label className='text-purple-700 text-sm'>ชื่อ-สกุล</Label>
-              <Input 
-                className='border-2 border-purple-500 rounded-lg p-2' 
-                type="text" 
-                placeholder="ชื่อ-สกุล" 
-                value={fullname} 
-                onChange={(e) => setFullname(e.target.value)}
-              />
-              <Label className='text-purple-700 text-sm'>รหัสนักศึกษา</Label>
-              <Input 
-                className='border-2 border-purple-500 rounded-lg p-2' 
-                type="text" 
-                placeholder="รหัสนักศึกษา" 
-                value={studentId} 
-                onChange={(e) => setStudentId(e.target.value)}
-              /> */}
-              <Label className='text-purple-700 text-sm'>email</Label>
-              <Input 
-                className='border-2 border-purple-500 rounded-lg p-2' 
-                type="email" 
-                placeholder="อีเมล" 
-                value={email}
-              />
-              {/* <Label className='text-purple-700 text-sm'>password</Label>
-              <Input 
-                className='border-2 border-purple-500 rounded-lg p-2' 
-                type="password" 
-                placeholder="รหัสผ่าน"  
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <Label className='text-purple-700 text-sm'>confirm password</Label>
-              <Input 
-                className='border-2 border-purple-500 rounded-lg p-2' 
-                type="password" 
-                placeholder="ยืนยันรหัสผ่าน"  
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              /> */}
-            </div>
-            <div>
-              {error && <p className="text-red-500 text-sm mb-2 text-center">{error}</p>}
-              <div>
-                <button
-                  onClick={handleGoogleLogin}
-                  className="w-30 h-10 bg-purple-500 rounded-4xl text-white font-bold cursor-pointer"
-                >
-                  GO
-                </button>
-              </div>
-            </div>
+            </p>
           </div>
         </div>
       </div>

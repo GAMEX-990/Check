@@ -1,15 +1,16 @@
 'use client';
-
 import React from 'react'
 import { motion } from 'framer-motion'
 import { BookOpenCheck, CheckCircle, ArrowRight, Users, Calendar, Shield } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
   title: string;
   description: string;
 }
+
 
 const FeatureCard = ({ icon, title, description }: FeatureCardProps) => {
   return (
@@ -28,6 +29,10 @@ const FeatureCard = ({ icon, title, description }: FeatureCardProps) => {
 };
 
 const BodyInterface = () => {
+
+const Router = useRouter();
+
+
   return (
     <div className="overflow-hidden">
       {/* Hero Section */}
@@ -66,6 +71,7 @@ const BodyInterface = () => {
                 className="bg-gradient-to-r from-purple-600 to-purple-700 text-white text-lg font-semibold px-8 py-4 rounded-xl hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2"
                 whileHover={{ scale: 1.03, boxShadow: '0 10px 25px -5px rgba(124, 58, 237, 0.5)' }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => Router.push('/register')}
               >
                 <span>Start Check-in</span>
                 <ArrowRight size={18} />

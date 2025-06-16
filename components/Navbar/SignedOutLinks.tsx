@@ -6,7 +6,11 @@ import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { useRouter } from 'next/navigation'
 
-const SignedOutLinks = () => {
+interface SignedOutLinksProps {
+  fullWidth?: boolean;
+}
+
+const SignedOutLinks = ({ fullWidth = false }: SignedOutLinksProps) => {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -23,7 +27,7 @@ const SignedOutLinks = () => {
   return (
     <button
       onClick={handleLogout}
-      className="flex items-center space-x-2 bg-white text-purple-700 border border-purple-200 px-4 py-2 rounded-lg hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+      className={`flex items-center ${fullWidth ? 'w-full justify-center' : ''} space-x-2 bg-white text-purple-700 border border-purple-200 px-4 py-2 rounded-lg hover:bg-purple-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 shadow-sm hover:shadow`}
     >
       <LogOut size={16} />
       <span className="font-medium">Logout</span>

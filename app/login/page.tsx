@@ -90,7 +90,6 @@ export default function LoginPage() {
 
 
   return (
-<<<<<<< HEAD
     <div>
       {/* -----------------------ตัวกาตูนน่าโง่กูนั่งจัดตั้งนานควยถอก------------------------- */}
       {/* <div className='bg-amber-500 absolute w-90 h-90 bottom-0 left-0 overflow-hidden'>
@@ -108,44 +107,6 @@ export default function LoginPage() {
             <button className='absolute cursor-pointer' onClick={() => router.push('/')}>
               <ChevronLeft className='text-purple-500' size={40} />
             </button>
-=======
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-      <div className="absolute top-4 left-4 z-10">
-        <button 
-          onClick={() => router.push('/')}
-          className="flex items-center text-purple-600 hover:text-purple-800 transition-colors"
-        >
-          <ChevronLeft className="mr-1" size={24} />
-          <span className="font-medium">Back to Home</span>
-        </button>
-      </div>
-      
-      {/* Left side illustration */}
-      <div className="hidden lg:block lg:w-1/2 relative">
-        <div className="relative z-10">
-          <Image 
-            src="/assets/images/personblook.png" 
-            alt="Login" 
-            width={400} 
-            height={400} 
-            className="object-contain" 
-          />
-        </div>
-        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-purple-500 rounded-full opacity-20 blur-xl"></div>
-        <div className="absolute left-40 top-20 w-40 h-40 bg-purple-300 rounded-full opacity-20 blur-md"></div>
-      </div>
-      
-      {/* Right side login form */}
-      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-2xl shadow-lg relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute -right-12 -top-12 w-40 h-40 bg-purple-100 rounded-full"></div>
-        <div className="absolute -left-12 -bottom-12 w-40 h-40 bg-purple-50 rounded-full"></div>
-        
-        <div className="relative z-10 space-y-6">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
-            <p className="mt-2 text-sm text-gray-600">Sign in to continue to Check-in</p>
->>>>>>> 0b1002dc93204edd54915c5093783ace982bbbc0
           </div>
           
           {error && (

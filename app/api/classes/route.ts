@@ -1,8 +1,8 @@
-// import { v4 as uuidv4 } from 'uuid';
-// import { auth } from '@clerk/nextjs/server';
-// import { db } from '@/lib/firebase'; // firebase.ts ที่คุณตั้งค่า
-// import { NextResponse } from 'next/server';
-// import { collection, addDoc } from 'firebase/firestore'; // ดึง method มาจาก firestore
+import { v4 as uuidv4 } from 'uuid';
+import { auth } from '@clerk/nextjs/server';
+import { db } from '@/lib/firebase'; // firebase.ts ที่คุณตั้งค่า
+import { NextResponse } from 'next/server';
+import { collection, addDoc } from 'firebase/firestore'; // ดึง method มาจาก firestore
 
 // export async function POST(req: Request) {
 //   try {
@@ -23,7 +23,7 @@
 //       );
 //     }
 
-//     const userUUID = uuidv4();
+    const userUUID = uuidv4();
 
 //     // ใช้ collection() และ addDoc() ตามแบบ modular
 //     const classesRef = collection(db, 'classes');

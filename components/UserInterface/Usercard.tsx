@@ -29,7 +29,7 @@ const Usercard = () => {
         });
 
         return () => unsubscribe(); // cleanup listener
-    }, []);
+    }, [router]);
 
     const handleLogout = async () => {
         await signOut(auth);

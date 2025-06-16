@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import {
   collection,
@@ -8,16 +8,17 @@ import {
 } from "firebase/firestore";
 import { ArrowRight } from "lucide-react";
 import { useHasScanned } from "@/utils/hasScanned";
+import { ClassData } from "@/types";
 
 interface MyClassPageProps {
   onNext: () => void;
-  onSelectClass: (classData: any) => void;
+  onSelectClass: (classData: ClassData) => void;
 }
 
 // -- หน้าที่ 1: MyClassPage
 const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
-  const { user, hasScanned, updateScanStatus, loading } = useHasScanned();
-  const [classes, setClasses] = useState<any[]>([]);
+  const { user, loading } = useHasScanned();
+  const [classes, setClasses] = useState<ClassData[]>([]);
 
   useEffect(() => {
     if (loading || !user) return;
@@ -28,9 +29,19 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
     const q = query(classesRef, where("owner_email", "==", user.email));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const classList: any[] = [];
+      const classList: ClassData[] = [];
       querySnapshot.forEach((doc) => {
-        classList.push({ id: doc.id, ...doc.data() });
+        const data = doc.data();
+        classList.push({
+          id: doc.id,
+          name: data.name || '',
+          description: data.description || '',
+          createdBy: data.createdBy || '',
+          creatorName: data.creatorName || '',
+          createdAt: data.createdAt || new Date(),
+          members: data.members || [],
+          checkedInRecord: data.checkedInRecord || {}
+        });
       });
       console.log("Owner classes loaded:", classList.length);
       setClasses(classList);
@@ -74,9 +85,9 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
             <div className="flex flex-col gap-4">
             {classes.length > 0 &&
               classes.map((cls) => (
-                <div key={cls.id}>
+                <div key={cls.name}>
                   <div
-                    key={cls.id}
+                    key={cls.name}
                     className="flex justify-between items-center bg-purple-200 hover:bg-purple-300 p-4 rounded-4xl cursor-pointer"
                     onClick={() => onSelectClass(cls)}
                   >

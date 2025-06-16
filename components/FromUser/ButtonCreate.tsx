@@ -16,7 +16,7 @@ interface AddClassPopupProps {
 // สร้าง Functional Component ชื่อ AddClassPopup
 const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   // State variables สำหรับจัดการสถานะต่างๆ
-  const { user, hasScanned, updateScanStatus, loading: authLoading } = useHasScanned();
+  const { user, hasScanned, updateScanStatus } = useHasScanned();
   //------------------------------------------------------------------------------------------------
   // สร้าง Reference สำหรับ Canvas element ที่ใช้ในการแสดงผลการสแกน QR Code
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -49,10 +49,24 @@ const handleCreate = async () => {
 
   // ฟังก์ชันสำหรับจัดการเมื่อสแกน QR Code สำเร็จ
   const handleQRDetected = async (result: { data: string }) => {
+    // Check if user is null before proceeding
+    if (!user) {
+      alert('กรุณาเข้าสู่ระบบก่อนใช้งาน');
+      return;
+    }
+    
+    // Convert Firebase User to UserData type
+    const userData = {
+      uid: user.uid,
+      displayName: user.displayName,
+      email: user.email,
+      photoURL: user.photoURL
+    };
+    
     await handleQRUtility({
       result,
       videoRef,
-      user,
+      user: userData,
       setScanning,
       setLoading,
       hasScanned,

@@ -3,8 +3,8 @@
 import { Input } from '@/components/ui/input';
 import { auth, db, provider } from '@/lib/firebase';
 import { Label } from "@/components/ui/label";
-import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { signInWithPopup } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
@@ -13,11 +13,8 @@ import Image from "next/image";
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [fullname, setFullname] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // Using only the state values without setters since this page now only uses Google login
+  const [email] = useState("");
   const [error, setError] = useState("");
 
   // ✅ Google login
@@ -37,59 +34,14 @@ export default function RegisterPage() {
         // มี profile แล้ว -> ไปหน้า dashboard
         router.push("/dashboard");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Google login error:", err);
       setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google");
     }
   };
 
-  const handleRegister = async () => {
-    if (!fullname || !studentId || !email || !password || !confirmPassword) {
-      setError("กรุณากรอกข้อมูลให้ครบ");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("รหัสผ่านไม่ตรงกัน");
-      return;
-    }
-
-    try {
-      // สร้าง Firebase Auth account
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // อัพเดท profile ใน Firebase Auth
-      await updateProfile(user, {
-        displayName: fullname,
-        photoURL: null
-      });
-
-      // บันทึกข้อมูลเพิ่มเติมลง Firestore
-      await setDoc(doc(db, "students", user.uid), {
-        fullname,
-        studentId,
-        email,
-        photoURL: user.photoURL || null,
-        uid: user.uid,
-        createdAt: new Date().toISOString()
-      });
-
-      // ไปหน้า dashboard
-      router.push("/dashboard");
-    } catch (err: any) {
-      console.error("Register error:", err);
-      if (err.code === 'auth/email-already-in-use') {
-        setError("อีเมลนี้ถูกใช้งานแล้ว");
-      } else if (err.code === 'auth/weak-password') {
-        setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
-      } else if (err.code === 'auth/invalid-email') {
-        setError("รูปแบบอีเมลไม่ถูกต้อง");
-      } else {
-        setError("เกิดข้อผิดพลาดในการสมัครสมาชิก");
-      }
-    }
-  };
+  // handleRegister function removed as it's not being used
+  // The page now only uses Google login
 
   return (
     <div>

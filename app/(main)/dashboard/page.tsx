@@ -7,7 +7,6 @@ import CreateQRCodeAndUpload from '@/components/FromUser/FusionButtonqrup';
 import { auth } from '@/lib/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { ClassData } from '@/types';
-import EditProfilePage from '@/app/text/page';
 
 
 
@@ -56,7 +55,6 @@ export default function DashboardPage() {
           <ClassSection onPageChange={handlePageChange} onClassSelect={handleSelectClass} />
         </div>
       </div>
-      <EditProfilePage/>
     </div>
   );
 }

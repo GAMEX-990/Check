@@ -8,7 +8,7 @@ import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
-import { createUserWithEmailAndPassword, EmailAuthProvider, linkWithCredential, updateProfile } from 'firebase/auth';
+import { updateProfile } from 'firebase/auth';
 
 export default function LoginRegisterPage() {
   const [fullname, setFullname] = useState("");
@@ -37,39 +37,41 @@ export default function LoginRegisterPage() {
     }
   
     try {
-      // สร้าง email/password credential
-      const credential = EmailAuthProvider.credential(user.email, password);
-      
-      // ลิงค์ credential กับ user ปัจจุบัน
-      const result = await linkWithCredential(user, credential);
-      const linkedUser = result.user;
-  
-      // อัพเดท profile
-      await updateProfile(linkedUser, {
+      // อัพเดท profile โดยไม่ต้องลิงค์ credential
+      await updateProfile(user, {
         displayName: fullname,
         photoURL: user.photoURL 
       });
   
-      // บันทึกลง Firestore
-      await setDoc(doc(db, "users", linkedUser.uid), {
+      // บันทึกข้อมูลลง Firestore โดยตรง
+      // ใช้ role และ institution ตามที่ระบุใน memory
+      await setDoc(doc(db, "users", user.uid), {
         name: fullname,
         studentId,
         email: user.email,
         photoURL: user.photoURL,
-        id: linkedUser.uid,
+        role: "student", // ตั้งค่าเริ่มต้นเป็น student ตาม memory
+        institution: "", // ให้ผู้ใช้กรอกในขั้นตอนถัดไปหรือตั้งค่าเริ่มต้นเป็นค่าว่าง
+        id: user.uid,
         updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString()
       });
   
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registration error:", err);
-      if (err.code === 'auth/email-already-in-use') {
-        setError("อีเมลนี้ถูกใช้งานแล้ว");
-      } else if (err.code === 'auth/provider-already-linked') {
-        setError("บัญชีนี้เชื่อมโยงกับ email/password แล้ว");
-      } else if (err.code === 'auth/credential-already-in-use') {
-        setError("ข้อมูลนี้ถูกใช้งานแล้ว");
+      // Type narrowing to check if err is an object with a code property
+      if (typeof err === 'object' && err !== null && 'code' in err) {
+        const firebaseError = err as { code?: string; message?: string };
+        if (firebaseError.code === 'auth/email-already-in-use') {
+          setError("อีเมลนี้ถูกใช้งานแล้ว");
+        } else if (firebaseError.code === 'auth/provider-already-linked') {
+          setError("บัญชีนี้เชื่อมโยงกับ email/password แล้ว");
+        } else if (firebaseError.code === 'auth/credential-already-in-use') {
+          setError("ข้อมูลนี้ถูกใช้งานแล้ว");
+        } else {
+          setError("เกิดข้อผิดพลาดในการลงทะเบียน");
+        }
       } else {
         setError("เกิดข้อผิดพลาดในการลงทะเบียน");
       }

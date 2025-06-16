@@ -1,17 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
-import { auth, db } from "@/lib/firebase";
+import { useState, useEffect } from "react";
+import { db } from "@/lib/firebase";
 import {
   collection,
   query,
   where,
   onSnapshot,
 } from "firebase/firestore";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useHasScanned } from "@/utils/hasScanned";
+import { ClassData } from "@/types";
 
-const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClass: (classData: any) => void }) => {
-  const { user, hasScanned, updateScanStatus, loading } = useHasScanned();
-  const [joinedClasses, setJoinedClasses] = useState<any[]>([]);
+// Using ClassData from types directory
+
+const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClass: (classData: ClassData) => void }) => {
+  const { user, hasScanned, loading } = useHasScanned();
+  const [joinedClasses, setJoinedClasses] = useState<ClassData[]>([]);
   const [classesLoading, setClassesLoading] = useState(false);
 
 
@@ -33,10 +36,19 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
     );
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const classes = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const classes = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name || '',
+          description: data.description || '',
+          createdBy: data.createdBy || '',
+          creatorName: data.creatorName || '',
+          createdAt: data.createdAt || new Date(),
+          members: data.members || [],
+          checkedInRecord: data.checkedInRecord || {}
+        } as ClassData;
+      });
       console.log("Classes loaded:", classes.length);
       setJoinedClasses(classes);
       setClassesLoading(false);
@@ -98,10 +110,10 @@ const ClassPage = ({ onBack, onSelectClass }: { onBack: () => void; onSelectClas
                             </div>
                             <div>
                               <p className="text-lg font-semibold text-purple-800">{cls.name}</p>
-                              <p className="text-sm text-purple-600">สร้างโดย: {cls.owner_email}</p>
+                              <p className="text-sm text-purple-600">สร้างโดย: {cls.creatorName}</p>
                             </div>
                           </div>
-                          {cls.checkedInMembers?.includes(user?.uid) && (
+                          {cls.members?.includes(user?.uid || '') && (
                             <div>
                               <span className="text-green-600 text-sm">✓ เช็คชื่อแล้ว</span>
                             </div>

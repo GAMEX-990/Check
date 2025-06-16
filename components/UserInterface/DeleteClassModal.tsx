@@ -105,7 +105,7 @@ export const DeleteClassModal = ({
           {/* Confirmation Input */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              พิมพ์ชื่อคลาส <span className="font-bold text-red-600">"{classData.name}"</span> เพื่อยืนยัน:
+              พิมพ์ชื่อคลาส <span className="font-bold text-red-600">&ldquo;{classData.name}&rdquo;</span> เพื่อยืนยัน:
             </label>
             <input
               type="text"

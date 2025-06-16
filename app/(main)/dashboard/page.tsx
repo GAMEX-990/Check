@@ -1,24 +1,24 @@
 'use client'
 import Usercard from '@/components/UserInterface/Usercard';
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import ClassSection from '@/components/UserInterface/ClassSection';
 import AddClassPopup from '@/components/FromUser/ButtonCreate';
 import CreateQRCodeAndUpload from '@/components/FromUser/FusionButtonqrup';
 import { auth } from '@/lib/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
-
+import { ClassData } from '@/types';
 
 
 
 export default function DashboardPage() {
   const [currectPang, SetCurrectPang] = useState<"myclass" | "class" | "view">("myclass");
-  const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
   const [user, loading, error] = useAuthState(auth);
   const handlePageChange = (page: "myclass" | "class" | "view") => {
     SetCurrectPang(page);
   };
 
-  const handleSelectClass = (classData: any) => {
+  const handleSelectClass = (classData: ClassData) => {
     setSelectedClass(classData);
   };
 

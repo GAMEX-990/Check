@@ -1,5 +1,6 @@
-import { doc, getDoc, updateDoc, arrayUnion, Timestamp, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion, Timestamp, collection, query, where, getDocs, QuerySnapshot, DocumentData } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { UserData } from "@/types";
 
 /**
  * ฟังก์ชันสำหรับจัดการการสแกน QR Code (แก้ไขให้ตรวจสอบรายชื่อจากไฟล์ CSV)
@@ -17,7 +18,7 @@ export const handleQRDetected = async ({
 }: {
   result: { data: string };
   videoRef: React.RefObject<HTMLVideoElement | null>;
-  user: any;
+  user: UserData;
   setScanning: (scanning: boolean) => void;
   setLoading: (loading: boolean) => void;
   hasScanned: boolean;
@@ -100,7 +101,7 @@ export const handleQRDetected = async ({
       });
 
       if (matchedStudent) {
-        studentsSnapshot = { docs: [matchedStudent], empty: false } as any;
+        studentsSnapshot = { docs: [matchedStudent], empty: false } as unknown as QuerySnapshot<DocumentData>;
       }
     }
     

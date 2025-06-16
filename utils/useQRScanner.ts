@@ -7,7 +7,7 @@ interface UseCameraScannerProps {
     videoRef: React.RefObject<HTMLVideoElement | null>;
     canvasRef: React.RefObject<HTMLCanvasElement | null>;
     onQRDetected: (result: { data: string }) => Promise<void>;
-    onError: (error: any) => void;
+    onError: (error: Error | string) => void;
   }
   
   export const useCameraScanner = ({

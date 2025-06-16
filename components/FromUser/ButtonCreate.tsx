@@ -22,7 +22,6 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // สร้าง Reference สำหรับ Video element ที่ใช้แสดงภาพจากกล้อง
   const videoRef = useRef<HTMLVideoElement>(null);
-  // State สำหรับเก็บข้อมูล Firebase Auth user
   // State สำหรับควบคุมสถานะการสแกน QR Code (เปิด/ปิด)
   const [scanning, setScanning] = useState(false);
   // State สำหรับควบคุมการแสดง popup สร้างคลาส (เปิด/ปิด)
@@ -55,18 +54,10 @@ const handleCreate = async () => {
       return;
     }
     
-    // Convert Firebase User to UserData type
-    const userData = {
-      uid: user.uid,
-      displayName: user.displayName,
-      email: user.email,
-      photoURL: user.photoURL
-    };
-    
     await handleQRUtility({
       result,
       videoRef,
-      user: userData,
+      user,
       setScanning,
       setLoading,
       hasScanned,

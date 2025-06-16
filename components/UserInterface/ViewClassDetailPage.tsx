@@ -75,8 +75,11 @@ const isClassOwner = classData.createdBy === currentUser?.uid;
               <h1 className="text-2xl font-bold text-purple-800 text-center flex-grow">{classData.name}</h1>
             </div>
             <div className=" absolute right-0">
-                {/* ปุ่มลบคลาส - แสดงเฉพาะคนสร้างเท่านั้น */}
-              {isClassOwner && (
+              <button className="text-2xl text-purple-600" onClick={onBack}>
+                <ArrowLeft size={28} />
+              </button>
+                 {/* ปุ่มลบคลาส - แสดงเฉพาะคนสร้างเท่านั้น */}
+                 {isClassOwner && (
                 <button 
                   className="text-red-500 hover:text-red-700 p-1"
                   onClick={handlsShowDeleteModal}
@@ -85,9 +88,6 @@ const isClassOwner = classData.createdBy === currentUser?.uid;
                   <Trash2 size={24} />
                 </button>
               )}
-              <button className="text-2xl text-purple-600" onClick={onBack}>
-                <ArrowLeft size={28} />
-              </button>
             </div>
           </div>
           {/* ดูสรุปการเข้าเรียน */}

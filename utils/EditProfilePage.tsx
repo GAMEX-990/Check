@@ -35,14 +35,14 @@ const EditProfilePage = ({ onCancel, onSave, initialData }: EditProfilePageProps
 
   return (
     <form onSubmit={handleSubmit} className="p-4">
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label className="block text-sm font-bold text-purple-700">ชื่อ</label>
         <input
           className="border p-2 w-full"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-      </div>
+      </div> */}
       <div className="mb-4">
         <label className="block text-sm font-bold text-purple-700">รหัสนักศึกษา</label>
         <input

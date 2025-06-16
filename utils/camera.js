@@ -1,6 +1,5 @@
 // ติดตั้ง dependencies ก่อน:
 // npm install jsqr
-
 import jsQR from 'jsqr';
 
 export async function openCamera(videoElement) {

@@ -67,12 +67,12 @@ export default function LoginPage() {
   return (
     <div>
       {/* -----------------------ตัวกาตูนน่าโง่กูนั่งจัดตั้งนานควยถอก------------------------- */}
-      <div className='absolute w-90 h-90 bottom-0 left-0 overflow-hidden'>
+      {/* <div className='bg-amber-500 absolute w-90 h-90 bottom-0 left-0 overflow-hidden'>
         <div className='relative z-10 bottom-2 shadow-2xl'>
           <Image src="/assets/images/personblook.png" alt="Login" width={240} height={240} />
         </div>
         <div className="absolute -left-30 -bottom-20 w-100 h-100  bg-purple-500 rounded-full z-0 shadow-2xl"></div>
-      </div>
+      </div> */}
       {/* --------------------------------------------------------------------------- */}
       <div className=' flex flex-row-reverse'>
         <div className='border-2 border-purple-500 rounded-4xl w-90 h-150 overflow-hidden relative mx-10 '>

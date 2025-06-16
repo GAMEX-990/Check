@@ -9,15 +9,13 @@ import Image from "next/image";
 import { Input } from '@/components/ui/input';
 import { Label } from '@radix-ui/react-label';
 
-
 export default function LoginPage() {
-
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
 
-  // 👤 Manual login
+  // Manual login
   const handleManualLogin = async () => {
     if (!email || !password) {
       setError("กรุณากรอกข้อมูลให้ครบ");
@@ -35,7 +33,7 @@ export default function LoginPage() {
     }
   };
 
-  // ✅ Google login
+  // Google login
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   
   const handleGoogleLogin = async () => {
@@ -91,99 +89,137 @@ export default function LoginPage() {
     }
   };
 
-
   return (
-    <div>
-      {/* -----------------------ตัวกาตูนน่าโง่กูนั่งจัดตั้งนานควยถอก------------------------- */}
-      {/* <div className='bg-amber-500 absolute w-90 h-90 bottom-0 left-0 overflow-hidden'>
-        <div className='relative z-10 bottom-2 shadow-2xl'>
-          <Image src="/assets/images/personblook.png" alt="Login" width={240} height={240} />
-        </div>
-        <div className="absolute -left-30 -bottom-20 w-100 h-100  bg-purple-500 rounded-full z-0 shadow-2xl"></div>
-      </div> */}
-      {/* --------------------------------------------------------------------------- */}
-      <div className=' flex flex-row-reverse'>
-        <div className='border-2 border-purple-500 rounded-4xl w-90 h-150 overflow-hidden relative mx-10 '>
-          {/* วงกลมสีม่วง */}
-          <div className="absolute left-73 -top-10 w-30 h-30  bg-purple-500 rounded-full"></div>
-          <div>
-            <button className='absolute cursor-pointer' onClick={() => router.push('/')}>
-              <ChevronLeft className='text-purple-500' size={40} />
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 flex items-center justify-center p-4">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+      </div>
+
+      {/* Character illustration */}
+      <div className="absolute bottom-0 left-0 hidden lg:block">
+        <div className="relative">
+          <div className="w-64 h-64 bg-gradient-to-tr from-purple-400 to-purple-600 rounded-full opacity-20 blur-2xl"></div>
+          <div className="absolute inset-0 flex items-end justify-center">
+            <Image 
+              src="/assets/images/personlookblook.png" 
+              alt="Welcome illustration" 
+              width={2000} 
+              height={2000}
+              className="drop-shadow-2xl"
+            />
           </div>
-          
+        </div>
+      </div>
+
+      {/* Main login card */}
+      <div className="relative w-full max-w-md">
+        {/* Back button */}
+        <button 
+          onClick={() => router.push('/')}
+          className="cursor-pointer absolute -top-12 left-0 flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
+        >
+          <ChevronLeft size={24} />
+          <span className="ml-1 text-sm font-medium">กลับ</span>
+        </button>
+
+        {/* Login card */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">เข้าสู่ระบบ</h1>
+            <p className="text-gray-600">ยินดีต้อนรับกลับมา</p>
+          </div>
+
+          {/* Error message */}
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg">
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
-          
+
+          {/* Google login button */}
           <button
             onClick={handleGoogleLogin}
             disabled={isLoggingIn}
-            className={`w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors ${isLoggingIn ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-6 cursor-pointer ${
+              isLoggingIn ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md'
+            }`}
           >
-            <Image src="/assets/images/google.png" alt="Google" width={20} height={20} className="mr-2" />
-            {isLoggingIn ? 'Signing in...' : 'Sign in with Google'}
+            <Image 
+              src="/assets/images/google.png" 
+              alt="Google" 
+              width={20} 
+              height={20} 
+              className="mr-3" 
+            />
+            {isLoggingIn ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบด้วย Google'}
           </button>
-          
-          <div className="relative">
+
+          {/* Divider */}
+          <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-4 bg-white text-gray-500">หรือเข้าสู่ระบบด้วย</span>
             </div>
           </div>
-          
-          <div className="space-y-4">
+
+          {/* Email and password form */}
+          <div className="space-y-6">
             <div>
-              <Label className="block text-sm font-medium text-gray-700" htmlFor="email">Email address</Label>
+              <Label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="email">
+                อีเมล
+              </Label>
               <Input
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                 type="email"
                 id="email"
-                placeholder="you@example.com"
+                placeholder="กรอกอีเมลของคุณ"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             
             <div>
-              <Label className="block text-sm font-medium text-gray-700" htmlFor="password">Password</Label>
+              <Label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="password">
+                รหัสผ่าน
+              </Label>
               <Input
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                 type="password"
                 id="password"
-                placeholder="••••••••"
+                placeholder="กรอกรหัสผ่านของคุณ"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <a href="/register" className="font-medium text-purple-600 hover:text-purple-500">
-                Create new account
-              </a>
-            </div>
-            <div className="text-sm">
-              <a href="#" className="font-medium text-purple-600 hover:text-purple-500">
-                Forgot password?
-              </a>
-            </div>
+
+          {/* Links */}
+          <div className="flex items-center justify-between mt-6 mb-8 cursor-pointer">
+            <button 
+              onClick={() => router.push('/register')}
+              className="cursor-pointer text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200 cursor-pointer"
+            >
+              สร้างบัญชีใหม่
+            </button>
+            <button className="cursor-pointer text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200 cursor-pointer">
+              ลืมรหัสผ่าน?
+            </button>
           </div>
-          
+
+          {/* Sign in button */}
           <button
             onClick={handleManualLogin}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+            className=" cursor-pointer w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 transform hover:-translate-y-0.5"
           >
-            Sign in
+            เข้าสู่ระบบ
           </button>
         </div>
       </div>
     </div>
-
   )
 }

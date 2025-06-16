@@ -1,31 +1,33 @@
 'use client'
 import React from 'react'
-import { LogIn } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { toast } from "sonner"
 import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import router from 'next/router'
 import { useRouter } from 'next/navigation'
 
 const SignedOutLinks = () => {
   const router = useRouter();
 
   const handleLogout = async () => {
-    await signOut(auth);
-    router.push("/");
+    try {
+      await signOut(auth);
+      toast.success("Logged out successfully");
+      router.push("/");
+    } catch (error) {
+      toast.error("Failed to log out");
+      console.error("Logout error:", error);
+    }
   };
 
-
-// อันนี้เอาไว้กอ่นไม่ต้องลบนะเพื่อใช้
-// const handleLogout =()=>{
-//     toast("ออกจากระบบเรียบร้อยแล้วสุดหล่อ")
-
-// }
-
   return (
-    <div>  
-       <button onClick={handleLogout}>Logout</button>
-    </div>
+    <button
+      onClick={handleLogout}
+      className="flex items-center space-x-2 bg-white text-purple-700 border border-purple-200 px-4 py-2 rounded-lg hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+    >
+      <LogOut size={16} />
+      <span className="font-medium">Logout</span>
+    </button>
   )
 }
 

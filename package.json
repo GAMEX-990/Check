@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.30.0",
+    "@clerk/nextjs": "^6.22.0",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-popover": "^1.1.10",
     "@radix-ui/react-slot": "^1.2.0",
@@ -19,6 +20,7 @@
     "clsx": "^2.1.1",
     "firebase": "^11.7.3",
     "firebase-admin": "^13.3.0",
+    "framer-motion": "^12.18.1",
     "html5-qrcode": "^2.3.8",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",

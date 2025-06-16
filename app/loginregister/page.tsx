@@ -8,19 +8,37 @@ import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
-import { updateProfile } from 'firebase/auth';
+import { updateProfile, EmailAuthProvider, linkWithCredential } from 'firebase/auth';
 
 export default function LoginRegisterPage() {
   const [fullname, setFullname] = useState("");
   const [studentId, setStudentId] = useState("");
   const [role, setRole] = useState<'teacher' | 'student'>('student');
   const [institution, setInstitution] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
   const handleRegister = async () => {
+    // Validation
     if (!fullname || !institution || (role === 'student' && !studentId)) {
       setError("กรุณากรอกข้อมูลให้ครบ");
+      return;
+    }
+
+    if (!password || !confirmPassword) {
+      setError("กรุณากรอกรหัสผ่านให้ครบ");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("รหัสผ่านไม่ตรงกัน");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
       return;
     }
 
@@ -31,21 +49,28 @@ export default function LoginRegisterPage() {
     }
 
     try {
+      // สร้าง email/password credential
+      const credential = EmailAuthProvider.credential(user.email, password);
+      
+      // ลิงค์ credential กับ user ปัจจุบัน
+      const result = await linkWithCredential(user, credential);
+      const linkedUser = result.user;
+
       // อัพเดท profile
-      await updateProfile(user, {
+      await updateProfile(linkedUser, {
         displayName: fullname,
         photoURL: user.photoURL 
       });
 
-      // บันทึกข้อมูลลง Firestore
-      await setDoc(doc(db, "users", user.uid), {
+      // บันทึกข้อมูลลง users collection เท่านั้น
+      await setDoc(doc(db, "users", linkedUser.uid), {  
         name: fullname,
         studentId: role === 'student' ? studentId : '',
         email: user.email,
         photoURL: user.photoURL,
         role: role,
         institution: institution,
-        id: user.uid,
+        id: linkedUser.uid,
         updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString()
       });
@@ -58,13 +83,13 @@ export default function LoginRegisterPage() {
         if (firebaseError.code === 'auth/email-already-in-use') {
           setError("อีเมลนี้ถูกใช้งานแล้ว");
         } else if (firebaseError.code === 'auth/provider-already-linked') {
-          console.log("Provider already linked, redirecting to dashboard");
-          router.push("/dashboard");
-          return;
+          setError("บัญชีนี้เชื่อมโยงกับ email/password แล้ว");
         } else if (firebaseError.code === 'auth/credential-already-in-use') {
           setError("ข้อมูลนี้ถูกใช้งานแล้ว");
+        } else if (firebaseError.code === 'auth/weak-password') {
+          setError("รหัสผ่านไม่ปลอดภัย กรุณาใช้รหัสผ่านที่แข็งแกร่งกว่านี้");
         } else {
-          setError("เกิดข้อผิดพลาดในการลงทะเบียน");
+          setError("เกิดข้อผิดพลาดในการลงทะเบียน: " + (firebaseError.message || ""));
         }
       } else {
         setError("เกิดข้อผิดพลาดในการลงทะเบียน");
@@ -202,6 +227,68 @@ export default function LoginRegisterPage() {
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
               />
+            </div>
+
+            {/* Password Section */}
+            <div className="border-t border-gray-200 pt-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">ตั้งรหัสผ่าน</h3>
+                <p className="text-sm text-gray-600">สร้างรหัสผ่านเพื่อใช้เข้าสู่ระบบในครั้งต่อไป</p>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-4">
+                <div>
+                  <Label className="block text-sm font-medium text-gray-700 mb-2">
+                    รหัสผ่าน
+                  </Label>
+                  <Input 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    type="password"
+                    placeholder="กรอกรหัสผ่าน (อย่างน้อย 6 ตัวอักษร)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <Label className="block text-sm font-medium text-gray-700 mb-2">
+                    ยืนยันรหัสผ่าน
+                  </Label>
+                  <Input 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    type="password"
+                    placeholder="ยืนยันรหัสผ่านของคุณ"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Password strength indicator */}
+              {password && (
+                <div className="mt-3">
+                  <div className="flex items-center space-x-2">
+                    <div className={`h-2 flex-1 rounded-full ${
+                      password.length < 6 ? 'bg-red-200' :
+                      password.length < 8 ? 'bg-yellow-200' : 'bg-green-200'
+                    }`}>
+                      <div className={`h-full rounded-full transition-all duration-300 ${
+                        password.length < 6 ? 'w-1/3 bg-red-500' :
+                        password.length < 8 ? 'w-2/3 bg-yellow-500' : 'w-full bg-green-500'
+                      }`}></div>
+                    </div>
+                    <span className={`text-xs font-medium ${
+                      password.length < 6 ? 'text-red-600' :
+                      password.length < 8 ? 'text-yellow-600' : 'text-green-600'
+                    }`}>
+                      {password.length < 6 ? 'อ่อน' :
+                       password.length < 8 ? 'ปานกลาง' : 'แข็งแรง'}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

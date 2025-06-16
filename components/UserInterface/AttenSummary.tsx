@@ -1,10 +1,19 @@
+import { ClassData } from "@/types";
 import { X } from "lucide-react";
+
+
+interface AttendanceRecord {
+  uid: string;
+  name: string;
+  studentId: string;
+  count: number;
+}
 
 interface AttendanceSummaryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  classData: any;
-  attendanceSummary: any[];
+  classData: ClassData;
+  attendanceSummary: AttendanceRecord[];
 }
 
 export const AttendanceSummaryModal = ({ 
@@ -39,7 +48,7 @@ export const AttendanceSummaryModal = ({
 
         <div className="overflow-y-auto max-h-64">
           <div className="space-y-3">
-            {attendanceSummary.map((student, index) => (
+            {attendanceSummary.map((student) => (
               <div key={student.uid} className="border-b border-purple-200 pb-2">
                 <div className="flex justify-between items-center">
                   <div>

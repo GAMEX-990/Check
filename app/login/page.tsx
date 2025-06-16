@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from 'next/navigation';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { auth, db, provider } from '@/lib/firebase';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import Image from "next/image";
@@ -70,18 +70,21 @@ export default function LoginPage() {
         // Profile exists -> go to dashboard
         router.push("/dashboard");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Google login error:", err);
       
+      // Type narrowing for Firebase Auth errors
+      const firebaseError = err as { code?: string; message?: string };
+      
       // Handle specific Firebase errors
-      if (err.code === 'auth/cancelled-popup-request') {
+      if (firebaseError.code === 'auth/cancelled-popup-request') {
         setError("การเข้าสู่ระบบถูกยกเลิก โปรดลองอีกครั้ง");
-      } else if (err.code === 'auth/popup-blocked') {
+      } else if (firebaseError.code === 'auth/popup-blocked') {
         setError("ป๊อปอัพถูกบล็อก โปรดอนุญาตป๊อปอัพสำหรับเว็บไซต์นี้และลองอีกครั้ง");
-      } else if (err.code === 'auth/popup-closed-by-user') {
+      } else if (firebaseError.code === 'auth/popup-closed-by-user') {
         setError("คุณปิดหน้าต่างเข้าสู่ระบบก่อนที่จะเสร็จสิ้น โปรดลองอีกครั้ง");
       } else {
-        setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: " + (err.message || "โปรดลองอีกครั้งในภายหลัง"));
+        setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: " + (firebaseError.message || "โปรดลองอีกครั้งในภายหลัง"));
       }
     } finally {
       setIsLoggingIn(false);

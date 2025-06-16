@@ -4,17 +4,18 @@ import { useState } from "react";
 import MyClassPage from "./MyClassPage";
 import ClassPage from "./ClassPage";
 import { ViewClassDetailPage } from "./ViewClassDetailPage";
+import { ClassData } from "@/types";
 import { SyncUserToFirebase } from "@/utils/userSync";
 
 interface ClassSectionProps {
   onPageChange?: (page: "myclass" | "class" | "view") => void;
-  onClassSelect?: (classData: any) => void;
+  onClassSelect?: (classData: ClassData) => void;
 }
 
 //ส่วนเอาไว้เลื่อนคลาสต่างๆ
 const ClassSection = ({ onPageChange, onClassSelect }: ClassSectionProps) => {
   const [page, setPage] = useState<"myclass" | "class" | "view">("myclass");
-  const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
 
   const handleNext = () => {
     setPage("class");
@@ -24,7 +25,7 @@ const ClassSection = ({ onPageChange, onClassSelect }: ClassSectionProps) => {
     setPage("myclass");
     onPageChange?.("myclass");
   }
-  const handleSelectClass = (classData: any) => {
+  const handleSelectClass = (classData: ClassData) => {
     setSelectedClass(classData);
     setPage("view");
     onPageChange?.("view");

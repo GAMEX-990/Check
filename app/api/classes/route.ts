@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/lib/firebase'; // firebase.ts ที่คุณตั้งค่า
 import { NextResponse } from 'next/server';
@@ -23,7 +22,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const userUUID = uuidv4();
 
     // ใช้ collection() และ addDoc() ตามแบบ modular
     const classesRef = collection(db, 'classes');

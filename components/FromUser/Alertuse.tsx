@@ -1,8 +1,7 @@
-import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react"
+import { PopcornIcon } from "lucide-react"
 
 import {
   Alert,
-  AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert"
 

@@ -6,8 +6,10 @@ import { createAttendanceSummary } from "@/utils/Summary";
 import DeleteClassModal from "./DeleteClassModal"; // เพิ่ม import
 import AttendanceSummaryModal from "./AttenSummary";
 import { ArrowLeft, Trash2 } from "lucide-react";
+import { ClassData, AttendanceSummaryItem, CheckedInUser } from "@/types";
+
 interface ViewClassDetailPageProps {
-  classData: any;
+  classData: ClassData;
   onBack: () => void;
   onDeleteSuccess?: () => void;
 
@@ -16,8 +18,8 @@ interface ViewClassDetailPageProps {
 export const ViewClassDetailPage = ({ classData, onBack, onDeleteSuccess }: ViewClassDetailPageProps) => {
   const [shoewDeleteModal, setShowDeleteModal] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
-  const [attendanceSummary, setAttendanceSummary] = useState<any[]>([]);
-  const [checkedInUsers, setCheckedInUsers] = useState<any[]>([]);
+  const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummaryItem[]>([]);
+  const [checkedInUsers, setCheckedInUsers] = useState<CheckedInUser[]>([]);
   const auth = getAuth();
   const currentUser = auth.currentUser;
   const currentUid = currentUser?.uid;
@@ -60,7 +62,7 @@ export const ViewClassDetailPage = ({ classData, onBack, onDeleteSuccess }: View
   }
 
   // ตรวจสอบว่าผู้ใช้ปัจจุบันเป็นคนสร้างคลาสหรือไม่
-const isClassOwner = classData.owner_email === currentUser?.email;
+const isClassOwner = classData.createdBy === currentUser?.uid;
   
 
   return (
@@ -106,7 +108,7 @@ const isClassOwner = classData.owner_email === currentUser?.email;
 
           <div className="">
             <p className="text-right text-purple-800">
-              จำนวนสมาชิกที่เช็คชื่อ: {classData?.checkedInCount || 0}
+              จำนวนสมาชิกที่เช็คชื่อ: {classData?.checkedInRecord ? Object.keys(classData.checkedInRecord).length : 0}
             </p>
           </div>
 
@@ -127,7 +129,7 @@ const isClassOwner = classData.owner_email === currentUser?.email;
                     </div>
                     <div className="flex flex-row justify-between mt-2">
                       <div>
-                        <p className="text-sm  text-purple-900">{user.name}</p>
+                        <p className="text-sm  text-purple-900">{user.displayName}</p>
                       </div>
                       <div>
                         <p className="text-sm text-purple-900">{user.studentId}</p>
@@ -146,7 +148,12 @@ const isClassOwner = classData.owner_email === currentUser?.email;
         isOpen={showSummary}
         onClose={handleCloseSummary}
         classData={classData}
-        attendanceSummary={attendanceSummary}
+        attendanceSummary={attendanceSummary.map(item => ({
+          uid: item.uid,
+          name: item.displayName,
+          studentId: item.studentId || '',
+          count: item.count
+        }))}
       />
        {/* Modal ลบคลาส */}
        <DeleteClassModal
@@ -155,7 +162,7 @@ const isClassOwner = classData.owner_email === currentUser?.email;
         classData={{
           id: classData.id,
           name: classData.name,
-          memberCount: classData.checkedInCount
+          memberCount: classData.checkedInRecord ? Object.keys(classData.checkedInRecord).length : 0
         }}
         user={currentUser}
         onDeleteSuccess={handleDeleteSuccess}

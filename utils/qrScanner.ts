@@ -1,6 +1,6 @@
 import { doc, getDoc, updateDoc, arrayUnion, Timestamp, collection, query, where, getDocs, QuerySnapshot, DocumentData } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { UserData } from "@/types";
+import { UserData } from "@/types/classTypes";
 
 /**
  * ฟังก์ชันสำหรับจัดการการสแกน QR Code (แก้ไขให้ตรวจสอบรายชื่อจากไฟล์ CSV)

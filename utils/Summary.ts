@@ -1,4 +1,4 @@
-import { AttendanceSummaryItem, CheckedInUser } from "@/types";
+import { AttendanceSummaryItem, CheckedInUser } from "@/types/classTypes";
 import { Timestamp } from "firebase/firestore";
 
 // ฟังก์ชันสร้างสรุปการเข้าเรียน

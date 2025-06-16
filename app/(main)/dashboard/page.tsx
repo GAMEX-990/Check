@@ -6,7 +6,7 @@ import AddClassPopup from '@/components/FromUser/ButtonCreate';
 import CreateQRCodeAndUpload from '@/components/FromUser/FusionButtonqrup';
 import { auth } from '@/lib/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { ClassData } from '@/types';
+import { ClassData } from '@/types/classTypes';
 
 
 

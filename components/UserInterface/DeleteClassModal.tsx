@@ -1,19 +1,7 @@
 import { useState } from "react";
 import { Trash2, AlertTriangle, X } from "lucide-react";
-import { User } from "firebase/auth";
 import { handleDeleteClass } from "@/utils/DeleteClass";
-
-interface DeleteClassModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  classData: {
-    id: string;
-    name: string;
-    memberCount?: number;
-  };
-  user: User | null;
-  onDeleteSuccess?: () => void;
-}
+import { DeleteClassModalProps } from "@/types/DeleteClassTypes";
 
 export const DeleteClassModal = ({
   isOpen,

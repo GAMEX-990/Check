@@ -1,20 +1,5 @@
-import { ClassData } from "@/types";
 import { X } from "lucide-react";
-
-
-interface AttendanceRecord {
-  uid: string;
-  name: string;
-  studentId: string;
-  count: number;
-}
-
-interface AttendanceSummaryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  classData: ClassData;
-  attendanceSummary: AttendanceRecord[];
-}
+import { AttendanceSummaryModalProps } from "@/types/attendanceTypes";
 
 export const AttendanceSummaryModal = ({ 
   isOpen, 

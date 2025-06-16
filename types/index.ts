@@ -25,7 +25,7 @@ export interface ClassData {
 
 export interface CheckedInUser {
   uid: string;
-  displayName: string;
+  name: string;
   email: string;
   photoURL?: string;
   timestamp: Timestamp | Date | string;

@@ -6,7 +6,7 @@ import { createAttendanceSummary } from "@/utils/Summary";
 import DeleteClassModal from "./DeleteClassModal"; // เพิ่ม import
 import AttendanceSummaryModal from "./AttenSummary";
 import { ArrowLeft, Trash2 } from "lucide-react";
-import { ClassData, AttendanceSummaryItem, CheckedInUser } from "@/types";
+import { AttendanceSummaryItem, CheckedInUser, ClassData } from "@/types";
 
 interface ViewClassDetailPageProps {
   classData: ClassData;
@@ -129,7 +129,7 @@ const isClassOwner = classData.createdBy === currentUser?.uid;
                     </div>
                     <div className="flex flex-row justify-between mt-2">
                       <div>
-                        <p className="text-sm  text-purple-900">{user.displayName}</p>
+                        <p className="text-sm  text-purple-900">{user.name}</p>
                       </div>
                       <div>
                         <p className="text-sm text-purple-900">{user.studentId}</p>

@@ -16,7 +16,7 @@ interface MyClassPageProps {
 }
 
 const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
-  const { user, hasScanned, updateScanStatus, loading } = useHasScanned();
+  const { user,loading } = useHasScanned();
   const [classes, setClasses] = useState<ClassData[]>([]); // ✅ ใช้ type ที่กำหนดไว้
 
   useEffect(() => {

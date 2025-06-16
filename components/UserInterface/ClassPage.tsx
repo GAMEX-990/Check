@@ -17,7 +17,7 @@ interface ClassPageProps {
 }
 
 const ClassPage = ({ onBack, onSelectClass }: ClassPageProps) => {
-  const { user, hasScanned, updateScanStatus, loading } = useHasScanned();
+  const { user, hasScanned, loading } = useHasScanned();
   const [joinedClasses, setJoinedClasses] = useState<ClassData[]>([]);
   const [classesLoading, setClassesLoading] = useState(false);
 

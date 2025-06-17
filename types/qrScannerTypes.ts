@@ -27,11 +27,11 @@ export interface ClassData {
   checkedInRecord?: Record<string, {
     uid: string;
     studentId: string;
-    timestamp: any; // Timestamp type from firestore
+    timestamp: number; // Timestamp type from firestore
     name: string;
     email: string;
     status: string;
   }>;
   checkedInCount?: number;
-  lastCheckedIn?: any; // Timestamp
+  lastCheckedIn?: number; // Timestamp
 }

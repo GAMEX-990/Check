@@ -148,7 +148,7 @@ export default function LoginPage() {
             }`}
           >
             <Image 
-              src="/assets/images/google.png" 
+              src="/assets/images/Google.png" 
               alt="Google" 
               width={20} 
               height={20} 

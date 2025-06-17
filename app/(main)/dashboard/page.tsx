@@ -34,26 +34,29 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className='flex justify-center space-x-4 mt-5'>
-        <div>
-          <Usercard />
-        </div>
-        {currectPang !== "view" && (
+      <div className='flex justify-center mt-5'>
+        <div className='flex flex-col md:flex-row gap-4'>
           <div>
-            <AddClassPopup />
+            <Usercard />
           </div>
-        )}
-        {currectPang === "view" && selectedClass && (
-            <div>
-            <CreateQRCodeAndUpload 
-              classId={selectedClass.id} 
-              currentUser={user ? { uid: user.uid } : null} 
+          {currectPang !== "view" && (
+            <div className=''>
+              <AddClassPopup />
+            </div>
+          )}
+           {currectPang === "view" && selectedClass && (
+          <div>
+            <CreateQRCodeAndUpload
+              classId={selectedClass.id}
+              currentUser={user ? { uid: user.uid } : null}
             />
           </div>
         )}
-        <div>
-          <ClassSection onPageChange={handlePageChange} onClassSelect={handleSelectClass} />
+          <div>
+            <ClassSection onPageChange={handlePageChange} onClassSelect={handleSelectClass} />
+          </div>
         </div>
+
       </div>
     </div>
   );

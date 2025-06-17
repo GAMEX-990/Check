@@ -89,8 +89,8 @@ const handleCreate = async () => {
 
   // ส่วน JSX ที่จะ render
   return (
-    <div>
-      <div className="flex flex-col gap-2 items-center">
+    <div className="">
+      <div className=" flex flex-row md:flex-col gap-2 items-center justify-center">
         <div>
           <button
             className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"

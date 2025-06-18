@@ -48,7 +48,7 @@ export default function DashboardPage() {
           <div>
             <CreateQRCodeAndUpload
               classId={selectedClass.id}
-              currentUser={user ? { uid: user.uid } : null}
+              currentUser={user ? { uid: user.uid, email: user.email || '' } : null}
             />
           </div>
         )}

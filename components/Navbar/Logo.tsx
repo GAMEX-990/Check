@@ -13,10 +13,10 @@ const Logo = () => {
         whileHover={{ scale: 1.05 }}
         transition={{ type: 'spring', stiffness: 400, damping: 10 }}
       >
-        <div className="">
+        <div>
         <Image 
               src="/assets/images/Logocheck.png" 
-              alt="Google" 
+              alt="Logocheck" 
               width={50} 
               height={50} 
               className="mr-3" 

@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, LogIn, Brush, X, Pencil } from 'lucide-react';
+import { ArrowLeft, LogIn, X, Pencil } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';

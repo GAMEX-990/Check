@@ -91,7 +91,7 @@ export default function RegisterPage() {
             className="cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-8"
           >
             <Image 
-              src="/assets/images/google.png" 
+              src="/assets/images/Google.png" 
               alt="Google" 
               width={20} 
               height={20} 

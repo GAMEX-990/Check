@@ -53,21 +53,41 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
+      console.log("User ID:", user.uid); // Debug log
+
       // Check if user profile exists in Firestore
-      const docRef = doc(db, "students", user.uid);
-      const docSnap = await getDoc(docRef);
+      const userRef = doc(db, "users", user.uid);
+      let userSnap;
+      
+      try {
+         userSnap = await getDoc(userRef);
 
-      // Also check if user might be a teacher
-      const teacherRef = doc(db, "teachers", user.uid);
-      const teacherSnap = await getDoc(teacherRef);
-
-      if (!docSnap.exists() && !teacherSnap.exists()) {
-        // No profile found -> redirect to registration
-        router.push("/loginregister");
-      } else {
-        // Profile exists -> go to dashboard
-        router.push("/dashboard");
+        console.log("User profile exists:", userSnap.exists()); // Debug log
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          console.log("User profile data:", userData);
+          
+          // ตรวจสอบ role จากข้อมูลใน Firestore
+          if (userData.role) {
+            console.log("User role:", userData.role);
+          }
+        }
+        
+      } catch (firestoreError) {
+        console.error("Firestore access error:", firestoreError);
+        setError("ไม่สามารถตรวจสอบข้อมูลโปรไฟล์ได้ กรุณาลองอีกครั้ง");
+        return;
       }
+
+      if (userSnap.exists()) {
+        console.log("User profile found, redirecting to dashboard");
+        router.push("/dashboard");
+      } else {
+        console.log("No profile found, redirecting to registration");
+        router.push("/loginregister");
+      }
+      
     } catch (err: unknown) {
       console.error("Google login error:", err);
       

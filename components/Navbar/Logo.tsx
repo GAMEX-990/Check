@@ -17,8 +17,8 @@ const Logo = () => {
         <Image 
               src="/assets/images/Logocheck.png" 
               alt="Logocheck" 
-              width={50} 
-              height={50} 
+              width={40} 
+              height={40} 
               className="mr-3" 
             />
         </div>

@@ -29,6 +29,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [showQRModal, setShowQRModal] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
 
     // ฟังก์ชันสำหรับสร้าง QR Code
@@ -46,6 +47,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
 
     // เมื่อกดปุ่ม Upload CSV ให้เปิด input file
     const onUploadButtonClick = () => {
+        if (isUploading) return;
         fileInputRef.current?.click();
     };
 
@@ -75,11 +77,17 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
                         onChange={(e) => handleFileUpload(e, classId)}
                     />
                     {/* ปุ่มเดียวที่ใช้เปิด input file */}
-                    <button
+                     {/* ปุ่มสำหรับเปิด input file */}
+                     <button
                         onClick={onUploadButtonClick}
-                        className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
+                        disabled={isUploading}
+                        className={`w-auto h-auto border-1 p-2 rounded-2xl transition-colors ${
+                            isUploading 
+                                ? 'border-gray-400 text-gray-400 cursor-not-allowed'
+                                : 'border-purple-600 text-purple-600 hover:bg-purple-100'
+                        }`}
                     >
-                        Upload CSV
+                        {isUploading ? 'กำลังอัปโหลด...' : 'Upload Excel/CSV'}
                     </button>
                 </div>
                 <div>

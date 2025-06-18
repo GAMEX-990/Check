@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, LogIn, Brush, X } from 'lucide-react';
+import { ArrowLeft, LogIn, Brush, X, Pencil } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
@@ -69,17 +69,16 @@ const Usercard = () => {
                     <button onClick={handleLogout} className="text-purple-600"><LogIn /></button>
                 </div>
                 <div className="flex flex-col items-center space-y-8">
-                    {/* ส่วนของรูปโปรไฟล์ปรับแปต่งได้ถ้าไม่พอใจ มี Dose ในREADME */}
-                    <div>
+                    <div className='relative'>
                         <div>
                             <img className=' border-4 border-purple-700 rounded-full w-30 h-30' src={data.photoURL} alt="Profile" />
                         </div>
-                        <div>
-                            <button
-                                onClick={() => setShowModal(true)}
-                            >
-                                <Brush />
-                            </button>
+                        <div
+                            className="absolute bottom-2 right-2 bg-purple-600 hover:bg-purple-700 cursor-pointer text-white rounded-full p-1"
+                            onClick={() => setShowModal(true)}
+                            title="แก้ไขข้อมูล"
+                        >
+                            <Pencil size={18} />
                         </div>
                     </div>
 

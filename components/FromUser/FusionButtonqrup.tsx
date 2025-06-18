@@ -1,41 +1,12 @@
+import { db } from '@/lib/firebase';
+import { CreateQRCodeAndUploadProps} from '@/types/Fusionqrup';
 import { handleExportPDF } from '@/utils/exportPDFHandler';
 import { uploadStudentsFromFile } from '@/utils/parseCSVFile';
-import React, { useRef, useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 
-// กำหนด interface สำหรับข้อมูลไฟล์
-interface FileInfo {
-    name: string;
-    size: string;
-    type: string;
-    extension?: string;
-    isSupported: boolean;
-}
 
-// กำหนด interface สำหรับผลลัพธ์การอัปโหลด
-interface UploadResult {
-    success: boolean;
-    message: string;
-    count?: number;
-    errors?: string[];
-    fileInfo?: FileInfo;
-    totalRows?: number;
-    collectionName?: string;
-    error?: string;
-}
-
-// กำหนด interface สำหรับสถานะการอัปโหลด
-interface UploadStatus {
-    success: boolean;
-    message: string;
-    details?: UploadResult;
-}
-
-// กำหนด props สำหรับ component
-interface CreateQRCodeAndUploadProps {
-    classId: string; // ID ของคลาสเรียน
-    currentUser: { uid: string } | null; // ข้อมูลผู้ใช้ปัจจุบัน
-}
 
 
 const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, currentUser }) => {
@@ -44,66 +15,56 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [showQRModal, setShowQRModal] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadStatus, setUploadStatus] = useState<UploadStatus | null>(null);
-
-// ฟังก์ชันสำหรับจัดการการอัปโหลดไฟล์
-const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // ตรวจสอบประเภทไฟล์
-    const allowedExtensions = ['.xlsx', '.xls', '.csv'];
-    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-    
-    if (!allowedExtensions.includes(fileExtension)) {
-        alert(`ไฟล์ประเภท ${fileExtension} ไม่รองรับ\nกรุณาเลือกไฟล์ .xlsx, .xls หรือ .csv`);
-        // Reset input
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-        return;
-    }
-
-    setIsUploading(true);
-    setUploadStatus(null);
-
-    try {
-        const result: UploadResult = await uploadStudentsFromFile(file, classId);
-
-        setUploadStatus({
-            success: result.success,
-            message: result.message,
-            details: result
-        });
-
-        if (result.success) {
-            alert(`✅ ${result.message}\n📊 อัปโหลดสำเร็จ: ${result.count} คน`);
-            
-            // แสดงข้อผิดพลาด (ถ้ามี)
-            if (result.errors && result.errors.length > 0) {
-                console.warn("Upload errors:", result.errors);
-                const errorMessage = result.errors.slice(0, 3).join('\n'); // แสดงแค่ 3 อันแรก
-                alert(`⚠️ มีข้อผิดพลาดบางรายการ:\n${errorMessage}${result.errors.length > 3 ? '\n...(และอื่น ๆ)' : ''}`);
+    // const [isUploading, setIsUploading] = useState(false);
+    // const [uploadStatus, setUploadStatus] = useState<UploadStatus | null>(null);
+    const [isOwner, setIsOwner] = useState(false);
+    const [isLoadingOwner, setIsLoadingOwner] = useState(true);
+    // ตรวจสอบว่า currentUser เป็นเจ้าของคลาสหรือไม่
+    useEffect(() => {
+        const checkOwnerStatus = async () => {
+            if (!currentUser || !classId) {
+                setIsOwner(false);
+                setIsLoadingOwner(false);
+                return;
             }
+
+            try {
+                const classRef = doc(db, 'classes', classId);
+                const classSnap = await getDoc(classRef);
+
+                if (classSnap.exists()) {
+                    const classData = classSnap.data();
+                    // ตรวจสอบว่า currentUser เป็นเจ้าของคลาสหรือไม่
+                    const isClassOwner = classData.owner_email === currentUser.email ||
+                        classData.created_by === currentUser.uid;
+                    setIsOwner(isClassOwner);
+                } else {
+                    setIsOwner(false);
+                }
+            } catch (error) {
+                console.error('Error checking owner status:', error);
+                setIsOwner(false);
+            } finally {
+                setIsLoadingOwner(false);
+            }
+        };
+
+        checkOwnerStatus();
+    }, [currentUser, classId]);
+
+    // ฟังก์ชันสำหรับจัดการการอัปโหลดไฟล์
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, classId: string) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+    
+        const result = await uploadStudentsFromFile(file, classId);
+    
+        if (result.success) {
+            alert("อัปโหลดข้อมูลนักเรียนสำเร็จ!");
         } else {
-            alert(`❌ การอัปโหลดล้มเหลว\n${result.message}\n${result.error || ''}`);
+            alert("เกิดข้อผิดพลาดในการอัปโหลด");
         }
-    } catch (error) {
-        console.error("File upload error:", error);
-        setUploadStatus({
-            success: false,
-            message: "เกิดข้อผิดพลาดที่ไม่คาดคิด"
-        });
-        alert("❌ เกิดข้อผิดพลาดในการอัปโหลดไฟล์");
-    } finally {
-        setIsUploading(false);
-        // Reset input เพื่อให้สามารถเลือกไฟล์เดิมอีกครั้งได้
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-    }
-};
+    };
 
     // ฟังก์ชันสำหรับสร้าง QR Code
     const handleCreateQR = () => {
@@ -120,7 +81,14 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
     // เมื่อกดปุ่ม Upload CSV ให้เปิด input file
     const onUploadButtonClick = () => {
-        if (isUploading) return; // ป้องกันไม่ให้กดซ้ำขณะอัปโหลด
+    
+
+        // ตรวจสอบสิทธิ์ก่อนอัปโหลด
+        if (!isOwner) {
+            alert('❌ คุณไม่มีสิทธิ์ในการอัปโหลดไฟล์\nเฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้');
+            return;
+        }
+
         fileInputRef.current?.click();
     };
 
@@ -141,25 +109,25 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                     </button>
                 </div>
                 <div>
-                 {/* ซ่อน input ไฟล์ไว้ */}
-                 <input
+                    {/* ซ่อน input ไฟล์ไว้ */}
+                    <input
                         type="file"
                         accept=".xlsx,.xls,.csv"
                         ref={fileInputRef}
                         style={{ display: 'none' }}
-                        onChange={handleFileUpload}
+                        onChange={(e) => handleFileUpload(e, classId)}
                     />
                     {/* ปุ่มสำหรับเปิด input file */}
                     <button
                         onClick={onUploadButtonClick}
-                        disabled={isUploading}
-                        className={`w-auto h-auto border-1 p-2 rounded-2xl transition-colors ${
-                            isUploading 
+                        disabled={isLoadingOwner || !isOwner}
+                        className={`w-auto h-auto border-1 p-2 rounded-2xl transition-colors ${isLoadingOwner || !isOwner
                                 ? 'border-gray-400 text-gray-400 cursor-not-allowed'
                                 : 'border-purple-600 text-purple-600 hover:bg-purple-100'
-                        }`}
+                            }`}
+                        title={!isOwner ? 'เฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้' : ''}
                     >
-                        {isUploading ? 'กำลังอัปโหลด...' : 'Upload Excel/CSV'}
+                        Upload CSV
                     </button>
                 </div>
                 <div>
@@ -171,26 +139,6 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                     </button>
                 </div>
             </div>
-
-             {/* แสดงผลการอัปโหลด */}
-             {uploadStatus && !isUploading && (
-                <div className={`mt-4 p-3 rounded-lg border ${
-                    uploadStatus.success 
-                        ? 'bg-green-50 border-green-200 text-green-700'
-                        : 'bg-red-50 border-red-200 text-red-700'
-                }`}>
-                    <div className="font-medium">
-                        {uploadStatus.success ? '✅ อัปโหลดสำเร็จ' : '❌ อัปโหลดล้มเหลว'}
-                    </div>
-                    <div className="text-sm mt-1">{uploadStatus.message}</div>
-                    {uploadStatus.details?.count && (
-                        <div className="text-sm mt-1">
-                            จำนวนที่อัปโหลด: {uploadStatus.details.count} คน
-                        </div>
-                    )}
-                </div>
-            )}
-
             {/* Modal สำหรับแสดง QR Code */}
             {showQRModal && qrCode && (
                 <div className="fixed inset-0 flex items-center justify-center z-10">

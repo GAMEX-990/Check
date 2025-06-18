@@ -15,7 +15,7 @@ const Logo = () => {
       >
         <div>
         <Image 
-              src="/assets/images/Logocheck.png" 
+              src="/assets/images/Logocheck.PNG" 
               alt="Logocheck" 
               width={40} 
               height={40} 

@@ -38,8 +38,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
                 } else {
                     setIsOwner(false);
                 }
-            } catch (error) {
-                setIsOwner(false);
+            } catch{
             } finally {
                 setIsLoadingOwner(false);
             }

@@ -4,11 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import { updateProfile, EmailAuthProvider, linkWithCredential } from 'firebase/auth';
+import { Button } from "@/components/ui/button";
 
 export default function LoginRegisterPage() {
   const [fullname, setFullname] = useState("");
@@ -19,9 +20,14 @@ export default function LoginRegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+  const [ishandleManualLogin, sethandleManualLogin] = useState(false);
 
   const handleRegister = async () => {
     // Validation
+
+    sethandleManualLogin(true);
+
+
     if (!fullname || !institution || (role === 'student' && !studentId)) {
       setError("กรุณากรอกข้อมูลให้ครบ");
       return;
@@ -51,7 +57,7 @@ export default function LoginRegisterPage() {
     try {
       // สร้าง email/password credential
       const credential = EmailAuthProvider.credential(user.email, password);
-      
+
       // ลิงค์ credential กับ user ปัจจุบัน
       const result = await linkWithCredential(user, credential);
       const linkedUser = result.user;
@@ -59,11 +65,11 @@ export default function LoginRegisterPage() {
       // อัพเดท profile
       await updateProfile(linkedUser, {
         displayName: fullname,
-        photoURL: user.photoURL 
+        photoURL: user.photoURL
       });
 
       // บันทึกข้อมูลลง users collection เท่านั้น
-      await setDoc(doc(db, "users", linkedUser.uid), {  
+      await setDoc(doc(db, "users", linkedUser.uid), {
         name: fullname,
         studentId: role === 'student' ? studentId : '',
         email: user.email,
@@ -110,10 +116,10 @@ export default function LoginRegisterPage() {
         <div className="relative">
           <div className="w-64 h-64 bg-gradient-to-tr from-purple-400 to-purple-600 rounded-full opacity-20 blur-2xl"></div>
           <div className="absolute inset-0 flex items-end justify-center">
-            <Image 
-              src="/assets/images/personlookblook.png" 
-              alt="Welcome illustration" 
-              width={200} 
+            <Image
+              src="/assets/images/personlookblook.png"
+              alt="Welcome illustration"
+              width={200}
               height={200}
               className="drop-shadow-2xl"
             />
@@ -124,7 +130,7 @@ export default function LoginRegisterPage() {
       {/* Main registration card */}
       <div className="relative w-full max-w-md">
         {/* Back button */}
-        <button 
+        <button
           onClick={() => router.push('/login')}
           className="absolute -top-12 left-0 flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
         >
@@ -157,7 +163,7 @@ export default function LoginRegisterPage() {
               <Label className="block text-sm font-medium text-gray-700 mb-2">
                 ชื่อ-สกุล
               </Label>
-              <Input 
+              <Input
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                 type="text"
                 placeholder="กรอกชื่อ-สกุลของคุณ"
@@ -175,11 +181,10 @@ export default function LoginRegisterPage() {
                 <button
                   type="button"
                   onClick={() => setRole('student')}
-                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                    role === 'student'
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${role === 'student'
                       ? 'border-purple-500 bg-purple-50 text-purple-700'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <div className="text-2xl mb-2">🎓</div>
                   <div className="font-medium">นักเรียน</div>
@@ -187,11 +192,10 @@ export default function LoginRegisterPage() {
                 <button
                   type="button"
                   onClick={() => setRole('teacher')}
-                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                    role === 'teacher'
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${role === 'teacher'
                       ? 'border-purple-500 bg-purple-50 text-purple-700'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <div className="text-2xl mb-2">👨‍🏫</div>
                   <div className="font-medium">อาจารย์</div>
@@ -205,7 +209,7 @@ export default function LoginRegisterPage() {
                 <Label className="block text-sm font-medium text-gray-700 mb-2">
                   รหัสนักศึกษา
                 </Label>
-                <Input 
+                <Input
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                   type="text"
                   placeholder="กรอกรหัสนักศึกษาของคุณ"
@@ -220,7 +224,7 @@ export default function LoginRegisterPage() {
               <Label className="block text-sm font-medium text-gray-700 mb-2">
                 สถาบันการศึกษา
               </Label>
-              <Input 
+              <Input
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                 type="text"
                 placeholder="กรอกชื่อโรงเรียน/มหาวิทยาลัยของคุณ"
@@ -242,7 +246,7 @@ export default function LoginRegisterPage() {
                   <Label className="block text-sm font-medium text-gray-700 mb-2">
                     รหัสผ่าน
                   </Label>
-                  <Input 
+                  <Input
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                     type="password"
                     placeholder="กรอกรหัสผ่าน (อย่างน้อย 6 ตัวอักษร)"
@@ -256,7 +260,7 @@ export default function LoginRegisterPage() {
                   <Label className="block text-sm font-medium text-gray-700 mb-2">
                     ยืนยันรหัสผ่าน
                   </Label>
-                  <Input 
+                  <Input
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                     type="password"
                     placeholder="ยืนยันรหัสผ่านของคุณ"
@@ -270,21 +274,18 @@ export default function LoginRegisterPage() {
               {password && (
                 <div className="mt-3">
                   <div className="flex items-center space-x-2">
-                    <div className={`h-2 flex-1 rounded-full ${
-                      password.length < 6 ? 'bg-red-200' :
-                      password.length < 8 ? 'bg-yellow-200' : 'bg-green-200'
-                    }`}>
-                      <div className={`h-full rounded-full transition-all duration-300 ${
-                        password.length < 6 ? 'w-1/3 bg-red-500' :
-                        password.length < 8 ? 'w-2/3 bg-yellow-500' : 'w-full bg-green-500'
-                      }`}></div>
+                    <div className={`h-2 flex-1 rounded-full ${password.length < 6 ? 'bg-red-200' :
+                        password.length < 8 ? 'bg-yellow-200' : 'bg-green-200'
+                      }`}>
+                      <div className={`h-full rounded-full transition-all duration-300 ${password.length < 6 ? 'w-1/3 bg-red-500' :
+                          password.length < 8 ? 'w-2/3 bg-yellow-500' : 'w-full bg-green-500'
+                        }`}></div>
                     </div>
-                    <span className={`text-xs font-medium ${
-                      password.length < 6 ? 'text-red-600' :
-                      password.length < 8 ? 'text-yellow-600' : 'text-green-600'
-                    }`}>
+                    <span className={`text-xs font-medium ${password.length < 6 ? 'text-red-600' :
+                        password.length < 8 ? 'text-yellow-600' : 'text-green-600'
+                      }`}>
                       {password.length < 6 ? 'อ่อน' :
-                       password.length < 8 ? 'ปานกลาง' : 'แข็งแรง'}
+                        password.length < 8 ? 'ปานกลาง' : 'แข็งแรง'}
                     </span>
                   </div>
                 </div>
@@ -293,12 +294,15 @@ export default function LoginRegisterPage() {
           </div>
 
           {/* Submit button */}
-          <button
+          <Button
             onClick={handleRegister}
+            disabled={ishandleManualLogin}
             className="w-full mt-8 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 transform hover:-translate-y-0.5"
           >
+            {ishandleManualLogin && <Loader2Icon className="animate-spin" />}
+            {ishandleManualLogin ? 'กำลังเริ่มต้นใช้งาน' : 'เริ่มต้นใช้งาน'}
             เริ่มใช้งาน
-          </button>
+          </Button>
         </div>
       </div>
     </div>

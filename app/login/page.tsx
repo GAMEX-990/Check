@@ -7,7 +7,7 @@ import { auth, db, provider } from '@/lib/firebase';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import Image from "next/image";
 import { Input } from '@/components/ui/input';
-import { Label } from '@radix-ui/react-label';import { Button } from '@/components/ui/button';
+import { Label } from '@radix-ui/react-label'; import { Button } from '@/components/ui/button';
 ;
 
 export default function LoginPage() {
@@ -15,7 +15,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
-
   const [ishandleManualLogin, sethandleManualLogin] = useState(false);
   // Manual login
   const handleManualLogin = async () => {
@@ -244,7 +243,7 @@ export default function LoginPage() {
             disabled={ishandleManualLogin}
             className=" cursor-pointer w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 transform hover:-translate-y-0.5"
           >
-            {ishandleManualLogin && <Loader2Icon className=" animate-spin" />}
+            {ishandleManualLogin && <Loader2Icon className="animate-spin" />}
             {ishandleManualLogin ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
           </Button>
         </div>

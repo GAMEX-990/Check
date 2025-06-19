@@ -86,7 +86,7 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
                 </motion.div>
               ))
             ) : (
-              <p className="text-center text-purple-600 mt-4">ยังไม่มีคลาส</p>
+              <p className="text-center text-purple-600 mt-4"></p>
             )}
           </div>
         </div>

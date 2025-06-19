@@ -34,8 +34,8 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className='flex justify-center mt-15'>
-        <div className='flex flex-col md:flex-row gap-4'>
+      <div className=' flex justify-center h-screen'>
+        <div className='flex flex-col md:flex-row gap-4 mt-15'>
           <div>
             <Usercard />
           </div>

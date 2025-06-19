@@ -17,7 +17,7 @@ export const ViewClassDetailPage = ({
   onBack,
   onDeleteSuccess
 }: ViewClassDetailPageProps) => {
-  const [shoewDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummaryItem[]>([]);
   const [checkedInUsers, setCheckedInUsers] = useState<CheckedInUser[]>([]);
@@ -35,7 +35,7 @@ export const ViewClassDetailPage = ({
     };
 
     loadCheckedInUsers();
-  }, [classData.checkedInRecord, currentUid]);
+  }, [classData, currentUid]);
 
   const handleShowSummary = () => setShowSummary(true);
   const handleCloseSummary = () => setShowSummary(false);
@@ -120,7 +120,7 @@ export const ViewClassDetailPage = ({
       />
 
       <DeleteClassModal
-        isOpen={shoewDeleteModal}
+        isOpen={showDeleteModal}
         onClose={handleCloseDeleteModal}
         classData={{
           id: classData.id,

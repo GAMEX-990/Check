@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { FaTimes } from "react-icons/fa";
 import { stopCamera } from "@/utils/camera";
 import { handleQRDetected as handleQRUtility } from "@/utils/qrScanner";
 import { useHasScanned } from "@/utils/hasScanned";
@@ -247,7 +246,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
               }
             }}
           >
-            <FaTimes size={40} /> {/* ไอคอนปิด ขนาด 40px */}
+            <X/>
           </button>
         </div>
       )}

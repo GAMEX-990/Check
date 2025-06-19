@@ -8,6 +8,7 @@ import SignedOutLinks from './SignedOutLinks'
 import { Menu, X, User as Home, Info, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserData, UserData } from '@/utils/getcurrentuser';
+import Image from 'next/image';
 
 const Navbar = () => {
     const [userData, setUserData] = useState<UserData | null>(null);
@@ -79,7 +80,9 @@ const Navbar = () => {
                             <div className="flex items-center space-x-2 bg-purple-50 px-3 py-1 rounded-full">
                                 <div className="bg-purple-100 p-1 rounded-full">
                                     {userData?.photoURL && (
-                                        <img
+                                        <Image
+                                            width={40}
+                                            height={40}
                                             src={userData.photoURL}
                                             alt="Profile"
                                             className="w-8 h-8 rounded-full border-4 border-purple-700 object-cover"
@@ -126,7 +129,9 @@ const Navbar = () => {
                         <div className="flex items-center space-x-2 px-2 py-2 bg-purple-50 rounded-lg mb-3">
                             <div className="bg-purple-100 p-1.5 rounded-full">
                                 {userData?.photoURL && (
-                                    <img
+                                    <Image
+                                        width={40}
+                                        height={40}
                                         src={userData.photoURL}
                                         alt="Profile"
                                         className="w-8 h-8 rounded-full border-4 border-purple-700 object-cover"

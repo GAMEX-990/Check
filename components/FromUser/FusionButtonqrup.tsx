@@ -10,8 +10,6 @@ import QRCode from 'react-qr-code';
 import { toast } from 'sonner';
 
 
-
-
 const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, currentUser }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [qrCode, setQrCode] = useState<string | null>(null);
@@ -187,20 +185,6 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
                     </motion.div>
                 </div>
             )}
-
-            {/* ส่วนอัปโหลดไฟล์ CSV */}
-            <div>
-                <div className="h-0 w-0">
-
-                </div>
-                {/* input file ที่ซ่อนไว้ */}
-                <input
-                    id="csv-upload"
-                    type="file"
-                    accept=".csv"
-                    className="hidden"
-                />
-            </div>
         </div>
     );
 };

@@ -8,6 +8,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { getUserData, UserData } from '@/utils/getcurrentuser';
 import { updateStudentId } from '@/utils/informationupdate';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const Usercard = () => {
     const [showModal, setShowModal] = useState(false);
@@ -72,7 +73,7 @@ const Usercard = () => {
                 <div className="flex flex-col items-center space-y-8">
                     <div className='relative'>
                         <div>
-                            <img className=' border-4 border-purple-700 rounded-full w-30 h-30' src={data.photoURL} alt="Profile" />
+                            <Image className=' border-4 border-purple-700 rounded-full w-30 h-30' width={50} height={50} src={data.photoURL} alt="Profile" />
                         </div>
                         <motion.div
                             whileHover={{ scale: 1.02 }}

@@ -13,7 +13,8 @@ export async function openCamera(videoElement) {
       video: {
         width: { ideal: 1280 },
         height: { ideal: 720 },
-        facingMode: 'environment' // ใช้กล้องหลังสำหรับมือถือ
+        facingMode: 'environment', // ใช้กล้องหลังสำหรับมือถือ
+        frameRate: { ideal: 30, max: 60 }  // <= เพิ่มตรงนี้
       }
     };
     

@@ -198,7 +198,6 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
                     id="csv-upload"
                     type="file"
                     accept=".csv"
-                    // onChange={handleUploadCSV}
                     className="hidden"
                 />
             </div>

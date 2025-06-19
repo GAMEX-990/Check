@@ -5,7 +5,7 @@ import Logo from './Logo'
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase'
 import SignedOutLinks from './SignedOutLinks'
-import { Menu, X, User as UserIcon, Home, Info, Mail } from 'lucide-react'
+import { Menu, X, User as Home, Info, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserData, UserData } from '@/utils/getcurrentuser';
 

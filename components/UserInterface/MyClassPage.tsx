@@ -9,6 +9,7 @@ import {
 import { ArrowRight } from "lucide-react";
 import { useHasScanned } from "@/utils/hasScanned";
 import { ClassData } from "@/types/classTypes"; // <-- นำเข้า types ที่สร้างไว้
+import { motion } from "framer-motion";
 
 interface MyClassPageProps {
   onNext: () => void;
@@ -63,10 +64,15 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
             </button>
           </div>
         </div>
-        <div className="overflow-scroll h-80">
-          <div className="flex flex-col gap-4">
+        <div className=" overflow-scroll h-80 ">
+          <div className="flex flex-col gap-4 p-4">
             {classes.length > 0 ? (
               classes.map((cls) => (
+                <motion.div
+                key={cls.id} 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 1.05 }}
+              >
                 <div
                   key={cls.id}
                   className="flex justify-between items-center bg-purple-200 hover:bg-purple-300 p-4 rounded-4xl cursor-pointer"
@@ -77,6 +83,7 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
                     {cls.name.charAt(0)}
                   </div>
                 </div>
+                </motion.div>
               ))
             ) : (
               <p className="text-center text-purple-600 mt-4">ยังไม่มีคลาส</p>

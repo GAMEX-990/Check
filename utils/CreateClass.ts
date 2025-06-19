@@ -1,6 +1,6 @@
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase"; // อย่าลืม import Firebase configuration ของคุณ
-
+import { toast } from "sonner";
 interface CreateClassParams {
   className: string;
   user: {
@@ -28,24 +28,22 @@ export const handleCreateClass = async ({
   user,
   setClassName,
   setShowPopup,
-  setError,
   setLoading,
 }: CreateClassParams) => {
   // ตรวจสอบว่าผู้ใช้กรอกชื่อคลาสหรือไม่
   if (!className.trim()) {
-    setError("กรุณากรอกชื่อคลาสก่อน");
+    toast.error("กรุณากรอกชื่อคลาสก่อน");
     return;
   }
 
   // ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
   if (!user) {
-    setError("คุณยังไม่ได้ล็อกอิน");
+    toast.error("คุณยังไม่ได้ล็อกอิน");
     return;
   }
 
   try {
     setLoading(true);
-    setError(null);
 
     const userId = user.uid;
     const userEmail = user.email || "";
@@ -64,10 +62,9 @@ export const handleCreateClass = async ({
 
     setClassName("");
     setShowPopup(false);
-    alert("สร้างคลาสสำเร็จ");
+    toast.success("สร้างคลาสสำเร็จ");
   } catch (error) {
-    console.error("Error details:", error);
-    setError(
+    toast.error(
       `เกิดข้อผิดพลาด: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   } finally {

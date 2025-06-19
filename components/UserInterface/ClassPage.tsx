@@ -10,6 +10,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { useHasScanned } from "@/utils/hasScanned";
 import { ClassData } from "@/types/classTypes";
+import { motion } from "framer-motion";
 
 interface ClassPageProps {
   onBack: () => void;
@@ -77,30 +78,38 @@ const ClassPage = ({ onBack, onSelectClass }: ClassPageProps) => {
           </div>
         </div>
         <div className="overflow-scroll h-80">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-4">
             {classesLoading ? (
               <div className="text-center text-purple-600">กำลังโหลดคลาส...</div>
             ) : (
               <>
                 {joinedClasses.map((cls) => (
                   <div key={cls.id}>
-                    <div
-                      className="flex justify-between items-center bg-purple-200 hover:bg-purple-300 p-4 rounded-4xl cursor-pointer"
-                      onClick={() => onSelectClass(cls)}
+                    <motion.div
+                      key={cls.id}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 1.05 }}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="bg-purple-500 text-white text-2xl w-12 h-12 flex items-center justify-center rounded-full">
-                          {cls.name.charAt(0)}
+                      <div
+                        className="flex justify-between items-center bg-purple-200 hover:bg-purple-300 p-4 rounded-4xl cursor-pointer"
+                        onClick={() => onSelectClass(cls)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center rounded-full">
+                            {cls.name.charAt(0)}
+                          </div>
+                          <div className="">
+                            <p className="text-lg font-bold text-purple-800">{cls.name}</p>
+                            <p className="text-sm text-purple-600  tracking-tight whitespace-nowrap">สร้างโดย:{cls.owner_email}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-lg font-semibold text-purple-800">{cls.name}</p>
-                          <p className="text-sm text-purple-600">สร้างโดย: {cls.owner_email}</p>
+                        <div className="">
+                        {user?.uid && cls.checkedInMembers?.includes(user.uid) && (
+                          <p className="text-green-600 text-xs tracking-tight whitespace-nowrap">เช็คชื่อแล้ว</p>
+                        )}
                         </div>
                       </div>
-                      {user?.uid && cls.checkedInMembers?.includes(user.uid) && (
-                        <span className="text-green-600 text-sm">✓ เช็คชื่อแล้ว</span>
-                      )}
-                    </div>
+                    </motion.div>
                   </div>
                 ))}
               </>

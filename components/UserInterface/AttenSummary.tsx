@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { AttendanceSummaryModalProps } from "@/types/attendanceTypes";
+import { motion } from "framer-motion";
 
 export const AttendanceSummaryModal = ({ 
   isOpen, 
@@ -10,7 +11,16 @@ export const AttendanceSummaryModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-20">
+      <motion.div
+      className="fixed inset-0 flex items-center justify-center z-10"
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{
+          duration: 0.4,
+          scale: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
+        }}
+      >
       <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 max-h-96">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-purple-800">สรุปการเข้าเรียน</h2>
@@ -57,6 +67,7 @@ export const AttendanceSummaryModal = ({
           </div>
         )}
       </div>
+    </motion.div>
     </div>
   );
 };

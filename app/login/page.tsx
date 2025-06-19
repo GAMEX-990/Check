@@ -1,13 +1,14 @@
 'use client'
 import React, { useState } from 'react'
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2Icon } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db, provider } from '@/lib/firebase';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import Image from "next/image";
 import { Input } from '@/components/ui/input';
-import { Label } from '@radix-ui/react-label';
+import { Label } from '@radix-ui/react-label';import { Button } from '@/components/ui/button';
+;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,8 +16,12 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
 
+  const [ishandleManualLogin, sethandleManualLogin] = useState(false);
   // Manual login
   const handleManualLogin = async () => {
+
+    sethandleManualLogin(true);
+
     if (!email || !password) {
       setError("กรุณากรอกข้อมูลให้ครบ");
       return;
@@ -30,19 +35,22 @@ export default function LoginPage() {
     } catch (error) {
       console.error("Manual login error:", error);
       setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+    } finally {
+      sethandleManualLogin(false);
     }
   };
 
+
   // Google login
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  
+
   const handleGoogleLogin = async () => {
     // Prevent multiple login attempts
     if (isLoggingIn) return;
-    
+
     setIsLoggingIn(true);
     setError(""); // Clear any previous errors
-    
+
     try {
       // Configure Google sign-in to always show account selection
       provider.setCustomParameters({
@@ -58,22 +66,22 @@ export default function LoginPage() {
       // Check if user profile exists in Firestore
       const userRef = doc(db, "users", user.uid);
       let userSnap;
-      
+
       try {
-         userSnap = await getDoc(userRef);
+        userSnap = await getDoc(userRef);
 
         console.log("User profile exists:", userSnap.exists()); // Debug log
-        
+
         if (userSnap.exists()) {
           const userData = userSnap.data();
           console.log("User profile data:", userData);
-          
+
           // ตรวจสอบ role จากข้อมูลใน Firestore
           if (userData.role) {
             console.log("User role:", userData.role);
           }
         }
-        
+
       } catch (firestoreError) {
         console.error("Firestore access error:", firestoreError);
         setError("ไม่สามารถตรวจสอบข้อมูลโปรไฟล์ได้ กรุณาลองอีกครั้ง");
@@ -87,13 +95,13 @@ export default function LoginPage() {
         console.log("No profile found, redirecting to registration");
         router.push("/loginregister");
       }
-      
+
     } catch (err: unknown) {
       console.error("Google login error:", err);
-      
+
       // Type narrowing for Firebase Auth errors
       const firebaseError = err as { code?: string; message?: string };
-      
+
       // Handle specific Firebase errors
       if (firebaseError.code === 'auth/cancelled-popup-request') {
         setError("การเข้าสู่ระบบถูกยกเลิก โปรดลองอีกครั้ง");
@@ -122,10 +130,10 @@ export default function LoginPage() {
         <div className="relative">
           <div className="w-64 h-64 bg-gradient-to-tr from-purple-400 to-purple-600 rounded-full opacity-20 blur-2xl"></div>
           <div className="absolute inset-0 flex items-end justify-center">
-            <Image 
-              src="/assets/images/personlookblook.png" 
-              alt="Welcome illustration" 
-              width={2000} 
+            <Image
+              src="/assets/images/personlookblook.png"
+              alt="Welcome illustration"
+              width={2000}
               height={2000}
               className="drop-shadow-2xl"
             />
@@ -136,7 +144,7 @@ export default function LoginPage() {
       {/* Main login card */}
       <div className="relative w-full max-w-md">
         {/* Back button */}
-        <button 
+        <button
           onClick={() => router.push('/')}
           className="cursor-pointer absolute -top-12 left-0 flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
         >
@@ -151,7 +159,6 @@ export default function LoginPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">เข้าสู่ระบบ</h1>
             <p className="text-gray-600">ยินดีต้อนรับกลับมา</p>
           </div>
-
           {/* Error message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg">
@@ -160,22 +167,22 @@ export default function LoginPage() {
           )}
 
           {/* Google login button */}
-          <button
+          <Button
             onClick={handleGoogleLogin}
             disabled={isLoggingIn}
-            className={`cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-6 ${
-              isLoggingIn ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md'
-            }`}
+            className={`cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-6 ${isLoggingIn ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md'
+              }`}
           >
-            <Image 
-              src="/assets/images/Google.png" 
-              alt="Google" 
-              width={20} 
-              height={20} 
-              className="mr-3" 
+            <Image
+              src="/assets/images/Google.png"
+              alt="Google"
+              width={20}
+              height={20}
+              className="mr-3"
             />
+            {isLoggingIn && <Loader2Icon className=" animate-spin" />}
             {isLoggingIn ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบด้วย Google'}
-          </button>
+          </Button>
 
           {/* Divider */}
           <div className="relative mb-6">
@@ -202,7 +209,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            
+
             <div>
               <Label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="password">
                 รหัสผ่าน
@@ -220,7 +227,7 @@ export default function LoginPage() {
 
           {/* Links */}
           <div className="flex items-center justify-between mt-6 mb-8 cursor-pointer">
-            <button 
+            <button
               onClick={() => router.push('/register')}
               className=" text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200 cursor-pointer"
             >
@@ -232,12 +239,14 @@ export default function LoginPage() {
           </div>
 
           {/* Sign in button */}
-          <button
+          <Button
             onClick={handleManualLogin}
+            disabled={ishandleManualLogin}
             className=" cursor-pointer w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 transform hover:-translate-y-0.5"
           >
-            เข้าสู่ระบบ
-          </button>
+            {ishandleManualLogin && <Loader2Icon className=" animate-spin" />}
+            {ishandleManualLogin ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+          </Button>
         </div>
       </div>
     </div>

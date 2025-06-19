@@ -10,6 +10,7 @@ import {
   CheckedInUser,
   AttendanceSummaryItem
 } from "@/types/classDetailTypes";
+import { motion } from "framer-motion";
 
 export const ViewClassDetailPage = ({
   classData,
@@ -72,12 +73,17 @@ export const ViewClassDetailPage = ({
 
         <div className="text-purple-800 flex justify-between m-4">
           <p>ชื่อ-สกุล</p>
+          <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 1.05 }}
+              >
           <button
             className="border-1 border-purple-700 p-1 rounded-4xl cursor-pointer"
             onClick={handleShowSummary}
           >
             ดูสรุปการเข้าเรียน
           </button>
+          </motion.div>
           <p>รหัส นศ.</p>
         </div>
 

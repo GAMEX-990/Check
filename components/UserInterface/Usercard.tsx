@@ -7,6 +7,7 @@ import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { getUserData, UserData } from '@/utils/getcurrentuser';
 import { updateStudentId } from '@/utils/informationupdate';
+import { motion } from 'framer-motion';
 
 const Usercard = () => {
     const [showModal, setShowModal] = useState(false);
@@ -73,13 +74,18 @@ const Usercard = () => {
                         <div>
                             <img className=' border-4 border-purple-700 rounded-full w-30 h-30' src={data.photoURL} alt="Profile" />
                         </div>
-                        <div
-                            className="absolute bottom-2 right-2 bg-purple-600 hover:bg-purple-700 cursor-pointer text-white rounded-full p-1"
-                            onClick={() => setShowModal(true)}
-                            title="แก้ไขข้อมูล"
+                        <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 1 }}
                         >
-                            <Pencil size={18} />
-                        </div>
+                            <div
+                                className="absolute bottom-2 right-2 bg-purple-600 hover:bg-purple-700 cursor-pointer text-white rounded-full p-1"
+                                onClick={() => setShowModal(true)}
+                                title="แก้ไขข้อมูล"
+                            >
+                                <Pencil size={18} />
+                            </div>
+                            </motion.div>
                     </div>
 
                     {/* ข้อมูลชื่อ อีเมล์ */}

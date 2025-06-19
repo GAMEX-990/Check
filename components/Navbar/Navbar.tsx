@@ -7,21 +7,28 @@ import { auth } from '@/lib/firebase'
 import SignedOutLinks from './SignedOutLinks'
 import { Menu, X, User as UserIcon, Home, Info, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { getUserData, UserData } from '@/utils/getcurrentuser';
 
 const Navbar = () => {
+    const [userData, setUserData] = useState<UserData | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+
     useEffect(() => {
-        const unsub = onAuthStateChanged(auth, (currentUser) => {
+        const unsub = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
+            if (currentUser) {
+                const data = await getUserData(currentUser.uid);
+                setUserData(data);
+            }
         });
-        
+
         const handleScroll = () => {
             setScrolled(window.scrollY > 10);
         };
-        
+
         window.addEventListener('scroll', handleScroll);
         return () => {
             unsub();
@@ -40,8 +47,8 @@ const Navbar = () => {
     ];
 
     return (
-        <motion.nav 
-            className={`sticky top-0 z-50 w-full ${scrolled ? 'bg-white shadow-md' : 'bg-transparent'} transition-all duration-300`}
+        <motion.nav
+            className={`sticky top-0 z-10 w-full ${scrolled ? 'bg-white shadow-md' : 'bg-transparent'} transition-all duration-300`}
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
@@ -49,13 +56,13 @@ const Navbar = () => {
             <div className='max-w-7xl mx-auto flex justify-between items-center px-4 py-3 md:py-4'>
                 {/* Logo */}
                 <Logo />
-                
+
                 {/* Desktop Navigation */}
                 <div className='hidden md:flex items-center space-x-8'>
                     <div className='flex items-center space-x-6'>
                         {navLinks.map((link) => (
-                            <Link 
-                                key={link.href} 
+                            <Link
+                                key={link.href}
                                 href={link.href}
                                 className='flex items-center space-x-1 text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200'
                             >
@@ -64,23 +71,29 @@ const Navbar = () => {
                             </Link>
                         ))}
                     </div>
-                    
+
                     <div className="h-8 w-px bg-gray-200 mx-2"></div>
-                    
+
                     {user ? (
                         <div className="flex items-center space-x-2">
                             <div className="flex items-center space-x-2 bg-purple-50 px-3 py-1 rounded-full">
                                 <div className="bg-purple-100 p-1 rounded-full">
-                                    <UserIcon size={16} className="text-purple-700" />
+                                    {userData?.photoURL && (
+                                        <img
+                                            src={userData.photoURL}
+                                            alt="Profile"
+                                            className="w-8 h-8 rounded-full border-4 border-purple-700 object-cover"
+                                        />
+                                    )}
                                 </div>
                                 <span className="text-sm text-purple-700 font-medium truncate max-w-[100px]">
-                                    {user.email?.split('@')[0]}
+                                    {userData?.name?.split('@')[0]}
                                 </span>
                             </div>
                             <SignedOutLinks />
                         </div>
                     ) : (
-                        <Link 
+                        <Link
                             href="/login"
                             className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg font-medium transition-colors duration-200 shadow-md hover:shadow-lg"
                         >
@@ -88,7 +101,7 @@ const Navbar = () => {
                         </Link>
                     )}
                 </div>
-                
+
                 {/* Mobile menu button */}
                 <div className="md:hidden">
                     <button
@@ -102,7 +115,7 @@ const Navbar = () => {
             </div>
 
             {/* Mobile menu */}
-            <motion.div 
+            <motion.div
                 className={`md:hidden overflow-hidden ${scrolled ? 'bg-white' : 'bg-white/95 backdrop-blur-sm'}`}
                 initial={{ height: 0 }}
                 animate={{ height: mobileMenuOpen ? 'auto' : 0 }}
@@ -112,14 +125,20 @@ const Navbar = () => {
                     {user && (
                         <div className="flex items-center space-x-2 px-2 py-2 bg-purple-50 rounded-lg mb-3">
                             <div className="bg-purple-100 p-1.5 rounded-full">
-                                <UserIcon size={16} className="text-purple-700" />
+                                {userData?.photoURL && (
+                                    <img
+                                        src={userData.photoURL}
+                                        alt="Profile"
+                                        className="w-8 h-8 rounded-full border-4 border-purple-700 object-cover"
+                                    />
+                                )}
                             </div>
                             <span className="text-sm text-purple-700 font-medium truncate">
-                                {user.email?.split('@')[0]}
+                                {userData?.name?.split('@')[0]}
                             </span>
                         </div>
                     )}
-                    
+
                     {navLinks.map((link) => (
                         <Link
                             key={link.href}
@@ -131,7 +150,7 @@ const Navbar = () => {
                             <span className="font-medium">{link.name}</span>
                         </Link>
                     ))}
-                    
+
                     <div className="pt-2 border-t border-gray-100 mt-2">
                         {user ? (
                             <div className="px-2 py-2">

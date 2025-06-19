@@ -11,7 +11,7 @@ const Logo = () => {
       <motion.div 
         className="relative flex items-center"
         whileHover={{ scale: 1.05 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 10 }}
       >
         <div>
         <Image 

@@ -1,25 +1,24 @@
 import { db } from '@/lib/firebase';
-import { CreateQRCodeAndUploadProps} from '@/types/Fusionqrup';
+import { CreateQRCodeAndUploadProps } from '@/types/Fusionqrup';
 import { handleExportPDF } from '@/utils/exportPDFHandler';
 import { uploadStudentsFromFile } from '@/utils/parseCSVFile';
 import { doc, getDoc } from 'firebase/firestore';
+import { motion } from 'framer-motion';
+import { X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
+import { toast } from 'sonner';
 
 
 
 
 const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, currentUser }) => {
-    // state สำหรับเก็บค่า QR code และสถานะการแสดง modal
-    // สร้าง ref สำหรับ input file
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [showQRModal, setShowQRModal] = useState(false);
-    // const [isUploading, setIsUploading] = useState(false);
-    // const [uploadStatus, setUploadStatus] = useState<UploadStatus | null>(null);
     const [isOwner, setIsOwner] = useState(false);
     const [isLoadingOwner, setIsLoadingOwner] = useState(true);
-    // ตรวจสอบว่า currentUser เป็นเจ้าของคลาสหรือไม่
+
     useEffect(() => {
         const checkOwnerStatus = async () => {
             if (!currentUser || !classId) {
@@ -42,7 +41,6 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
                     setIsOwner(false);
                 }
             } catch (error) {
-                console.error('Error checking owner status:', error);
                 setIsOwner(false);
             } finally {
                 setIsLoadingOwner(false);
@@ -56,13 +54,13 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, classId: string) => {
         const file = e.target.files?.[0];
         if (!file) return;
-    
+
         const result = await uploadStudentsFromFile(file, classId);
-    
+
         if (result.success) {
-            alert("อัปโหลดข้อมูลนักเรียนสำเร็จ!");
+            toast.success("อัปโหลดข้อมูลนักเรียนสำเร็จ!");
         } else {
-            alert("เกิดข้อผิดพลาดในการอัปโหลด");
+            toast.error("เกิดข้อผิดพลาดในการอัปโหลด");
         }
     };
 
@@ -81,11 +79,11 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
 
     // เมื่อกดปุ่ม Upload CSV ให้เปิด input file
     const onUploadButtonClick = () => {
-    
+
 
         // ตรวจสอบสิทธิ์ก่อนอัปโหลด
         if (!isOwner) {
-            alert('❌ คุณไม่มีสิทธิ์ในการอัปโหลดไฟล์\nเฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้');
+            toast.error('❌ คุณไม่มีสิทธิ์ในการอัปโหลดไฟล์\nเฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้');
             return;
         }
 
@@ -100,13 +98,19 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
     return (
         <div>
             <div className="flex flex-row md:flex-col gap-2 items-center justify-center">
+
                 <div>
-                    <button
-                        className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
-                        onClick={handleCreateQR}
+                    <motion.div
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 1 }}
                     >
-                        Create QR
-                    </button>
+                        <button
+                            className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
+                            onClick={handleCreateQR}
+                        >
+                            Create QR
+                        </button>
+                    </motion.div>
                 </div>
                 <div>
                     {/* ซ่อน input ไฟล์ไว้ */}
@@ -118,53 +122,69 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
                         onChange={(e) => handleFileUpload(e, classId)}
                     />
                     {/* ปุ่มสำหรับเปิด input file */}
-                    <button
-                        onClick={onUploadButtonClick}
-                        disabled={isLoadingOwner || !isOwner}
-                        className={`w-auto h-auto border-1 p-2 rounded-2xl transition-colors ${isLoadingOwner || !isOwner
+                    <motion.div
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 1 }}
+                    >
+                        <button
+                            onClick={onUploadButtonClick}
+                            disabled={isLoadingOwner || !isOwner}
+                            className={`w-auto h-auto border-1 p-2 rounded-2xl transition-colors ${isLoadingOwner || !isOwner
                                 ? 'border-gray-400 text-gray-400 cursor-not-allowed'
                                 : 'border-purple-600 text-purple-600 hover:bg-purple-100'
-                            }`}
-                        title={!isOwner ? 'เฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้' : ''}
-                    >
-                        Upload CSV
-                    </button>
+                                }`}
+                            title={!isOwner ? 'เฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้' : ''}
+                        >
+                            Upload CSV
+                        </button>
+                    </motion.div>
                 </div>
                 <div>
-                    <button
-                        onClick={handleExportClick}
-                        className="border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
+                    <motion.div
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 1 }}
                     >
-                        Export PDF
-                    </button>
+                        <button
+                            onClick={handleExportClick}
+                            className="border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
+                        >
+                            Export PDF
+                        </button>
+                    </motion.div>
                 </div>
             </div>
             {/* Modal สำหรับแสดง QR Code */}
             {showQRModal && qrCode && (
-                <div className="fixed inset-0 flex items-center justify-center z-10">
-                    {/* พื้นหลังสีเทาโปร่งใส */}
-                    <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}></div>
+                <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-20">
+                    <motion.div
+                        className="fixed inset-0 flex items-center justify-center z-10"
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                            duration: 0.4,
+                            scale: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
+                        }}
+                    >
+                        {/* กล่อง modal */}
+                        <div className="relative bg-white rounded-4xl mx-5 shadow-lg overflow-hidden md:h-150 md:w-250">
+                            {/* วงกลมสีม่วงที่มุมขวาบน */}
+                            <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500 rounded-full"></div>
+                            {/* ปุ่มปิด modal - วางไว้บนวงกลมสีมวง */}
+                            <div>
+                            <button
+                                onClick={handleCloseQR}
+                                className="absolute top-2 right-2 z-10 text-white hover:text-gray-200 transition-colors"
+                            >
+                                <X />
+                            </button>
+                            </div>
 
-                    {/* กล่อง modal */}
-                    <div className="relative bg-white rounded-4xl p-12 w-250 h-150 mx-4 shadow-lg overflow-hidden">
-                        {/* วงกลมสีม่วงที่มุมขวาบน */}
-                        <div className="absolute -top-16 -right-16 w-40 h-40 bg-purple-500 rounded-full"></div>
-
-                        {/* ปุ่มปิด modal - วางไว้บนวงกลมสีม่วง */}
-                        <button
-                            onClick={handleCloseQR}
-                            className="absolute top-2 right-2 z-10 text-white hover:text-gray-200 transition-colors"
-                        >
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-
-                        {/* ส่วนแสดง QR Code */}
-                        <div className="flex items-center justify-center p-25">
-                            <QRCode value={qrCode} size={280} />
+                            {/* ส่วนแสดง QR Code */}
+                            <div className="flex items-center justify-center p-15  md:p-40">
+                                <QRCode value={qrCode} size={280} />
+                            </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             )}
 

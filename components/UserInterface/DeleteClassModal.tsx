@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Trash2, AlertTriangle, X } from "lucide-react";
 import { handleDeleteClass } from "@/utils/DeleteClass";
 import { DeleteClassModalProps } from "@/types/DeleteClassTypes";
+import { motion } from "framer-motion";
 
 export const DeleteClassModal = ({
   isOpen,
@@ -43,7 +44,17 @@ export const DeleteClassModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-20">
+    <motion.div
+    className="fixed inset-0 flex items-center justify-center z-10"
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{
+        duration: 0.4,
+        scale: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
+      }}
+    >
+
       <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
@@ -134,6 +145,7 @@ export const DeleteClassModal = ({
           </button>
         </div>
       </div>
+      </motion.div>
     </div>
   );
 };

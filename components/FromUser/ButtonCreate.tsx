@@ -8,6 +8,10 @@ import { handleQRDetected as handleQRUtility } from "@/utils/qrScanner";
 import { useHasScanned } from "@/utils/hasScanned";
 import { handleCreateClass } from "@/utils/CreateClass";
 import { useCameraScanner } from "@/utils/useQRScanner";
+import { X } from "lucide-react";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { motion } from "framer-motion";
 
 interface AddClassPopupProps {
   onScanSuccess?: () => void;
@@ -34,17 +38,17 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   //------------------------------------------------------------------------------------------------
 
-//สร้างคลาส
-const handleCreate = async () => {
-  await handleCreateClass({
-    className,
-    user, // ข้อมูลผู้ใช้ปัจจุบัน
-    setClassName,
-    setShowPopup,
-    setError,
-    setLoading,
-  });
-};
+  //สร้างคลาส
+  const handleCreate = async () => {
+    await handleCreateClass({
+      className,
+      user, // ข้อมูลผู้ใช้ปัจจุบัน
+      setClassName,
+      setShowPopup,
+      setError,
+      setLoading,
+    });
+  };
 
   // ฟังก์ชันสำหรับจัดการเมื่อสแกน QR Code สำเร็จ
   const handleQRDetected = async (result: { data: string }) => {
@@ -53,7 +57,7 @@ const handleCreate = async () => {
       alert('กรุณาเข้าสู่ระบบก่อนใช้งาน');
       return;
     }
-    
+
     await handleQRUtility({
       result,
       videoRef,
@@ -92,89 +96,115 @@ const handleCreate = async () => {
     <div className="">
       <div className=" flex flex-row md:flex-col gap-2 items-center justify-center">
         <div>
-          <button
-            className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
-            onClick={() => setScanning(true)}
-            disabled={!user}
+          <motion.div
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 1 }}
           >
-            {hasScanned ? "Scan QR" : "Scan QR"}
-          </button>
+            <button
+              className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+              onClick={() => setScanning(true)}
+              disabled={!user}
+            >
+              {hasScanned ? "Scan QR" : "Scan QR"}
+            </button>
+          </motion.div>
         </div>
         <div>
-          <button
-            className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 "
-            onClick={() => setShowPopup(true)}
-            disabled={!user}
+          <motion.div
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 1 }}
           >
-            Add a class
-          </button>
+            <button
+              className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+              onClick={() => setShowPopup(true)}
+              disabled={!user}
+            >
+              Add a class
+            </button>
+          </motion.div>
         </div>
       </div>
 
 
       {showPopup && (
-        <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50">
-          <div className="bg-white rounded-3xl shadow-lg p-6 relative max-w-2xl w-full  overflow-hidden">
-            <div className="absolute -top-16 -right-16 w-35 h-35 bg-purple-500 rounded-full"></div>
-            <button
-              onClick={closePopup}
-              className="absolute top-2 right-2 z-10 text-white hover:text-gray-200 transition-colors"
-            >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-            <div className="flex">
-              <div className="absolute -bottom-50 right-120 w-100 h-100 bg-purple-500 rounded-full "></div>
-              <div className="absolute -bottom-2">
-                <Image
-                  src="/assets/images/person.png"
-                  width={150}
-                  height={150}
-                  alt="Student thinking"
-                  className="object-contain relative z-10"
-                />
+        <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-20">
+          <motion.div
+            className="fixed inset-0 flex items-center justify-center z-10"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.4,
+              scale: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
+            }}
+          >
+            <div className="bg-white rounded-3xl shadow-lg relative overflow-hidden md:max-w-3xl md:w-full">
+              <div className="absolute -top-16 -right-16 w-35 h-35 bg-purple-500 rounded-full"></div>
+              {/* ปุ่ม */}
+              <div>
+                <button
+                  onClick={closePopup}
+                  className="absolute top-2 right-2 z-10 text-white hover:text-gray-200 transition-colors"
+                >
+                  <X />
+                </button>
               </div>
-
-              {/* ส่วนขวา - ฟอร์มสำหรับกรอกข้อมูล */}
-              <div className="w-1/2 p-8 flex flex-col justify-center ml-70">
-                <div className="bg-white p-6 rounded-2xl shadow-lg">
-                  <h2 className="text-purple-700 font-bold text-xl mb-6 flex items-center gap-2">
-                    <span>🏠</span> ชื่อคลาส
-                  </h2>
-                  <label className="block text-purple-600 text-sm mb-2">
-                    ชื่อคลาส
-                  </label>
-
-                  {/* ช่องกรอกชื่อคลาส */}
-                  <input
-                    type="text"
-                    value={className}
-                    onChange={(e) => {
-                      setClassName(e.target.value);
-                      setError(null);
-                    }}
-                    placeholder="ชื่อคลาส"
-                    className="w-full border-2 border-purple-200 rounded-4xl px-4 py-3 mb-6 focus:outline-none focus:border-purple-400" // CSS สำหรับ styling
+              <div className="flex">
+                <div className="absolute -bottom-50 right-120 w-100 h-100 bg-purple-500 rounded-full "></div>
+                <div className="absolute -bottom-2 hidden md:block">
+                  <Image
+                    src="/assets/images/person.png"
+                    width={150}
+                    height={150}
+                    alt="Student thinking"
+                    className="object-contain relative z-10"
                   />
-                  {error && (
-                    <div className="text-red-500 mb-4 text-sm">{error}</div>
-                  )}
+                </div>
 
-                  {/* ปุ่มสร้างคลาส */}
-                  <div className="p-5">
-                    <button
-                      onClick={handleCreate}
-                      disabled={loading}
-                      className="w-full bg-purple-500 text-white py-3 rounded-xl font-medium hover:bg-purple-600 transition-colors" // CSS styling
-                    >
-                      {loading ? "กำลังสร้าง..." : "สร้าง"}
-                    </button>
+                {/* ส่วนขวา - ฟอร์มสำหรับกรอกข้อมูล */}
+                <div className="p-8 md:ml-auto">
+                  <div className="bg-white p-8 rounded-2xl shadow-lg ">
+                    <div>
+                      <h2 className="text-purple-700 font-bold text-xl mb-6 flex items-center gap-2">
+                        <span>🏠</span> ชื่อคลาส
+                      </h2>
+                    </div>
+                    <div>
+                      <Label htmlFor="ชื่อคลาส" className="block text-purple-600 text-sm mb-2">ชื่อคลาส</Label>
+                      <Input
+                        type="text"
+                        value={className}
+                        onChange={(e) => {
+                          setClassName(e.target.value);
+                          setError(null);
+                        }}
+                        placeholder="ชื่อคลาส"
+                        className="w-full border-2 border-purple-200 rounded-4xl px-4 py-3 mb-6 focus:outline-none focus:border-purple-400" // CSS สำหรับ styling
+                      />
+                      {error && (
+                        <div className="text-red-500 mb-4 text-sm">{error}</div>
+                      )}
+                    </div>
+
+                    {/* ปุ่มสร้างคลาส */}
+                    <div className="p-5">
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 1 }}
+                      >
+                        <button
+                          onClick={handleCreate}
+                          disabled={loading}
+                          className="w-full bg-purple-500 text-white py-3 rounded-xl font-medium hover:bg-purple-600 transition-colors" // CSS styling
+                        >
+                          {loading ? "กำลังสร้าง..." : "สร้าง"}
+                        </button>
+                      </motion.div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
@@ -223,6 +253,7 @@ const handleCreate = async () => {
       )}
     </div>
   )
+
 };
 
 // ส่งออก Component เป็น default export

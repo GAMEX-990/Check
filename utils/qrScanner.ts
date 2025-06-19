@@ -1,6 +1,7 @@
 import { doc, getDoc, updateDoc, arrayUnion, Timestamp, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { HandleQRDetectedParams, StudentData, ClassData } from "types/qrScannerTypes";
+import { toast } from "sonner";
 
 /**
  * ฟังก์ชันสำหรับจัดการการสแกน QR Code (แก้ไขให้ตรวจสอบรายชื่อจากไฟล์ CSV)
@@ -29,7 +30,7 @@ export const handleQRDetected = async ({
     const classId = url.pathname.split('/').pop();
 
     if (!classId || !user) {
-      alert('ไม่สามารถเช็คชื่อได้ กรุณาลองใหม่');
+      toast.error('ไม่สามารถเช็คชื่อได้ กรุณาลองใหม่');
       return;
     }
 
@@ -40,7 +41,7 @@ export const handleQRDetected = async ({
     const studentId = userData?.studentId || "";
 
     if (!studentId) {
-      alert('ไม่พบรหัสนักศึกษาของคุณ กรุณาติดต่อผู้ดูแลระบบ');
+      toast.error('ไม่พบรหัสนักศึกษาของคุณ\nกรุณาติดต่อผู้ดูแลระบบหรืออาจาร์ยังไม่ได้อัพไฟล์เช็คชื่อ');
       return;
     }
 
@@ -79,7 +80,7 @@ export const handleQRDetected = async ({
       const allStudents = await getDocs(studentsCollectionRef);
       const studentIds = allStudents.docs.map(doc => (doc.data() as StudentData).studentId);
 
-      alert(`คุณไม่อยู่ในรายชื่อของคลาสนี้\nรหัสของคุณ: ${studentId}\nกรุณาติดต่อวัยรุ่น Check-IN`);
+      toast.error(`คุณไม่อยู่ในรายชื่อของคลาสนี้\nรหัสของคุณ: ${studentId}\nกรุณาติดต่อวัยรุ่น Check-IN`);
       return;
     }
 
@@ -91,7 +92,7 @@ export const handleQRDetected = async ({
       const checkedInMembers = classData.checkedInMembers || [];
 
       if (checkedInMembers.includes(user.uid)) {
-        alert('คุณได้เช็คชื่อไปแล้ว!');
+        toast.error('คุณได้เช็คชื่อไปแล้ว!');
         return;
       }
 
@@ -113,14 +114,14 @@ export const handleQRDetected = async ({
         await updateScanStatus(true);
       }
 
-      alert(`เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}\nสถานะ: ${studentData.status || 'active'}`);
+      toast.success(`เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}\nสถานะ: ${studentData.status || 'active'}`);
       onScanSuccess?.();
     } else {
-      alert('ไม่พบข้อมูลคลาสนี้');
+      toast.error('ไม่พบข้อมูลคลาสนี้');
     }
   } catch (error) {
     console.error('Error details:', error);
-    alert(`เกิดข้อผิดพลาดในการเช็คชื่อ: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    toast.error(`เกิดข้อผิดพลาดในการเช็คชื่อ: ${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
     setLoading(false);
   }

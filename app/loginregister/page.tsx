@@ -30,27 +30,31 @@ export default function LoginRegisterPage() {
 
     if (!fullname || !institution || (role === 'student' && !studentId)) {
       setError("กรุณากรอกข้อมูลให้ครบ");
+      sethandleManualLogin(false);
       return;
     }
 
     if (!password || !confirmPassword) {
       setError("กรุณากรอกรหัสผ่านให้ครบ");
+      sethandleManualLogin(false);
       return;
     }
 
     if (password !== confirmPassword) {
       setError("รหัสผ่านไม่ตรงกัน");
+      sethandleManualLogin(false);
       return;
     }
 
     if (password.length < 6) {
       setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
+      sethandleManualLogin(false);
       return;
     }
-
     const user = auth.currentUser;
     if (!user || !user.email) {
       setError("ไม่ได้เข้าสู่ระบบด้วย Google หรือไม่พบอีเมล");
+      sethandleManualLogin(false);
       return;
     }
 
@@ -99,7 +103,9 @@ export default function LoginRegisterPage() {
         }
       } else {
         setError("เกิดข้อผิดพลาดในการลงทะเบียน");
-      }
+      } 
+    } finally {
+      sethandleManualLogin(false);
     }
   };
 

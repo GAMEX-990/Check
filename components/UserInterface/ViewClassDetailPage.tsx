@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
-import { fetchCheckedInUsers } from "@/utils/fetchCheckedInUsers";
 import { createAttendanceSummary } from "@/utils/Summary";
 import DeleteClassModal from "./DeleteClassModal";
 import AttendanceSummaryModal from "./AttenSummary";
@@ -11,30 +10,35 @@ import {
   AttendanceSummaryItem
 } from "@/types/classDetailTypes";
 import { motion } from "framer-motion";
+import { fetchCheckedInUsersByDate } from "@/utils/fetchCheckedInUsersByDate";
 
 export const ViewClassDetailPage = ({
   classData,
   onBack,
   onDeleteSuccess
 }: ViewClassDetailPageProps) => {
+  const [dailyCheckedIn, setDailyCheckedIn] = useState<
+    { date: string; users: CheckedInUser[] }[]
+  >([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummaryItem[]>([]);
-  const [checkedInUsers, setCheckedInUsers] = useState<CheckedInUser[]>([]);
   const auth = getAuth();
   const currentUser = auth.currentUser;
   const currentUid = currentUser?.uid;
 
   useEffect(() => {
-    const loadCheckedInUsers = async () => {
-      const users = await fetchCheckedInUsers(classData, currentUid);
-      setCheckedInUsers(users);
+    const loadCheckedInData = async () => {
+      const data = await fetchCheckedInUsersByDate(classData, currentUid);
+      setDailyCheckedIn(data);
 
-      const summary = createAttendanceSummary(users);
+      const summary = createAttendanceSummary(
+        data.flatMap((d) => d.users) // รวมทุกวัน
+      );
       setAttendanceSummary(summary);
     };
 
-    loadCheckedInUsers();
+    loadCheckedInData();
   }, [classData, currentUid]);
 
   const handleShowSummary = () => setShowSummary(true);
@@ -74,15 +78,15 @@ export const ViewClassDetailPage = ({
         <div className="text-purple-800 flex justify-between m-4">
           <p>ชื่อ-สกุล</p>
           <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 1.05 }}
-              >
-          <button
-            className="border-1 border-purple-700 p-1 rounded-4xl cursor-pointer"
-            onClick={handleShowSummary}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 1.05 }}
           >
-            ดูสรุปการเข้าเรียน
-          </button>
+            <button
+              className="border-1 border-purple-700 p-1 rounded-4xl cursor-pointer"
+              onClick={handleShowSummary}
+            >
+              ดูสรุปการเข้าเรียน
+            </button>
           </motion.div>
           <p>รหัส นศ.</p>
         </div>
@@ -92,24 +96,37 @@ export const ViewClassDetailPage = ({
         </p>
 
         <div className="overflow-scroll h-80 relative">
-          {checkedInUsers.map((user) => (
-            <div key={user.uid}>
-              <p className="text-sm text-purple-900">
-                {user.timestamp.toLocaleString("th-TH", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-              <div className="flex flex-row justify-between mt-2">
-                <p className="text-sm text-purple-900">{user.name}</p>
-                <p className="text-sm text-purple-900">{user.studentId}</p>
+          {dailyCheckedIn.map(({ date, users }) => (
+            <div key={date} className="mb-4">
+              <div>
+                <h2 className="text-md text-purple-700 mb-1">
+                  วันที่: {new Date(date).toLocaleDateString("th-TH", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </h2>
               </div>
+              {users.map((user) => (
+                <div key={user.uid + date}>
+                  <div>
+                    <p className="text-sm text-purple-900">
+                      {user.timestamp.toLocaleTimeString("th-TH", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                  <div className="flex flex-row justify-between mt-1">
+                    <p className="text-sm text-purple-900">{user.name}</p>
+                    <p className="text-sm text-purple-900">{user.studentId}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
+
       </div>
 
       <AttendanceSummaryModal

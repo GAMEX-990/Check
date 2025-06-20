@@ -34,4 +34,5 @@ export interface ClassData {
   }>;
   checkedInCount?: number;
   lastCheckedIn?: number; // Timestamp
+  dailyCheckedInMembers?: Record<string, string[]>;
 }

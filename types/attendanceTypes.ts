@@ -14,7 +14,9 @@ export interface StudentAttendanceSummary {
   uid: string;
   name: string;
   studentId: string;
+  email?: string;
   count: number;
+  lastAttendance?: string;
 }
 
 export interface AttendanceSummaryModalProps {

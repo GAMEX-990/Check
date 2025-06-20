@@ -4,7 +4,15 @@ import type { HandleQRDetectedParams, StudentData, ClassData } from "types/qrSca
 import { toast } from "sonner";
 
 /**
- * ฟังก์ชันสำหรับจัดการการสแกน QR Code (แก้ไขให้ตรวจสอบรายชื่อจากไฟล์ CSV)
+ * ฟังก์ชันสำหรับสร้าง date key ในรูปแบบ YYYY-MM-DD
+ */
+const getTodayDateKey = (): string => {
+  const today = new Date();
+  return today.toISOString().split('T')[0]; // YYYY-MM-DD
+};
+
+/**
+ * ฟังก์ชันสำหรับจัดการการสแกน QR Code (แก้ไขให้เช็คชื่อได้วันละครั้งต่อคลาส)
  */
 export const handleQRDetected = async ({
   result,
@@ -47,14 +55,14 @@ export const handleQRDetected = async ({
 
     const classRef = doc(db, "classes", classId);
     const studentsCollectionRef = collection(classRef, "students");
-    
+
     let studentsQuery = query(
       studentsCollectionRef,
       where("studentId", "==", studentId)
     );
-    
+
     let studentsSnapshot = await getDocs(studentsQuery);
-    
+
     if (studentsSnapshot.empty) {
       studentsQuery = query(
         studentsCollectionRef,
@@ -68,7 +76,7 @@ export const handleQRDetected = async ({
       const matchedStudent = allStudentsSnapshot.docs.find(doc => {
         const data = doc.data() as StudentData;
         return String(data.studentId).trim() === String(studentId).trim() ||
-               String(data.studentId).replace(/\s+/g, '') === String(studentId).replace(/\s+/g, '');
+          String(data.studentId).replace(/\s+/g, '') === String(studentId).replace(/\s+/g, '');
       });
 
       if (matchedStudent) {
@@ -89,32 +97,53 @@ export const handleQRDetected = async ({
     const classDoc = await getDoc(classRef);
     if (classDoc.exists()) {
       const classData = classDoc.data() as ClassData;
-      const checkedInMembers = classData.checkedInMembers || [];
+      const todayDateKey = getTodayDateKey();
 
-      if (checkedInMembers.includes(user.uid)) {
-        toast.error('คุณได้เช็คชื่อไปแล้ว!');
+      // ตรวจสอบการเช็คชื่อวันนี้
+      const dailyCheckedInMembers = classData.dailyCheckedInMembers || {};
+      const todayCheckedInMembers = dailyCheckedInMembers[todayDateKey] || [];
+
+      if (todayCheckedInMembers.includes(user.uid)) {
+        toast.error('คุณได้เช็คชื่อวันนี้ไปแล้ว!');
         return;
       }
 
+      // สร้าง record การเช็คชื่อใหม่
+      const checkInRecord = {
+        uid: user.uid,
+        studentId: studentId,
+        timestamp: Timestamp.now(),
+        name: studentData.name || user.displayName || user.email || "",
+        email: user.email || "",
+        status: studentData.status || "active",
+        date: todayDateKey,
+      };
+
+      // อัพเดทข้อมูลในฐานข้อมูล
       await updateDoc(classRef, {
-        [`checkedInRecord.${user.uid}`]: {
-          uid: user.uid,
-          studentId: studentId,
-          timestamp: Timestamp.now(),
-          name: studentData.name || user.displayName || user.email || "",
-          email: user.email || "",
-          status: studentData.status || "active",
-        },
-        checkedInMembers: arrayUnion(user.uid),
-        checkedInCount: (checkedInMembers.length || 0) + 1,
+        // เก็บ record แยกตามวันที่
+        [`dailyCheckedInRecord.${todayDateKey}.${user.uid}`]: checkInRecord,
+
+        // เก็บรายการ uid ที่เช็คชื่อแต่ละวัน
+        [`dailyCheckedInMembers.${todayDateKey}`]: arrayUnion(user.uid),
+
+        // นับจำนวนคนที่เช็คชื่อวันนี้
+        [`dailyCheckedInCount.${todayDateKey}`]: (todayCheckedInMembers.length || 0) + 1,
+
+        // เก็บ timestamp ล่าสุดที่มีคนเช็คชื่อ
         lastCheckedIn: Timestamp.now(),
+
+        // รักษา backward compatibility (ถ้าต้องการ)
+        [`checkedInRecord.${user.uid}`]: checkInRecord,
+        checkedInMembers: arrayUnion(user.uid),
+        checkedInCount: (classData.checkedInMembers?.length || 0) + 1,
       });
 
       if (!hasScanned) {
         await updateScanStatus(true);
       }
 
-      toast.success(`เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}\nสถานะ: ${studentData.status || 'active'}`);
+      toast.success(`เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}\nวันที่: ${todayDateKey}\nสถานะ: ${studentData.status || 'active'}`);
       onScanSuccess?.();
     } else {
       toast.error('ไม่พบข้อมูลคลาสนี้');

@@ -13,6 +13,7 @@ import { doc, getDoc } from 'firebase/firestore';
 
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [currectPang, SetCurrectPang] = useState<"myclass" | "class" | "view">("myclass");
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
   const [user, loading, error] = useAuthState(auth);
@@ -33,7 +34,6 @@ export default function DashboardPage() {
     return <div className="flex justify-center items-center h-screen">Error: {error.message}</div>;
   }
 
-  const router = useRouter();
 
 useEffect(() => {
   const checkUserProfile = async () => {

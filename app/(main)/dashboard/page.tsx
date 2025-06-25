@@ -40,7 +40,7 @@ export default function DashboardPage() {
     };
 
     checkUserProfile();
-  }, [user]);
+  }, [user, router]);
 
   const handlePageChange = (page: "myclass" | "class" | "view") => {
     SetCurrectPang(page);

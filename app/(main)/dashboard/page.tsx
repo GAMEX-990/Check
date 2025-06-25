@@ -1,47 +1,19 @@
 'use client'
 import Usercard from '@/components/UserInterface/Usercard';
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import ClassSection from '@/components/UserInterface/ClassSection';
 import AddClassPopup from '@/components/FromUser/ButtonCreate';
 import CreateQRCodeAndUpload from '@/components/FromUser/FusionButtonqrup';
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { ClassData } from '@/types/classTypes';
-import { useRouter } from 'next/navigation';
-import { doc, getDoc } from 'firebase/firestore';
 
 
 
 export default function DashboardPage() {
-  const router = useRouter();
   const [currectPang, SetCurrectPang] = useState<"myclass" | "class" | "view">("myclass");
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
   const [user, loading, error] = useAuthState(auth);
-
-
-  useEffect(() => {
-    const checkUserProfile = async () => {
-      if (!user) return;
-
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        router.push("/loginregister");
-        return;
-      }
-
-      const data = userSnap.data();
-
-      // ตรวจสอบว่า field สำคัญมีอยู่
-      if (!data.name || !data.role || !data.institution || (data.role === "student" && !data.studentId)) {
-        router.push("/loginregister");
-      }
-    };
-
-    checkUserProfile();
-  }, [user, router]);
-
   const handlePageChange = (page: "myclass" | "class" | "view") => {
     SetCurrectPang(page);
   };
@@ -60,7 +32,6 @@ export default function DashboardPage() {
   }
 
 
-
   return (
     <div>
       <div className=' flex justify-center h-screen'>
@@ -73,14 +44,14 @@ export default function DashboardPage() {
               <AddClassPopup />
             </div>
           )}
-          {currectPang === "view" && selectedClass && (
-            <div>
-              <CreateQRCodeAndUpload
-                classId={selectedClass.id}
-                currentUser={user ? { uid: user.uid, email: user.email || '' } : null}
-              />
-            </div>
-          )}
+           {currectPang === "view" && selectedClass && (
+          <div>
+            <CreateQRCodeAndUpload
+              classId={selectedClass.id}
+              currentUser={user ? { uid: user.uid, email: user.email || '' } : null}
+            />
+          </div>
+        )}
           <div>
             <ClassSection onPageChange={handlePageChange} onClassSelect={handleSelectClass} />
           </div>

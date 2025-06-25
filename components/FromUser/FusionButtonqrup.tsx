@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase';
 import { CreateQRCodeAndUploadProps } from '@/types/Fusionqrup';
-import { handleExportPDF } from '@/utils/exportPDFHandler';
+import { handleExportXLSX } from '@/utils/exportXLSXHandler';
 import { uploadStudentsFromFile } from '@/utils/parseCSVFile';
 import { doc, getDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
@@ -88,8 +88,9 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
     };
 
     const handleExportClick = async () => {
-        handleExportPDF(classId, currentUser);
+        handleExportXLSX(classId, currentUser);
     }
+
 
 
     return (
@@ -145,7 +146,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
                             onClick={handleExportClick}
                             className="border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
                         >
-                            Export PDF
+                            Export
                         </button>
                     </motion.div>
                 </div>

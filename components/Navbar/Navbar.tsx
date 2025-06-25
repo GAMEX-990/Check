@@ -9,15 +9,12 @@ import { Menu, X, User as Home, Info, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserData, UserData } from '@/utils/getcurrentuser';
 import Image from 'next/image';
-import { isProfileComplete } from '@/utils/profileUtils';
 
 const Navbar = () => {
     const [userData, setUserData] = useState<UserData | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const profileComplete = isProfileComplete(userData);
-
 
 
     useEffect(() => {
@@ -40,17 +37,15 @@ const Navbar = () => {
         };
     }, []);
 
-    const navLinks = user
-        ? [
-            ...(profileComplete ? [{ name: 'Dashboard', href: '/dashboard', icon: <Home size={18} /> }] : []),
-            { name: 'About Us', href: '/about', icon: <Info size={18} /> },
-            { name: 'Contact', href: '/contact', icon: <Mail size={18} /> },
-        ]
-        : [
-            { name: 'Home', href: '/', icon: <Home size={18} /> },
-            { name: 'About Us', href: '/about', icon: <Info size={18} /> },
-            { name: 'Contact', href: '/contact', icon: <Mail size={18} /> },
-        ];
+    const navLinks = user ? [
+        { name: 'Dashboard', href: '/dashboard', icon: <Home size={18} /> },
+        { name: 'About Us', href: '/about', icon: <Info size={18} /> },
+        { name: 'Contact', href: '/contact', icon: <Mail size={18} /> },
+    ] : [
+        { name: 'Home', href: '/', icon: <Home size={18} /> },
+        { name: 'About Us', href: '/about', icon: <Info size={18} /> },
+        { name: 'Contact', href: '/contact', icon: <Mail size={18} /> },
+    ];
 
     return (
         <motion.nav

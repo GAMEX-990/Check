@@ -6,6 +6,8 @@ export type UserData = {
   studentId: string;
   photoURL: string;
   email?: string;
+  role?: string;         
+  institution?: string;  
 };
 
 export const getUserData = async (uid: string): Promise<UserData | null> => {
@@ -23,6 +25,8 @@ export const getUserData = async (uid: string): Promise<UserData | null> => {
         studentId: data.studentId,
         photoURL: data.photoURL,
         email: data.email,
+        role: data.role,             // <-- add this
+        institution: data.institution // <-- add this
       };
     } else {
       return null;

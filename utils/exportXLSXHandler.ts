@@ -66,15 +66,17 @@ export const handleExportXLSX = async (
       return;
     }
 
-    // ✅ แปลง checkedInUsers → AttendanceRecord + dateList
+    // ✅ แปลง checkedInUsers → AttendanceRecord + dateList แบบเก็บวันที่ครบทุกคน
     const attendanceData: AttendanceRecord = {};
     const dateSet = new Set<string>();
+    const allDates: Date[] = [];
 
     checkedInUsers.forEach(({ studentId, name, timestamp }) => {
       const dd = timestamp.getDate().toString().padStart(2, '0');
       const mm = (timestamp.getMonth() + 1).toString().padStart(2, '0');
       const dateStr = `${dd}/${mm}`;
       dateSet.add(dateStr);
+      allDates.push(timestamp);
 
       if (!attendanceData[studentId]) {
         attendanceData[studentId] = { name, attendance: {} };
@@ -88,15 +90,15 @@ export const handleExportXLSX = async (
       return m1 === m2 ? d1 - d2 : m1 - m2;
     });
 
-    // 🗓 ชื่อเดือน + พ.ศ.
+    // ✅ หาวันที่น้อยที่สุด เพื่อใช้ตั้งชื่อเดือนแบบแม่นยำ
+    const earliestDate = allDates.sort((a, b) => a.getTime() - b.getTime())[0];
     const monthsTH = [
       'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
     ];
-    const firstDate = checkedInUsers[0].timestamp;
-    const monthLabel = `${monthsTH[firstDate.getMonth()]} ${firstDate.getFullYear() + 543}`;
+    const monthLabel = `${monthsTH[earliestDate.getMonth()]} ${earliestDate.getFullYear() + 543}`;
 
-    // ✅ เรียกฟังก์ชันสร้าง .xlsx
+    // ✅ เรียกใช้ XLSX exporter
     exportMonthlyAttendanceToXLSX(
       { name: classData.name, month: monthLabel },
       attendanceData,

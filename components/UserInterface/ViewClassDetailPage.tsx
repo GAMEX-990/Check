@@ -59,7 +59,7 @@ export const ViewClassDetailPage = ({
           <h1 className="text-2xl font-bold text-purple-800 text-center flex-grow">
             {classData.name}
           </h1>
-          <div className="absolute right-0 space-x-2">
+          <div className="absolute right-0 mx-4">
             {isClassOwner && (
               <button
                 className="text-red-500 hover:text-red-700 p-1"
@@ -69,7 +69,7 @@ export const ViewClassDetailPage = ({
                 <Trash2 size={24} />
               </button>
             )}
-            <button className="text-2xl text-purple-600 m-2" onClick={onBack}>
+            <button className="text-2xl text-purple-600" onClick={onBack}>
               <ArrowLeft size={28} />
             </button>
           </div>

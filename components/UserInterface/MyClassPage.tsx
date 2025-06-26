@@ -58,7 +58,7 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
       <div className="w-100 h-auto border-2 border-purple-500 rounded-2xl p-4 relative">
         <div className="flex justify-center">
           <h1 className="text-2xl font-bold text-purple-800 text-center">My Class</h1>
-          <div className="absolute right-0">
+          <div className="absolute right-0 mx-4">
             <button className="text-2xl text-purple-600" onClick={onNext}>
               <ArrowRight size={28} />
             </button>

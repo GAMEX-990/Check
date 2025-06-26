@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Input } from '../ui/input';
 import { toast } from 'sonner';
+import { handleUpdateStudentIdHandler } from '@/utils/updateStudentIdHandler';
 
 interface UserData {
   name: string;
@@ -51,27 +52,8 @@ const Usercard = () => {
     router.push('/');
   };
 
-  const handleUpdateStudentId = async () => {
-    if (!studentId.trim()) {
-      toast.error('กรุณากรอกรหัสนักศึกษา');
-      return;
-    }
-
-    setLoading(true);
-    const result = await updateStudentId(studentId.trim());
-
-    if (result.success) {
-      toast.success('อัพเดทรหัสนักศึกษาสำเร็จ');
-
-      // ✅ Update UI realtime
-      setData((prev) => (prev ? { ...prev, studentId } : prev));
-
-      setShowModal(false);
-    } else {
-      toast.error('เกิดข้อผิดพลาด: ' + result.error);
-    }
-
-    setLoading(false);
+  const handleUpdateStudentId = () => {
+    handleUpdateStudentIdHandler(studentId, setLoading, setShowModal, setData);
   };
 
   if (!data) return null;

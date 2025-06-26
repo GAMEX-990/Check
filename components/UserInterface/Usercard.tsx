@@ -6,11 +6,9 @@ import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore'; // ✅ missing import
-import { updateStudentId } from '@/utils/informationupdate';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Input } from '../ui/input';
-import { toast } from 'sonner';
 import { handleUpdateStudentIdHandler } from '@/utils/updateStudentIdHandler';
 
 interface UserData {

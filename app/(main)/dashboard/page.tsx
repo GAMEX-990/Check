@@ -1,5 +1,6 @@
 'use client'
 import Usercard from '@/components/UserInterface/Usercard';
+<<<<<<< HEAD
 import React, { useEffect, useState } from 'react'
 import ClassSection from '@/components/UserInterface/ClassSection';
 import AddClassPopup from '@/components/FromUser/ButtonCreate';
@@ -9,6 +10,15 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { ClassData } from '@/types/classTypes';
 import { useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
+=======
+import React, { useState } from 'react'
+import ClassSection from '@/components/UserInterface/ClassSection';
+import AddClassPopup from '@/components/FromUser/ButtonCreate';
+import CreateQRCodeAndUpload from '@/components/FromUser/FusionButtonqrup';
+import { auth } from '@/lib/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { ClassData } from '@/types/classTypes';
+>>>>>>> parent of c07e200 (Update dependencies and enhance UI components)
 
 
 
@@ -33,6 +43,7 @@ export default function DashboardPage() {
     return <div className="flex justify-center items-center h-screen">Error: {error.message}</div>;
   }
 
+<<<<<<< HEAD
   const router = useRouter();
 
 useEffect(() => {
@@ -57,6 +68,8 @@ useEffect(() => {
 
   checkUserProfile();
 }, [user]);
+=======
+>>>>>>> parent of c07e200 (Update dependencies and enhance UI components)
 
   return (
     <div>

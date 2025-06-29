@@ -1,7 +1,6 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { exportMonthlyAttendanceToXLSX } from './exportToXLSX';
-import { toast } from 'sonner';
 
 interface UserData {
   uid: string;
@@ -63,7 +62,7 @@ export const handleExportXLSX = async (
       }));
 
     if (checkedInUsers.length === 0) {
-      toast.error('ไม่มีข้อมูลผู้เข้าเรียนสำหรับ Export');
+      alert('ไม่มีข้อมูลผู้เข้าเรียนสำหรับ Export');
       return;
     }
 

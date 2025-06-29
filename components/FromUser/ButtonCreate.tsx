@@ -7,11 +7,10 @@ import { handleQRDetected as handleQRUtility } from "@/utils/qrScanner";
 import { useHasScanned } from "@/utils/hasScanned";
 import { handleCreateClass } from "@/utils/CreateClass";
 import { useCameraScanner } from "@/utils/useQRScanner";
-import { X, QrCode, Plus } from "lucide-react";
+import { X } from "lucide-react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
 
 interface AddClassPopupProps {
   onScanSuccess?: () => void;
@@ -32,82 +31,43 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   const [showPopup, setShowPopup] = useState(false);
   // State สำหรับเก็บชื่อคลาสที่ผู้ใช้กรอก
   const [className, setClassName] = useState("");
-  // State สำหรับแสดงสถานะการโหลด
-  const [isProcessing, setIsProcessing] = useState(false);
+  // State สำหรับแสดงสถานะการโหลด 
+  const [loading, setLoading] = useState(false);
   // State สำหรับเก็บข้อความแสดงข้อผิดพลาด
   const [error, setError] = useState<string | null>(null);
   //------------------------------------------------------------------------------------------------
 
   //สร้างคลาส
   const handleCreate = async () => {
-    if (!className.trim()) {
-      toast.error("กรุณากรอกชื่อคลาส");
-      return;
-    }
-
-    if (isProcessing) return;
-
-    setIsProcessing(true);
-    toast.loading("กำลังสร้างคลาส...");
-
-    try {
-      await handleCreateClass({
-        className,
-        user,
-        setClassName,
-        setShowPopup,
-        setError: () => {},
-        setLoading: () => {},
-      });
-
-      toast.success("สร้างคลาสสำเร็จ");
-      setShowPopup(false);
-      setClassName("");
-    } catch (error) {
-      toast.error(
-        "เกิดข้อผิดพลาดในการสร้างคลาส: " +
-          (error instanceof Error ? error.message : "ไม่ทราบสาเหตุ")
-      );
-    } finally {
-      setIsProcessing(false);
-    }
+    await handleCreateClass({
+      className,
+      user, // ข้อมูลผู้ใช้ปัจจุบัน
+      setClassName,
+      setShowPopup,
+      setError,
+      setLoading,
+    });
   };
 
   // ฟังก์ชันสำหรับจัดการเมื่อสแกน QR Code สำเร็จ
   const handleQRDetected = async (result: { data: string }) => {
+    // Check if user is null before proceeding
     if (!user) {
-      toast.error("กรุณาเข้าสู่ระบบก่อนใช้งาน");
+      alert('กรุณาเข้าสู่ระบบก่อนใช้งาน');
       return;
     }
 
-    if (isProcessing) return;
-
-    setIsProcessing(true);
-    toast.loading("กำลังตรวจสอบ QR Code...");
-
-    try {
-      await handleQRUtility({
-        result,
-        videoRef,
-        user,
-        setScanning,
-        setLoading: () => {},
-        hasScanned,
-        updateScanStatus,
-        onScanSuccess,
-        stopCamera,
-      });
-
-      toast.success("สแกน QR Code สำเร็จ");
-      setScanning(false);
-    } catch (error) {
-      toast.error(
-        "เกิดข้อผิดพลาดในการสแกน: " +
-          (error instanceof Error ? error.message : "ไม่ทราบสาเหตุ")
-      );
-    } finally {
-      setIsProcessing(false);
-    }
+    await handleQRUtility({
+      result,
+      videoRef,
+      user,
+      setScanning,
+      setLoading,
+      hasScanned,
+      updateScanStatus,
+      onScanSuccess,
+      stopCamera,
+    });
   };
 
   useCameraScanner({
@@ -116,23 +76,24 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
     canvasRef,
     onQRDetected: handleQRDetected,
     onError: (error) => {
-      toast.error(`เกิดข้อผิดพลาดในการสแกน: ${error}`);
-      setScanning(false);
-      setIsProcessing(false);
+      console.error("เกิดข้อผิดพลาดในการสแกน:", error);
+      alert(error);
     },
   });
 
   // ฟังก์ชันสำหรับปิด popup สร้างคลาส
   const closePopup = () => {
-    setShowPopup(false);
-    setClassName("");
-    setScanning(false);
-    setIsProcessing(false);
+    setShowPopup(false); // ปิด popup
+    setClassName(""); // ล้างชื่อคลาส
+    setError(null); // ล้างข้อความผิดพลาด
+    setScanning(false); // ปิดการสแกน
+    // setSuccess(false); // บรรทัดนี้ถูก comment ไว้ - อาจใช้สำหรับรีเซ็ตสถานะความสำเร็จ
   };
 
   // ส่วน JSX ที่จะ render
   return (
     <div className="">
+<<<<<<< HEAD
       <div className="flex flex-row md:flex-col gap-3 items-center justify-center w-full">
         <motion.div
           whileHover={{ scale: 1.02 }}
@@ -170,18 +131,45 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
               setShowPopup(true);
             }}
             disabled={!user || isProcessing}
+=======
+      <div className=" flex flex-row md:flex-col gap-2 items-center justify-center">
+        <div>
+          <motion.div
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 1 }}
           >
-            <Plus className="w-5 h-5" />
-            {isProcessing ? "กำลังประมวลผล..." : "Add a class"}
-          </button>
-        </motion.div>
+            <button
+              className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+              onClick={() => setScanning(true)}
+              disabled={!user}
+            >
+              {hasScanned ? "Scan QR" : "Scan QR"}
+            </button>
+          </motion.div>
+        </div>
+        <div>
+          <motion.div
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 1 }}
+>>>>>>> parent of c07e200 (Update dependencies and enhance UI components)
+          >
+            <button
+              className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+              onClick={() => setShowPopup(true)}
+              disabled={!user}
+            >
+              Add a class
+            </button>
+          </motion.div>
+        </div>
       </div>
 
+
       {showPopup && (
-        <div className="fixed inset-0 bg-black/50 z-50">
+        <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-20">
           <motion.div
             className="fixed inset-0 flex items-center justify-center z-10"
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{
               duration: 0.4,
@@ -195,7 +183,6 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
                 <button
                   onClick={closePopup}
                   className="absolute top-2 right-2 z-10 text-white hover:text-gray-200 transition-colors"
-                  disabled={isProcessing}
                 >
                   <X />
                 </button>
@@ -221,12 +208,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
                       </h2>
                     </div>
                     <div>
-                      <Label
-                        htmlFor="ชื่อคลาส"
-                        className="block text-purple-600 text-sm mb-2"
-                      >
-                        ชื่อคลาส
-                      </Label>
+                      <Label htmlFor="ชื่อคลาส" className="block text-purple-600 text-sm mb-2">ชื่อคลาส</Label>
                       <Input
                         type="text"
                         value={className}
@@ -236,7 +218,6 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
                         }}
                         placeholder="ชื่อคลาส"
                         className="w-full border-2 border-purple-200 rounded-4xl px-4 py-3 mb-6 focus:outline-none focus:border-purple-400" // CSS สำหรับ styling
-                        disabled={isProcessing}
                       />
                       {error && (
                         <div className="text-red-500 mb-4 text-sm">{error}</div>
@@ -251,10 +232,10 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
                       >
                         <button
                           onClick={handleCreate}
-                          disabled={isProcessing}
-                          className="w-full bg-purple-500 text-white py-3 rounded-xl font-medium hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" // CSS styling
+                          disabled={loading}
+                          className="w-full bg-purple-500 text-white py-3 rounded-xl font-medium hover:bg-purple-600 transition-colors" // CSS styling
                         >
-                          {isProcessing ? "กำลังสร้าง..." : "สร้าง"}
+                          {loading ? "กำลังสร้าง..." : "สร้าง"}
                         </button>
                       </motion.div>
                     </div>
@@ -268,38 +249,35 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
 
       {/* หน้าจอสแกน QR Code - แสดงเมื่อ scanning เป็น true */}
       {scanning && (
-        <div className="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
-          {" "}
-          {/* หน้าจอเต็มจอสำหรับการสแกน */}
-          <div className="relative">
-            {" "}
-            {/* Container สำหรับ video และ canvas */}
+        <div className="fixed inset-0 bg-white flex flex-col items-center justify-center z-50"> {/* หน้าจอเต็มจอสำหรับการสแกน */}
+          <div className="relative"> {/* Container สำหรับ video และ canvas */}
             {/* Video element สำหรับแสดงภาพจากกล้อง */}
             <video
               ref={videoRef} // เชื่อมต่อกับ useRef
               autoPlay // เล่นอัตโนมัติ
               playsInline // เล่นแบบ inline (สำหรับมือถือ)
-              style={{ width: "100%", maxWidth: "640px" }} // กำหนดขนาด
+              style={{ width: '100%', maxWidth: '640px' }} // กำหนดขนาด
             />
+
             {/* Canvas element สำหรับวาดกรอบการสแกน */}
             <canvas
               ref={canvasRef} // เชื่อมต่อกับ useRef
               style={{
-                position: "absolute", // วางทับบน video
+                position: 'absolute', // วางทับบน video
                 top: 0,
                 left: 0,
-                width: "100%",
-                height: "100%",
+                width: '100%',
+                height: '100%'
               }}
             />
           </div>
+
           {/* ปุ่มปิดการสแกน */}
           <button
             className="absolute top-2 right-1 text-purple-500 hover:text-purple-700" // จัดตำแหน่งและสี
-            onClick={() => {
-              // ฟังก์ชันเมื่อคลิกปิด
+            onClick={() => { // ฟังก์ชันเมื่อคลิกปิด
               setScanning(false); // ปิดสถานะการสแกน
-              setIsProcessing(false);
+
               // ถ้ามี video stream อยู่ให้หยุดการทำงาน
               if (videoRef.current?.srcObject) {
                 const stream = videoRef.current.srcObject as MediaStream; // แปลงเป็น MediaStream
@@ -307,14 +285,14 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
                 videoRef.current.srcObject = null; // ล้าง video source
               }
             }}
-            disabled={isProcessing}
           >
-            <X />
+            <X/>
           </button>
         </div>
       )}
     </div>
-  );
+  )
+
 };
 
 // ส่งออก Component เป็น default export

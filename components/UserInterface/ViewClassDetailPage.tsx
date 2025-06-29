@@ -68,18 +68,6 @@ export const ViewClassDetailPage = ({
   const isClassOwner = classData.owner_email === currentUser?.email;
 
   return (
-<<<<<<< HEAD
-    <div className="bg-white rounded-xl shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-purple-100">
-        <div className="flex items-center gap-3">
-          <div className="bg-purple-600 text-white w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl shadow-sm">
-            {classData.name.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-purple-900">{classData.name}</h1>
-            <p className="text-sm text-purple-600">Created by: {classData.owner_email}</p>
-=======
     <div>
       <div className="h-auto w-100 border-2 border-purple-500 rounded-2xl p-4 relative">
         <div className="flex justify-center">
@@ -99,7 +87,6 @@ export const ViewClassDetailPage = ({
             <button className="text-2xl text-purple-600 m-2" onClick={onBack}>
               <ArrowLeft size={28} />
             </button>
->>>>>>> parent of cb57ede (fix Butum)
           </div>
         </div>
         <div className="flex items-center gap-2">

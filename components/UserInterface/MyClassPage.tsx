@@ -63,13 +63,6 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
   }
 
   return (
-<<<<<<< HEAD
-    <div className="bg-white rounded-xl shadow-sm">
-      <div className="flex items-center justify-between p-4 border-b border-purple-100">
-        <div className="flex items-center gap-2">
-          <School className="h-5 w-5 text-purple-600" />
-          <h2 className="text-lg font-semibold text-purple-900">My Classes</h2>
-=======
     <div>
       <div className="w-100 h-auto border-2 border-purple-500 rounded-2xl p-4 relative">
         <div className="flex justify-center">
@@ -79,7 +72,6 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
               <ArrowRight size={28} />
             </button>
           </div>
->>>>>>> parent of cb57ede (fix Butum)
         </div>
         <button
           onClick={onNext}

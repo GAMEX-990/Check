@@ -137,10 +137,10 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="relative group"
+          className="w-full"
         >
           <button
-            className="relative flex items-center gap-2 px-6 py-3 bg-white hover:bg-purple-50 rounded-xl border border-purple-200 text-purple-700 font-medium shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-medium shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full"
             onClick={() => {
               if (!user) {
                 toast.error("กรุณาเข้าสู่ระบบก่อนใช้งาน");
@@ -158,10 +158,10 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="relative group"
+          className="w-full"
         >
           <button
-            className="relative flex items-center gap-2 px-6 py-3 bg-white hover:bg-purple-50 rounded-xl border border-purple-200 text-purple-700 font-medium shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-xl font-medium shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full"
             onClick={() => {
               if (!user) {
                 toast.error("กรุณาเข้าสู่ระบบก่อนใช้งาน");

@@ -9,6 +9,7 @@ import {
   getDocs,
   query,
   where,
+  FirestoreError,
 } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { X, QrCode, Upload, Download } from "lucide-react";
@@ -59,8 +60,13 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
           setIsOwner(false);
           setHasData(false);
         }
-      } catch (error) {
-        toast.error("เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์");
+      } catch (error: unknown) {
+        console.error("Error checking owner status:", error);
+        if (error instanceof FirestoreError) {
+          toast.error(`เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์: ${error.message}`);
+        } else {
+          toast.error("เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์");
+        }
         setHasData(false);
       } finally {
         setIsLoadingOwner(false);

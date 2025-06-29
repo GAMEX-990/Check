@@ -75,6 +75,7 @@ export const ViewClassDetailPage = ({
   const isClassOwner = classData.owner_email === currentUser?.email;
 
   return (
+<<<<<<< HEAD
     <div className="bg-white rounded-xl shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-purple-100">
@@ -89,6 +90,27 @@ export const ViewClassDetailPage = ({
             <p className="text-sm text-purple-600">
               Created by: {classData.owner_email}
             </p>
+=======
+    <div>
+      <div className="h-auto w-100 border-2 border-purple-500 rounded-2xl p-4 relative">
+        <div className="flex justify-center">
+          <h1 className="text-2xl font-bold text-purple-800 text-center flex-grow">
+            {classData.name}
+          </h1>
+          <div className="absolute right-0 space-x-2">
+            {isClassOwner && (
+              <button
+                className="text-red-500 hover:text-red-700 p-1"
+                onClick={handlsShowDeleteModal}
+                title="ลบคลาส"
+              >
+                <Trash2 size={24} />
+              </button>
+            )}
+            <button className="text-2xl text-purple-600 m-2" onClick={onBack}>
+              <ArrowLeft size={28} />
+            </button>
+>>>>>>> parent of cb57ede (fix Butum)
           </div>
         </div>
         <div className="flex items-center gap-2">

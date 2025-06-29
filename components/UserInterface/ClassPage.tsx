@@ -78,6 +78,7 @@ const ClassPage = ({ onBack, onSelectClass }: ClassPageProps) => {
   }
 
   return (
+<<<<<<< HEAD
     <div className="bg-white rounded-xl shadow-sm">
       <div className="flex items-center justify-between p-4 border-b border-purple-100">
         <div className="flex items-center gap-2">
@@ -85,6 +86,17 @@ const ClassPage = ({ onBack, onSelectClass }: ClassPageProps) => {
           <h2 className="text-lg font-semibold text-purple-900">
             Available Classes
           </h2>
+=======
+    <div>
+      <div className="h-auto w-100 border-2 border-purple-500 rounded-2xl p-4 relative">
+        <div className="flex justify-center">
+          <h1 className="text-2xl font-bold text-purple-800 text-center">Class</h1>
+          <div className="absolute right-0">
+            <button className="text-2xl text-purple-600" onClick={onBack}>
+              <ArrowLeft size={28} />
+            </button>
+          </div>
+>>>>>>> parent of cb57ede (fix Butum)
         </div>
         <button
           onClick={onBack}

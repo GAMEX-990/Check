@@ -1,13 +1,8 @@
 // src/components/ClassPage.tsx
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-} from "firebase/firestore";
-import { ArrowLeft } from "lucide-react";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { ArrowLeft, Loader2, Users, CheckCircle2 } from "lucide-react";
 import { useHasScanned } from "@/utils/hasScanned";
 import { ClassData } from "@/types/classTypes";
 import { motion } from "framer-motion";
@@ -16,6 +11,21 @@ interface ClassPageProps {
   onBack: () => void;
   onSelectClass: (classData: ClassData) => void;
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+};
 
 const ClassPage = ({ onBack, onSelectClass }: ClassPageProps) => {
   const { user, hasScanned, loading } = useHasScanned();
@@ -56,66 +66,87 @@ const ClassPage = ({ onBack, onSelectClass }: ClassPageProps) => {
     };
   }, [user?.uid, hasScanned, loading]);
 
-  if (loading) {
+  if (loading || classesLoading) {
     return (
-      <div className="border-2 border-purple-500 rounded-2xl p-4 h-95">
-        <div className="flex justify-center items-center h-full">
-          <div className="text-purple-600">กำลังโหลด...</div>
-        </div>
+      <div className="flex flex-col items-center justify-center h-80 bg-white rounded-xl shadow-sm p-8">
+        <Loader2 className="h-8 w-8 text-purple-600 animate-spin mb-4" />
+        <p className="text-purple-600 font-medium">
+          Loading available classes...
+        </p>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="h-auto w-100 border-2 border-purple-500 rounded-2xl p-4 relative">
-        <div className="flex justify-center">
-          <h1 className="text-2xl font-bold text-purple-800 text-center">Class</h1>
-          <div className="absolute right-0 mx-4">
-            <button className="text-2xl text-purple-600" onClick={onBack}>
-              <ArrowLeft size={28} />
-            </button>
-          </div>
+    <div className="bg-white rounded-xl shadow-sm">
+      <div className="flex items-center justify-between p-4 border-b border-purple-100">
+        <div className="flex items-center gap-2">
+          <Users className="h-5 w-5 text-purple-600" />
+          <h2 className="text-lg font-semibold text-purple-900">
+            Available Classes
+          </h2>
         </div>
-        <div className="overflow-scroll h-80">
-          <div className="flex flex-col gap-4 p-4">
-            {classesLoading ? (
-              <div className="text-center text-purple-600">กำลังโหลดคลาส...</div>
-            ) : (
-              <>
-                {joinedClasses.map((cls) => (
-                  <div key={cls.id}>
-                    <motion.div
-                      key={cls.id}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 1.05 }}
-                    >
-                      <div
-                        className="flex justify-between items-center bg-purple-200 hover:bg-purple-300 p-4 rounded-4xl cursor-pointer"
-                        onClick={() => onSelectClass(cls)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center rounded-full">
-                            {cls.name.charAt(0)}
-                          </div>
-                          <div className="">
-                            <p className="text-lg font-bold text-purple-800">{cls.name}</p>
-                            <p className="text-sm text-purple-600  tracking-tight whitespace-nowrap">สร้างโดย:{cls.owner_email}</p>
-                          </div>
-                        </div>
-                        <div className="">
-                        {user?.uid && cls.checkedInMembers?.includes(user.uid) && (
-                          <p className="text-green-600 text-xs tracking-tight whitespace-nowrap">เช็คชื่อแล้ว</p>
-                        )}
-                        </div>
-                      </div>
-                    </motion.div>
+        <button
+          onClick={onBack}
+          className="p-2 hover:bg-purple-50 rounded-full transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5 text-purple-600" />
+        </button>
+      </div>
+
+      <div className="p-4">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="space-y-3"
+        >
+          {joinedClasses.length > 0 ? (
+            joinedClasses.map((cls) => (
+              <motion.div
+                key={cls.id}
+                variants={itemVariants}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="group cursor-pointer"
+                onClick={() => onSelectClass(cls)}
+              >
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-purple-50 group-hover:bg-purple-100 transition-colors">
+                  <div className="flex-shrink-0 w-12 h-12 bg-purple-600 text-white rounded-lg flex items-center justify-center font-bold text-xl shadow-sm">
+                    {cls.name.charAt(0).toUpperCase()}
                   </div>
-                ))}
-              </>
-            )}
-          </div>
-        </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-purple-900 font-medium truncate">
+                        {cls.name}
+                      </h3>
+                      {user?.uid &&
+                        cls.checkedInMembers?.includes(user.uid) && (
+                          <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        )}
+                    </div>
+                    <p className="text-sm text-purple-600 truncate">
+                      Created by: {cls.owner_email}
+                    </p>
+                  </div>
+                  <ArrowLeft className="h-5 w-5 text-purple-400 group-hover:text-purple-600 transition-colors" />
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <div className="bg-purple-50 p-4 rounded-full mb-4">
+                <Users className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="text-purple-900 font-medium mb-1">
+                No Classes Available
+              </h3>
+              <p className="text-purple-600 text-sm text-center">
+                Join a class to see it here
+              </p>
+            </div>
+          )}
+        </motion.div>
       </div>
     </div>
   );

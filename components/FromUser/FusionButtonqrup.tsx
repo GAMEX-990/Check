@@ -1,192 +1,247 @@
-import { db } from '@/lib/firebase';
-import { CreateQRCodeAndUploadProps } from '@/types/Fusionqrup';
-import { handleExportXLSX } from '@/utils/exportXLSXHandler';
-import { uploadStudentsFromFile } from '@/utils/parseCSVFile';
-import { doc, getDoc } from 'firebase/firestore';
-import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
-import QRCode from 'react-qr-code';
-import { toast } from 'sonner';
+import { db } from "@/lib/firebase";
+import { CreateQRCodeAndUploadProps } from "@/types/Fusionqrup";
+import { handleExportXLSX } from "@/utils/exportXLSXHandler";
+import { uploadStudentsFromFile } from "@/utils/parseCSVFile";
+import {
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import { motion } from "framer-motion";
+import { X, QrCode, Upload, Download } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import QRCode from "react-qr-code";
+import { toast } from "sonner";
 
+const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
+  classId,
+  currentUser,
+}) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [isLoadingOwner, setIsLoadingOwner] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [hasData, setHasData] = useState(false);
 
-const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, currentUser }) => {
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [qrCode, setQrCode] = useState<string | null>(null);
-    const [showQRModal, setShowQRModal] = useState(false);
-    const [isOwner, setIsOwner] = useState(false);
-    const [isLoadingOwner, setIsLoadingOwner] = useState(true);
+  useEffect(() => {
+    const checkOwnerStatus = async () => {
+      if (!currentUser || !classId) {
+        setIsOwner(false);
+        setIsLoadingOwner(false);
+        return;
+      }
 
-    useEffect(() => {
-        const checkOwnerStatus = async () => {
-            if (!currentUser || !classId) {
-                setIsOwner(false);
-                setIsLoadingOwner(false);
-                return;
-            }
+      try {
+        const classRef = doc(db, "classes", classId);
+        const classSnap = await getDoc(classRef);
 
-            try {
-                const classRef = doc(db, 'classes', classId);
-                const classSnap = await getDoc(classRef);
+        if (classSnap.exists()) {
+          const classData = classSnap.data();
+          const isClassOwner =
+            classData.owner_email === currentUser.email ||
+            classData.created_by === currentUser.uid;
+          setIsOwner(isClassOwner);
 
-                if (classSnap.exists()) {
-                    const classData = classSnap.data();
-                    // ตรวจสอบว่า currentUser เป็นเจ้าของคลาสหรือไม่
-                    const isClassOwner = classData.owner_email === currentUser.email ||
-                        classData.created_by === currentUser.uid;
-                    setIsOwner(isClassOwner);
-                } else {
-                    setIsOwner(false);
-                }
-            } catch{
-            } finally {
-                setIsLoadingOwner(false);
-            }
-        };
-
-        checkOwnerStatus();
-    }, [currentUser, classId]);
-
-    // ฟังก์ชันสำหรับจัดการการอัปโหลดไฟล์
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, classId: string) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const result = await uploadStudentsFromFile(file, classId);
-
-        if (result.success) {
-            toast.success("อัปโหลดข้อมูลนักเรียนสำเร็จ!");
+          // ตรวจสอบว่ามีข้อมูลนักเรียนในคลาสหรือไม่
+          const attendanceRef = collection(db, "attendance");
+          const attendanceQuery = query(
+            attendanceRef,
+            where("classId", "==", classId)
+          );
+          const attendanceSnap = await getDocs(attendanceQuery);
+          setHasData(!attendanceSnap.empty);
         } else {
-            toast.error("เกิดข้อผิดพลาดในการอัปโหลด");
+          setIsOwner(false);
+          setHasData(false);
         }
+      } catch (error) {
+        toast.error("เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์");
+        setHasData(false);
+      } finally {
+        setIsLoadingOwner(false);
+      }
     };
 
-    // ฟังก์ชันสำหรับสร้าง QR Code
-    const handleCreateQR = () => {
-        // สร้าง link สำหรับ QR code โดยใช้ classId
-        const qrLink = `https://your-app-url/class/${classId}`;
-        setQrCode(qrLink);
-        setShowQRModal(true); // แสดง modal QR code
-    };
+    checkOwnerStatus();
+  }, [currentUser, classId]);
 
-    // ฟังก์ชันสำหรับปิด modal QR code
-    const handleCloseQR = () => {
-        setShowQRModal(false);
-    };
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    // เมื่อกดปุ่ม Upload CSV ให้เปิด input file
-    const onUploadButtonClick = () => {
-
-
-        // ตรวจสอบสิทธิ์ก่อนอัปโหลด
-        if (!isOwner) {
-            toast.error('❌ คุณไม่มีสิทธิ์ในการอัปโหลดไฟล์\nเฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้');
-            return;
-        }
-
-        fileInputRef.current?.click();
-    };
-
-    const handleExportClick = async () => {
-        handleExportXLSX(classId, currentUser);
+    if (!isOwner) {
+      toast.error(
+        "คุณไม่มีสิทธิ์ในการอัปโหลดไฟล์ เฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้"
+      );
+      return;
     }
 
+    if (isProcessing) return;
 
+    setIsProcessing(true);
+    toast.loading("กำลังอัปโหลดข้อมูลนักเรียน...");
 
-    return (
-        <div>
-            <div className="flex flex-row md:flex-col gap-2 items-center justify-center">
+    try {
+      await uploadStudentsFromFile(file, classId);
+      toast.success("อัปโหลดข้อมูลนักเรียนสำเร็จ");
+    } catch (error) {
+      toast.error(
+        "เกิดข้อผิดพลาดในการอัปโหลด: " +
+          (error instanceof Error ? error.message : "ไม่ทราบสาเหตุ")
+      );
+    } finally {
+      setIsProcessing(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
-                <div>
-                    <motion.div
-                        whileHover={{ scale: 1.2 }}
-                        whileTap={{ scale: 1 }}
-                    >
-                        <button
-                            className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
-                            onClick={handleCreateQR}
-                        >
-                            Create QR
-                        </button>
-                    </motion.div>
+  const handleCreateQR = () => {
+    const qrLink = `https://your-app-url/class/${classId}`;
+    setQrCode(qrLink);
+    setShowQRModal(true);
+  };
+
+  const handleCloseQR = () => {
+    setShowQRModal(false);
+  };
+
+  const onUploadButtonClick = () => {
+    if (!isOwner) {
+      toast.error(
+        "คุณไม่มีสิทธิ์ในการอัปโหลดไฟล์ เฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้"
+      );
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleExportClick = async () => {
+    if (isProcessing) return;
+
+    if (!hasData) {
+      toast.error(
+        "ไม่พบข้อมูลที่จะส่งออก กรุณาตรวจสอบว่ามีการเช็คชื่อในคลาสนี้แล้ว"
+      );
+      return;
+    }
+
+    setIsProcessing(true);
+    toast.loading("กำลังส่งออกข้อมูล...");
+
+    try {
+      await handleExportXLSX(classId, currentUser);
+      toast.success("ส่งออกข้อมูลสำเร็จ");
+    } catch (error) {
+      toast.error(
+        "เกิดข้อผิดพลาดในการส่งออก: " +
+          (error instanceof Error ? error.message : "ไม่ทราบสาเหตุ")
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <motion.button
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
+        onClick={handleCreateQR}
+        className="w-full flex items-center gap-2 px-4 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors border border-gray-200"
+      >
+        <QrCode className="h-5 w-5 text-purple-600" />
+        <span className="text-purple-600 font-medium">สร้าง QR</span>
+      </motion.button>
+
+      <div className="relative">
+        <input
+          type="file"
+          accept=".xlsx,.xls,.csv"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleFileUpload}
+        />
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={onUploadButtonClick}
+          disabled={isLoadingOwner || !isOwner || isProcessing}
+          className={`w-full flex items-center gap-2 px-4 py-3 rounded-lg transition-colors border ${
+            isLoadingOwner || !isOwner || isProcessing
+              ? "bg-gray-50 text-gray-400 cursor-not-allowed border-gray-200"
+              : "bg-white text-purple-600 hover:bg-gray-50 border-gray-200"
+          }`}
+          title={!isOwner ? "เฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้" : ""}
+        >
+          <Upload className="h-5 w-5" />
+          <span className="font-medium">
+            {isProcessing ? "กำลังอัปโหลด..." : "อัปโหลด CSV"}
+          </span>
+        </motion.button>
+      </div>
+
+      <motion.button
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
+        onClick={handleExportClick}
+        disabled={isProcessing || !hasData}
+        className={`w-full flex items-center gap-2 px-4 py-3 rounded-lg transition-colors border ${
+          isProcessing || !hasData
+            ? "bg-gray-50 text-gray-400 cursor-not-allowed border-gray-200"
+            : "bg-white text-purple-600 hover:bg-gray-50 border-gray-200"
+        }`}
+        title={!hasData ? "ไม่พบข้อมูลที่จะส่งออก" : ""}
+      >
+        <Download className="h-5 w-5" />
+        <span className="font-medium">
+          {isProcessing
+            ? "กำลังส่งออก..."
+            : !hasData
+            ? "ไม่มีข้อมูล"
+            : "ส่งออก"}
+        </span>
+      </motion.button>
+
+      {showQRModal && qrCode && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <motion.div
+            className="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+          >
+            <div className="relative p-6">
+              <button
+                onClick={handleCloseQR}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <div className="flex flex-col items-center">
+                <h3 className="text-lg font-semibold text-purple-900 mb-6">
+                  QR Code สำหรับเข้าร่วมคลาส
+                </h3>
+                <div className="bg-white p-4 rounded-lg shadow-inner">
+                  <QRCode value={qrCode} size={200} />
                 </div>
-                <div>
-                    {/* ซ่อน input ไฟล์ไว้ */}
-                    <input
-                        type="file"
-                        accept=".xlsx,.xls,.csv"
-                        ref={fileInputRef}
-                        style={{ display: 'none' }}
-                        onChange={(e) => handleFileUpload(e, classId)}
-                    />
-                    {/* ปุ่มสำหรับเปิด input file */}
-                    <motion.div
-                        whileHover={{ scale: 1.2 }}
-                        whileTap={{ scale: 1 }}
-                    >
-                        <button
-                            onClick={onUploadButtonClick}
-                            disabled={isLoadingOwner || !isOwner}
-                            className={`w-auto h-auto border-1 p-2 rounded-2xl transition-colors ${isLoadingOwner || !isOwner
-                                ? 'border-gray-400 text-gray-400 cursor-not-allowed'
-                                : 'border-purple-600 text-purple-600 hover:bg-purple-100'
-                                }`}
-                            title={!isOwner ? 'เฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้' : ''}
-                        >
-                            Upload CSV
-                        </button>
-                    </motion.div>
-                </div>
-                <div>
-                    <motion.div
-                        whileHover={{ scale: 1.2 }}
-                        whileTap={{ scale: 1 }}
-                    >
-                        <button
-                            onClick={handleExportClick}
-                            className="border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
-                        >
-                            Export
-                        </button>
-                    </motion.div>
-                </div>
+                <p className="mt-4 text-sm text-purple-600 text-center">
+                  สแกน QR Code นี้เพื่อเข้าร่วมคลาส
+                </p>
+              </div>
             </div>
-            {/* Modal สำหรับแสดง QR Code */}
-            {showQRModal && qrCode && (
-                <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-20">
-                    <motion.div
-                        className="fixed inset-0 flex items-center justify-center z-10"
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{
-                            duration: 0.4,
-                            scale: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
-                        }}
-                    >
-                        {/* กล่อง modal */}
-                        <div className="relative bg-white rounded-4xl mx-5 shadow-lg overflow-hidden md:h-150 md:w-250">
-                            {/* วงกลมสีม่วงที่มุมขวาบน */}
-                            <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500 rounded-full"></div>
-                            {/* ปุ่มปิด modal - วางไว้บนวงกลมสีมวง */}
-                            <div>
-                            <button
-                                onClick={handleCloseQR}
-                                className="absolute top-2 right-2 z-10 text-white hover:text-gray-200 transition-colors"
-                            >
-                                <X />
-                            </button>
-                            </div>
-
-                            {/* ส่วนแสดง QR Code */}
-                            <div className="flex items-center justify-center p-15  md:p-40">
-                                <QRCode value={qrCode} size={280} />
-                            </div>
-                        </div>
-                    </motion.div>
-                </div>
-            )}
+          </motion.div>
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
 export default CreateQRCodeAndUpload;

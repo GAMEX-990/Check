@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { db } from "@/lib/firebase";
 import { CreateQRCodeAndUploadProps } from "@/types/Fusionqrup";
 import { handleExportXLSX } from "@/utils/exportXLSXHandler";
@@ -17,18 +16,6 @@ import { X, QrCode, Upload, Download } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
-=======
-import { db } from '@/lib/firebase';
-import { CreateQRCodeAndUploadProps } from '@/types/Fusionqrup';
-import { handleExportXLSX } from '@/utils/exportXLSXHandler';
-import { uploadStudentsFromFile } from '@/utils/parseCSVFile';
-import { doc, getDoc } from 'firebase/firestore';
-import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
-import QRCode from 'react-qr-code';
-import { toast } from 'sonner';
->>>>>>> parent of c07e200 (Update dependencies and enhance UI components)
 
 
 const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, currentUser }) => {
@@ -80,20 +67,6 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({ classId, 
         } else {
             toast.error("เกิดข้อผิดพลาดในการอัปโหลด");
         }
-<<<<<<< HEAD
-      } catch (error: unknown) {
-        console.error("Error checking owner status:", error);
-        if (error instanceof FirestoreError) {
-          toast.error(`เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์: ${error.message}`);
-        } else {
-          toast.error("เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์");
-        }
-        setHasData(false);
-      } finally {
-        setIsLoadingOwner(false);
-      }
-=======
->>>>>>> parent of c07e200 (Update dependencies and enhance UI components)
     };
 
     // ฟังก์ชันสำหรับสร้าง QR Code

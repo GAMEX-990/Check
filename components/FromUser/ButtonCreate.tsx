@@ -93,45 +93,6 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   // ส่วน JSX ที่จะ render
   return (
     <div className="">
-<<<<<<< HEAD
-      <div className="flex flex-row md:flex-col gap-3 items-center justify-center w-full">
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full"
-        >
-          <button
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-medium shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full"
-            onClick={() => {
-              if (!user) {
-                toast.error("กรุณาเข้าสู่ระบบก่อนใช้งาน");
-                return;
-              }
-              setScanning(true);
-            }}
-            disabled={!user || isProcessing}
-          >
-            <QrCode className="w-5 h-5" />
-            {isProcessing ? "กำลังประมวลผล..." : "Scan QR"}
-          </button>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full"
-        >
-          <button
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-xl font-medium shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full"
-            onClick={() => {
-              if (!user) {
-                toast.error("กรุณาเข้าสู่ระบบก่อนใช้งาน");
-                return;
-              }
-              setShowPopup(true);
-            }}
-            disabled={!user || isProcessing}
-=======
       <div className=" flex flex-row md:flex-col gap-2 items-center justify-center">
         <div>
           <motion.div
@@ -151,7 +112,6 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
           <motion.div
             whileHover={{ scale: 1.2 }}
             whileTap={{ scale: 1 }}
->>>>>>> parent of c07e200 (Update dependencies and enhance UI components)
           >
             <button
               className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"

@@ -10,7 +10,9 @@ import {
   AttendanceSummaryItem
 } from "@/types/classDetailTypes";
 import { motion } from "framer-motion";
-import { fetchCheckedInUsersByDate } from "@/utils/fetchCheckedInUsersByDate";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
 
 export const ViewClassDetailPage = ({
   classData,
@@ -23,23 +25,65 @@ export const ViewClassDetailPage = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummaryItem[]>([]);
+
   const auth = getAuth();
   const currentUser = auth.currentUser;
   const currentUid = currentUser?.uid;
 
   useEffect(() => {
-    const loadCheckedInData = async () => {
-      const data = await fetchCheckedInUsersByDate(classData, currentUid);
-      setDailyCheckedIn(data);
+    if (!classData?.id) return;
 
-      const summary = createAttendanceSummary(
-        data.flatMap((d) => d.users) // รวมทุกวัน
-      );
-      setAttendanceSummary(summary);
-    };
+    const classRef = doc(db, "classes", classData.id);
 
-    loadCheckedInData();
-  }, [classData, currentUid]);
+    // สร้าง real-time listener
+    const unsubscribe = onSnapshot(classRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        const dailyCheckedInRecord = data.dailyCheckedInRecord || {};
+
+        // แปลงข้อมูลให้อยู่ในรูปแบบเดิม
+        const processedData: { date: string; users: CheckedInUser[] }[] = [];
+
+        Object.keys(dailyCheckedInRecord).forEach(date => {
+          const dayRecords = dailyCheckedInRecord[date] || {};
+          const users: CheckedInUser[] = [];
+
+          Object.values(dayRecords).forEach((record: any) => {
+            const isClassOwner = data.owner_email === currentUser?.email;
+            const isCurrentUserRecord = record.uid === currentUid;
+
+            if (isClassOwner || isCurrentUserRecord) {
+              users.push({
+                uid: record.uid,
+                name: record.name,
+                studentId: record.studentId,
+                email: record.email,
+                status: record.status || 'active',
+                timestamp: record.timestamp?.toDate() || new Date(record.date),
+                date: record.date
+              });
+            }
+          });
+
+          if (users.length > 0) {
+            users.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+            processedData.push({ date, users });
+          }
+        });
+
+        processedData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        setDailyCheckedIn(processedData);
+
+        const allUsers = processedData.flatMap(d => d.users);
+        const summary = createAttendanceSummary(allUsers);
+        setAttendanceSummary(summary);
+      }
+    });
+
+    // Cleanup function
+    return () => unsubscribe();
+  }, [classData?.id, currentUser?.email, currentUid]);
 
   const handleShowSummary = () => setShowSummary(true);
   const handleCloseSummary = () => setShowSummary(false);

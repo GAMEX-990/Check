@@ -14,7 +14,10 @@ export interface ClassData {
     uid: string;
     name: string;
     studentId: string;
+    email: string;
+    status: string;
     timestamp: Date;
+    date: string;
   }
   
   export interface AttendanceSummaryItem {

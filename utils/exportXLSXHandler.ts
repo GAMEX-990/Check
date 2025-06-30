@@ -1,6 +1,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { exportMonthlyAttendanceToXLSX } from './exportToXLSX';
+import { toast } from 'sonner';
 
 interface UserData {
   uid: string;
@@ -27,7 +28,7 @@ export const handleExportXLSX = async (
 ): Promise<void> => {
   try {
     if (!currentUser) {
-      alert('คุณยังไม่ได้ล็อกอิน');
+      toast.error('คุณยังไม่ได้ล็อกอิน');
       return;
     }
 
@@ -35,14 +36,14 @@ export const handleExportXLSX = async (
     const classSnap = await getDoc(classRef);
 
     if (!classSnap.exists()) {
-      alert('ไม่พบข้อมูลคลาสในระบบ');
+      toast.error('ไม่พบข้อมูลคลาสในระบบ');
       return;
     }
 
     const classDataFromDB = classSnap.data();
 
     if (classDataFromDB.created_by !== currentUser.uid) {
-      alert('คุณไม่มีสิทธิ์ในการ Export ข้อมูลของคลาสนี้');
+      toast.error('คุณไม่มีสิทธิ์ในการ Export ข้อมูลของคลาสนี้');
       return;
     }
 
@@ -62,7 +63,7 @@ export const handleExportXLSX = async (
       }));
 
     if (checkedInUsers.length === 0) {
-      alert('ไม่มีข้อมูลผู้เข้าเรียนสำหรับ Export');
+      toast.error('ไม่มีข้อมูลผู้เข้าเรียนสำหรับ Export');
       return;
     }
 
@@ -107,6 +108,6 @@ export const handleExportXLSX = async (
 
   } catch (err) {
     console.error('Export XLSX Error:', err);
-    alert('เกิดข้อผิดพลาดในการ Export Excel');
+    toast.error('เกิดข้อผิดพลาดในการ Export Excel');
   }
 };

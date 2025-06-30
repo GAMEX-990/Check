@@ -7,7 +7,8 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 import {
   ViewClassDetailPageProps,
   CheckedInUser,
-  AttendanceSummaryItem
+  AttendanceSummaryItem,
+  AttendanceRecord
 } from "@/types/classDetailTypes";
 import { motion } from "framer-motion";
 import { doc, onSnapshot } from "firebase/firestore";
@@ -48,7 +49,7 @@ export const ViewClassDetailPage = ({
           const dayRecords = dailyCheckedInRecord[date] || {};
           const users: CheckedInUser[] = [];
 
-          Object.values(dayRecords).forEach((record: any) => {
+          (Object.values(dayRecords) as AttendanceRecord[]).forEach((record) => {
             const isClassOwner = data.owner_email === currentUser?.email;
             const isCurrentUserRecord = record.uid === currentUid;
 

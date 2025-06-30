@@ -1,5 +1,17 @@
 // types/classDetailTypes.ts
 
+import { Timestamp } from "firebase/firestore";
+
+export interface AttendanceRecord {
+  uid: string;
+  name: string;
+  studentId: string;
+  email: string;
+  date: string;
+  timestamp?: Timestamp;
+  status?: string;
+}
+
 export interface ClassData {
     id: string;
     name: string;

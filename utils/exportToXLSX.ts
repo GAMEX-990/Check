@@ -1,10 +1,14 @@
+'use client'; 
 import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
-
+/* ---------- Types ---------- */
 interface AttendanceRecord {
   [studentId: string]: {
     name: string;
-    attendance: { [date: string]: boolean }; // 'DD/MM': true/false
+    attendance: {
+      [date: string]: { present: boolean; late: boolean };
+    };
   };
 }
 
@@ -13,58 +17,65 @@ interface ClassData {
   month: string;
 }
 
-/**
- * สร้าง Excel (.xlsx) รายงานการเข้าเรียนแบบสรุปรายเดือน
- */
+/* ---------- Exporter ---------- */
 export const exportMonthlyAttendanceToXLSX = (
   classData: ClassData,
   attendanceData: AttendanceRecord,
   dateList: string[]
-) => {
-  const sheetData: (string | number)[][] = [];
+): void => {
+  /* 1. เตรียมแถวหัวตาราง */
+  const headerRow = [
+    'No.',
+    'Student ID',
+    'Full Name',
+    ...dateList,
+    'Total',
+    'Attend',
+    'Absent',
+    'Late'
+  ];
+  const sheetData: (string | number)[][] = [headerRow];
 
-  // สร้างหัวตาราง
-  const header = ['No.', 'Student ID', 'Full Name', ...dateList, 'Total', 'Attend', 'Absent'];
-  sheetData.push(header);
-
-  // สร้างข้อมูลแต่ละแถว
+  /* 2. สร้างข้อมูลแต่ละแถว */
   let index = 1;
   for (const [studentId, { name, attendance }] of Object.entries(attendanceData)) {
-    const row = [index++, studentId, name];
-
     let attended = 0;
-    for (const date of dateList) {
-      const present = attendance[date] ?? false;
-      if (present) attended++;
-      row.push(present ? '✔' : '✘');
-    }
+    let lateCount = 0;
 
-    row.push(`${attended}/${dateList.length}`, attended, dateList.length - attended);
+    const row: (string | number)[] = [index++, studentId, name];
+
+    dateList.forEach(date => {
+      const data = attendance[date];
+      if (data?.present) {
+        attended++;
+        if (data.late) lateCount++;
+        row.push(data.late ? '✔ (สาย)' : '✔');
+      } else {
+        row.push('✘');
+      }
+    });
+
+    const absent = dateList.length - attended;
+    row.push(`${attended}/${dateList.length}`, attended, absent, lateCount); // <-- fixed back‑ticks
     sheetData.push(row);
   }
 
-  // สร้าง worksheet และ workbook
+  /* 3. แปลงเป็น worksheet / workbook */
   const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance Report');
 
-  // Export .xlsx
+  /* ตั้งความกว้างคอลัมน์คร่าว ๆ */
+  worksheet['!cols'] = headerRow.map(() => ({ wch: 12 }));
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
+
+  /* 4. บันทึกไฟล์ */
   const safeName = classData.name.replace(/[^a-zA-Z0-9ก-๙]/g, '_');
   const fileName = `รายงานการเข้าเรียน_${safeName}_${new Date().toISOString().split('T')[0]}.xlsx`;
 
-  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-  const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+  const wbArray = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbArray], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8'
+  });
   saveAs(blob, fileName);
 };
-function saveAs(blob: Blob, fileName: string) {
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  setTimeout(() => {
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, 0);
-}

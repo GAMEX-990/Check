@@ -25,7 +25,7 @@ export default function LoginPage() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
   // Manual login
   const handleManualLogin = async () => {
     sethandleManualLogin(true);

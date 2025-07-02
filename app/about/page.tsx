@@ -1,11 +1,26 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronLeft, Users, Target, Award, Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import Loader from '@/components/Loader/Loader'
+import { auth } from '@/lib/firebase'
+import Image from 'next/image'
+
 
 const AboutPage = () => {
   const router = useRouter()
+  const [, loading] = useAuthState(auth);
+  const [delayDone, setdelayDone] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setdelayDone(true);
+    }, 2000); // 600ms ดีเลย์
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -47,11 +62,17 @@ const AboutPage = () => {
     }
   }
 
+  if (loading || !delayDone) {
+    return <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+      <Loader />
+    </div>
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div 
+        <motion.div
           className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70"
           animate={{
             scale: [1, 1.2, 1],
@@ -63,7 +84,7 @@ const AboutPage = () => {
             ease: "linear"
           }}
         />
-        <motion.div 
+        <motion.div
           className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70"
           animate={{
             scale: [1.2, 1, 1.2],
@@ -75,7 +96,7 @@ const AboutPage = () => {
             ease: "linear"
           }}
         />
-        <motion.div 
+        <motion.div
           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-50"
           animate={{
             scale: [1, 1.1, 1],
@@ -89,14 +110,14 @@ const AboutPage = () => {
         />
       </div>
 
-      <motion.div 
+      <motion.div
         className="relative z-10 container mx-auto px-4 py-8"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         {/* Back button */}
-        <motion.button 
+        <motion.button
           onClick={() => router.push('/')}
           className="cursor-pointer flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200 mb-8"
           variants={itemVariants}
@@ -109,7 +130,7 @@ const AboutPage = () => {
 
         {/* Header */}
         <motion.div className="text-center mb-12" variants={itemVariants}>
-          <motion.h1 
+          <motion.h1
             className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -117,7 +138,7 @@ const AboutPage = () => {
           >
             เกี่ยวกับเรา
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-lg text-gray-600 max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -130,13 +151,13 @@ const AboutPage = () => {
         {/* Main content */}
         <div className="max-w-6xl mx-auto">
           {/* Mission section */}
-          <motion.div 
+          <motion.div
             className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8"
             variants={cardVariants}
             whileHover="hover"
           >
             <div className="flex items-center mb-6">
-              <motion.div 
+              <motion.div
                 className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mr-4"
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.5 }}
@@ -147,22 +168,22 @@ const AboutPage = () => {
             </div>
             <p className="text-gray-600 text-lg leading-relaxed">
               เราเชื่อว่าการศึกษาคือรากฐานสำคัญของสังคม ระบบ Check ถูกพัฒนาขึ้นเพื่อช่วยให้การเรียนการสอน
-              เป็นไปอย่างมีประสิทธิภาพ โดยเชื่อมโยงเทคโนโลยีเข้ากับการศึกษาอย่างลงตัว 
+              เป็นไปอย่างมีประสิทธิภาพ โดยเชื่อมโยงเทคโนโลยีเข้ากับการศึกษาอย่างลงตัว
               เพื่อสร้างประสบการณ์การเรียนรู้ที่ดีที่สุดสำหรับทุกคน
             </p>
           </motion.div>
 
           {/* Features grid */}
-          <motion.div 
+          <motion.div
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
             variants={containerVariants}
           >
-            <motion.div 
+            <motion.div
               className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300"
               variants={cardVariants}
               whileHover="hover"
             >
-              <motion.div 
+              <motion.div
                 className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4"
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.5 }}
@@ -175,12 +196,12 @@ const AboutPage = () => {
               </p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300"
               variants={cardVariants}
               whileHover="hover"
             >
-              <motion.div 
+              <motion.div
                 className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4"
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.5 }}
@@ -193,12 +214,12 @@ const AboutPage = () => {
               </p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 md:col-span-2 lg:col-span-1"
               variants={cardVariants}
               whileHover="hover"
             >
-              <motion.div 
+              <motion.div
                 className="w-12 h-12 bg-gradient-to-r from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4"
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.5 }}
@@ -213,7 +234,7 @@ const AboutPage = () => {
           </motion.div>
 
           {/* Team section */}
-          <motion.div 
+          <motion.div
             className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-8"
             variants={cardVariants}
             whileHover="hover"
@@ -221,20 +242,26 @@ const AboutPage = () => {
             <h2 className="text-2xl font-bold text-gray-800 text-center mb-8">ทีมพัฒนา</h2>
             <div className="text-center">
               <div className="inline-block relative">
-                <motion.div 
-                  className="w-32 h-32 bg-gradient-to-tr from-purple-400 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center"
-                  whileHover={{ 
+                <motion.div
+                  className="w-32 h-32 rounded-full mx-auto mb-4 flex items-center justify-center"
+                  whileHover={{
                     scale: 1.1,
                     rotate: 360,
-                    boxShadow: "0 20px 40px rgba(139, 92, 246, 0.3)"
                   }}
                   transition={{ duration: 0.5 }}
                 >
-                  <span className="text-white text-4xl font-bold">C</span>
+                  <span>
+                    <Image
+                    src="/assets/images/Logocheck.PNG"
+                    width={100}
+                    height={100}
+                    alt='Check Logo'
+                    />
+                  </span>
                 </motion.div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">ทีม Check</h3>
                 <p className="text-gray-600 max-w-md mx-auto">
-                  ทีมนักพัฒนาที่มีประสบการณ์ในการสร้างระบบการศึกษาดิจิทัล 
+                  ทีมนักพัฒนาที่มีประสบการณ์ในการสร้างระบบการศึกษาดิจิทัล
                   พร้อมมุ่งมั่นที่จะพัฒนาเครื่องมือที่ดีที่สุดสำหรับการเรียนการสอน
                 </p>
               </div>

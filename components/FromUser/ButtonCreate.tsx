@@ -11,6 +11,7 @@ import { X } from "lucide-react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 interface AddClassPopupProps {
   onScanSuccess?: () => void;
@@ -53,7 +54,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   const handleQRDetected = async (result: { data: string }) => {
     // Check if user is null before proceeding
     if (!user) {
-      alert('กรุณาเข้าสู่ระบบก่อนใช้งาน');
+      toast.error('กรุณาเข้าสู่ระบบก่อนใช้งาน');
       return;
     }
 
@@ -75,10 +76,6 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
     videoRef,
     canvasRef,
     onQRDetected: handleQRDetected,
-    onError: (error) => {
-      console.error("เกิดข้อผิดพลาดในการสแกน:", error);
-      alert(error);
-    },
   });
 
   // ฟังก์ชันสำหรับปิด popup สร้างคลาส

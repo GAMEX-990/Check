@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { openCamera, scanQRCode, stopCamera } from "./camera";
+import { toast } from "sonner";
 
 // ในไฟล์ useCameraScanner.ts
 interface UseCameraScannerProps {
@@ -7,7 +8,6 @@ interface UseCameraScannerProps {
     videoRef: React.RefObject<HTMLVideoElement | null>;
     canvasRef: React.RefObject<HTMLCanvasElement | null>;
     onQRDetected: (result: { data: string }) => Promise<void>;
-    onError: (error: Error | string) => void;
   }
   
   export const useCameraScanner = ({
@@ -15,7 +15,6 @@ interface UseCameraScannerProps {
     videoRef,
     canvasRef,
     onQRDetected,
-    onError,
   }: UseCameraScannerProps) => {
     useEffect(() => {
       let currentStream: MediaStream | null = null;
@@ -32,7 +31,6 @@ interface UseCameraScannerProps {
                 videoRef.current,
                 canvasRef.current,
                 onQRDetected,
-                onError
               );
   
               return () => {
@@ -42,7 +40,7 @@ interface UseCameraScannerProps {
           })
           .catch((error) => {
             console.error("ไม่สามารถเปิดกล้องได้:", error);
-            onError("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบการอนุญาตการใช้งานกล้อง");
+            toast.error("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบการอนุญาตการใช้งานกล้อง");
           });
       }
   
@@ -52,5 +50,5 @@ interface UseCameraScannerProps {
           currentStream = null;
         }
       };
-    }, [scanning, videoRef, canvasRef, onQRDetected, onError]);
+    }, [scanning, videoRef, canvasRef, onQRDetected]);
   };

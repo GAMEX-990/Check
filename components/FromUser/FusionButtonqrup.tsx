@@ -85,7 +85,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
     // ตรวจสอบสิทธิ์ก่อนอัปโหลด
     if (!isOwner) {
       toast.error(
-        "❌ คุณไม่มีสิทธิ์ในการอัปโหลดไฟล์\nเฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้"
+        "คุณไม่มีสิทธิ์ในการอัปโหลดไฟล์\nเฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้"
       );
       return;
     }
@@ -103,7 +103,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
         <div>
           <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
             <button
-              className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
+              className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
               onClick={handleCreateQR}
             >
               Create QR
@@ -123,7 +123,6 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
           <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
             <button
               onClick={onUploadButtonClick}
-              disabled={isLoadingOwner || !isOwner}
               className={`w-auto h-auto border-1 p-2 rounded-2xl transition-colors ${
                 isLoadingOwner || !isOwner
                   ? "border-gray-400 text-gray-400 cursor-not-allowed"
@@ -141,7 +140,14 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
           <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
             <button
               onClick={handleExportClick}
-              className="border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100"
+              className={`w-auto h-auto border-1 p-2 rounded-2xl transition-colors ${
+                isLoadingOwner || !isOwner
+                  ? "border-gray-400 text-gray-400 cursor-not-allowed"
+                  : "border-purple-600 text-purple-600 hover:bg-purple-100"
+              }`}
+              title={
+                !isOwner ? "เฉพาะเจ้าของคลาสเท่านั้นที่สามารถ Export ได้" : ""
+              }
             >
               Export
             </button>

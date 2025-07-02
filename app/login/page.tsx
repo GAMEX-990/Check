@@ -8,6 +8,7 @@ import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import Image from "next/image";
 import { Input } from '@/components/ui/input';
 import { Label } from '@radix-ui/react-label'; import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 ;
 
 export default function LoginPage() {
@@ -18,7 +19,6 @@ export default function LoginPage() {
   const [ishandleManualLogin, sethandleManualLogin] = useState(false);
   // Manual login
   const handleManualLogin = async () => {
-
     sethandleManualLogin(true);
 
     if (!email || !password) {
@@ -46,7 +46,6 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     // Prevent multiple login attempts
     if (isLoggingIn) return;
-
     setIsLoggingIn(true);
     setError(""); // Clear any previous errors
 
@@ -55,22 +54,14 @@ export default function LoginPage() {
       provider.setCustomParameters({
         prompt: 'select_account'
       });
-
       // Attempt sign in with popup
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
-      console.log("User ID:", user.uid); // Debug log
-
       // Check if user profile exists in Firestore
       const userRef = doc(db, "users", user.uid);
       let userSnap;
-
       try {
         userSnap = await getDoc(userRef);
-
-        console.log("User profile exists:", userSnap.exists()); // Debug log
-
         if (userSnap.exists()) {
           const userData = userSnap.data();
           console.log("User profile data:", userData);
@@ -80,7 +71,6 @@ export default function LoginPage() {
             console.log("User role:", userData.role);
           }
         }
-
       } catch (firestoreError) {
         console.error("Firestore access error:", firestoreError);
         setError("ไม่สามารถตรวจสอบข้อมูลโปรไฟล์ได้ กรุณาลองอีกครั้ง");
@@ -89,6 +79,11 @@ export default function LoginPage() {
 
       if (userSnap.exists()) {
         console.log("User profile found, redirecting to dashboard");
+        toast.success("เข้าสู่ระบบสำเร็จ!!", {
+          style: {
+            color: '#22c55e',
+          }
+        });
         router.push("/dashboard");
       } else {
         console.log("No profile found, redirecting to registration");
@@ -179,7 +174,7 @@ export default function LoginPage() {
               height={20}
               className="mr-3"
             />
-            {isLoggingIn && <Loader2Icon className=" animate-spin" />}
+            {isLoggingIn && <Loader2Icon className="animate-spin" />}
             {isLoggingIn ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบด้วย Google'}
           </Button>
 
@@ -226,22 +221,23 @@ export default function LoginPage() {
 
           {/* Links */}
           <div className="flex items-center justify-between mt-6 mb-8 cursor-pointer">
-            <button
+            <Button
+              variant='link'
               onClick={() => router.push('/register')}
-              className=" text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200 cursor-pointer"
+              className=" text-sm font-medium text-purple-600 hover:text-purple-800 cursor-pointer"
             >
               สร้างบัญชีใหม่
-            </button>
-            <button className=" text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200 cursor-pointer">
+            </Button>
+            <Button  variant='link' className=" text-sm font-medium text-purple-600 hover:text-purple-800 cursor-pointer">
               ลืมรหัสผ่าน?
-            </button>
+            </Button>
           </div>
 
           {/* Sign in button */}
           <Button
             onClick={handleManualLogin}
             disabled={ishandleManualLogin}
-            className=" cursor-pointer w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 transform hover:-translate-y-0.5"
+            className="cursor-pointer w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 transition duration-200 rounded-4xl"
           >
             {ishandleManualLogin && <Loader2Icon className="animate-spin" />}
             {ishandleManualLogin ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}

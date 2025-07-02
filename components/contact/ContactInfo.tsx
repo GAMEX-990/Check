@@ -7,7 +7,7 @@ const contactItems = [
   {
     icon: Mail,
     title: 'อีเมล',
-    content: 'support@check.edu',
+    content: 'incheack@gmail.com',
     description: 'ส่งข้อความถึงเราได้ตลอดเวลา'
   },
   {
@@ -19,7 +19,7 @@ const contactItems = [
   {
     icon: MapPin,
     title: 'ที่อยู่',
-    content: 'กรุงเทพมหานคร',
+    content: 'นครราชสีมา',
     description: 'สำนักงานใหญ่'
   },
   {

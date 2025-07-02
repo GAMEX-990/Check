@@ -9,7 +9,7 @@ export const uploadStudentsToSubcollection = async (
 ) => {
   try {
     console.log("Starting file upload process...", { fileName: file.name, classId });
-    
+
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data, { type: "buffer" });
     const sheetName = workbook.SheetNames[0];
@@ -45,7 +45,7 @@ export const uploadStudentsToSubcollection = async (
           // เก็บใน subcollection ของคลาสนั้น ๆ
           await addDoc(studentsCollectionRef, studentData);
           uploadedStudents.push(studentData);
-          
+
           console.log("Uploaded student to subcollection:", studentData);
         } else {
           errors.push(`ข้อมูลไม่ครบถ้วนในแถว: ${JSON.stringify(row)}`);
@@ -58,18 +58,12 @@ export const uploadStudentsToSubcollection = async (
 
     console.log(`Upload completed. Success: ${uploadedStudents.length}, Errors: ${errors.length}`);
 
-    return { 
-      success: true, 
-      message: `อัปโหลดสำเร็จ ${uploadedStudents.length} คน`,
-      count: uploadedStudents.length,
-      errors: errors
+    return {
+      success: true,
     };
   } catch (err) {
-    console.error("Error uploading students:", err);
-    return { 
-      success: false, 
-      error: err instanceof Error ? err.message : "Unknown error",
-      message: "เกิดข้อผิดพลาดในการอัปโหลดไฟล์"
+    return {
+      success: false,
     };
   }
 };

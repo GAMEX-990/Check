@@ -29,14 +29,14 @@ const ClassSection = ({ onPageChange, onClassSelect }: ClassSectionProps) => {
   };
 
   return (
-    <>
+    <div>
       <SyncUserToFirebase />
       {page === "myclass" && <MyClassPage onNext={handleNext} onSelectClass={handleSelectClass} />}
       {page === "class" && <ClassPage onBack={handleBack} onSelectClass={handleSelectClass} />}
       {page === "view" && selectedClass && (
         <ViewClassDetailPage classData={selectedClass} onBack={handleBack} />
       )}
-    </>
+    </div>
   );
 };
 

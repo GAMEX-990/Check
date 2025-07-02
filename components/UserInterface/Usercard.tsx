@@ -76,7 +76,6 @@ const Usercard = () => {
               height={128}
               src={data.photoURL || '/default-profile.png'}
               alt="Profile"
-              priority
             />
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 1 }}>
               <div

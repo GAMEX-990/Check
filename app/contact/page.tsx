@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -8,22 +8,41 @@ import { ContactInfo } from '../../components/contact/ContactInfo'
 import { ContactForm } from '../../components/contact/ContactForm'
 import { FAQ } from '../../components/contact/FAQ'
 import { containerVariants, itemVariants } from '../../components/animations/contactAnimations'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { auth } from '@/lib/firebase'
+import Loader from '@/components/Loader/Loader'
 
 const ContactPage = () => {
   const router = useRouter()
+  const [, loading] = useAuthState(auth);
+  const [delayDone, setdelayDone] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setdelayDone(true);
+    }, 2000); // 600ms ดีเลย์
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || !delayDone) {
+    return <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+      <Loader />
+    </div>
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 relative overflow-hidden">
       <BackgroundDecorations />
 
-      <motion.div 
+      <motion.div
         className="relative z-10 container mx-auto px-4 py-8"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         {/* Back button */}
-        <motion.button 
+        <motion.button
           onClick={() => router.push('/')}
           className="flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200 mb-8"
           variants={itemVariants}

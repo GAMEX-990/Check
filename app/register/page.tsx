@@ -3,35 +3,86 @@
 import { auth, db, provider } from '@/lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Loader2Icon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 import Image from "next/image";
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+
 
 export default function RegisterPage() {
   const router = useRouter();
   const [error, setError] = useState("");
 
   // Google login
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   const handleGoogleLogin = async () => {
+    // Prevent multiple login attempts
+    if (isLoggingIn) return;
+    setIsLoggingIn(true);
+    setError(""); // Clear any previous errors
+
     try {
+      // Configure Google sign-in to always show account selection
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      // Attempt sign in with popup
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      // Check if user profile exists in Firestore
+      const userRef = doc(db, "users", user.uid);
+      let userSnap;
+      try {
+        userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          console.log("User profile data:", userData);
 
-      // ตรวจสอบว่ามี profile ใน Firestore หรือยัง
-      const docRef = doc(db, "students", user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (!docSnap.exists()) {
-        // ยังไม่มี profile -> ไปหน้า loginregister เพื่อให้กรอกชื่อ-รหัส
-        router.push("/loginregister");
-      } else {
-        // มี profile แล้ว -> ไปหน้า dashboard
-        router.push("/dashboard");
+          // ตรวจสอบ role จากข้อมูลใน Firestore
+          if (userData.role) {
+            console.log("User role:", userData.role);
+          }
+        }
+      } catch (firestoreError) {
+        console.error("Firestore access error:", firestoreError);
+        setError("ไม่สามารถตรวจสอบข้อมูลโปรไฟล์ได้ กรุณาลองอีกครั้ง");
+        return;
       }
+
+      if (userSnap.exists()) {
+        console.log("User profile found, redirecting to dashboard");
+        toast.success("เข้าสู่ระบบสำเร็จ!!", {
+          style: {
+            color: '#22c55e',
+          }
+        });
+        router.push("/dashboard");
+      } else {
+        console.log("No profile found, redirecting to registration");
+        router.push("/loginregister");
+      }
+
     } catch (err: unknown) {
       console.error("Google login error:", err);
-      setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google");
+
+      // Type narrowing for Firebase Auth errors
+      const firebaseError = err as { code?: string; message?: string };
+
+      // Handle specific Firebase errors
+      if (firebaseError.code === 'auth/cancelled-popup-request') {
+        setError("การเข้าสู่ระบบถูกยกเลิก โปรดลองอีกครั้ง");
+      } else if (firebaseError.code === 'auth/popup-blocked') {
+        setError("ป๊อปอัพถูกบล็อก โปรดอนุญาตป๊อปอัพสำหรับเว็บไซต์นี้และลองอีกครั้ง");
+      } else if (firebaseError.code === 'auth/popup-closed-by-user') {
+        setError("คุณปิดหน้าต่างเข้าสู่ระบบก่อนที่จะเสร็จสิ้น โปรดลองอีกครั้ง");
+      } else {
+        setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: " + (firebaseError.message || "โปรดลองอีกครั้งในภายหลัง"));
+      }
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -48,10 +99,10 @@ export default function RegisterPage() {
         <div className="relative">
           <div className="w-64 h-64 bg-gradient-to-tr from-purple-400 to-purple-600 rounded-full opacity-20 blur-2xl"></div>
           <div className="absolute inset-0 flex items-end justify-center">
-            <Image 
-              src="/assets/images/personlookblook.png" 
-              alt="Welcome illustration" 
-              width={800} 
+            <Image
+              src="/assets/images/personlookblook.png"
+              alt="Welcome illustration"
+              width={800}
               height={800}
               className="drop-shadow-2xl"
             />
@@ -62,7 +113,7 @@ export default function RegisterPage() {
       {/* Main register card */}
       <div className="relative w-full max-w-md">
         {/* Back button */}
-        <button 
+        <button
           onClick={() => router.push('/login')}
           className="cursor-pointer absolute -top-12 left-0 flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
         >
@@ -85,20 +136,23 @@ export default function RegisterPage() {
             </div>
           )}
 
-          {/* Google signup button */}
-          <button
+          {/* Google login button */}
+          <Button
             onClick={handleGoogleLogin}
-            className="cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-8"
-          >
-            <Image 
-              src="/assets/images/Google.png" 
-              alt="Google" 
-              width={20} 
-              height={20} 
-              className="mr-3" 
+            disabled={isLoggingIn}
+            className={`cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-6 ${isLoggingIn ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md'
+            }`}
+        >
+            <Image
+              src="/assets/images/Google.png"
+              alt="Google"
+              width={20}
+              height={20}
+              className="mr-3"
             />
-            สร้างบัญชีด้วย Google
-          </button>
+            {isLoggingIn && <Loader2Icon className="animate-spin" />}
+            {isLoggingIn ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบด้วย Google'}
+          </Button>
 
           {/* Welcome message */}
           <div className="text-center mb-6">
@@ -130,13 +184,14 @@ export default function RegisterPage() {
           {/* Login link */}
           <div className="text-center">
             <p className="text-sm text-gray-600 cursor-pointer">
-              มีบัญชีอยู่แล้ว?{' '}
-              <button 
+              มีบัญชีอยู่แล้ว?
+              <Button
+                variant="link"
                 onClick={() => router.push('/login')}
-                className="cursor-pointer font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200"
+                className="text-purple-600 hover:text-purple-800"
               >
                 เข้าสู่ระบบ
-              </button>
+              </Button>
             </p>
           </div>
         </div>

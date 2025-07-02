@@ -1,21 +1,7 @@
-'use client'; 
+'use client';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-
-/* ---------- Types ---------- */
-interface AttendanceRecord {
-  [studentId: string]: {
-    name: string;
-    attendance: {
-      [date: string]: { present: boolean; late: boolean };
-    };
-  };
-}
-
-interface ClassData {
-  name: string;
-  month: string;
-}
+import { AttendanceRecord, ClassData } from '@/types/exportMonthlyAttendanceToXLSX';
 
 /* ---------- Exporter ---------- */
 export const exportMonthlyAttendanceToXLSX = (

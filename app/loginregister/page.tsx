@@ -6,12 +6,14 @@ import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { ChevronLeft, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { updateProfile, EmailAuthProvider, linkWithCredential } from 'firebase/auth';
+import { updateProfile, EmailAuthProvider, linkWithCredential, onAuthStateChanged } from 'firebase/auth';
 import { Button } from "@/components/ui/button";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 export default function LoginRegisterPage() {
+  const [user, loading] = useAuthState(auth);
   const [fullname, setFullname] = useState("");
   const [studentId, setStudentId] = useState("");
   const [role, setRole] = useState<'teacher' | 'student'>('student');
@@ -21,6 +23,19 @@ export default function LoginRegisterPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const [ishandleManualLogin, sethandleManualLogin] = useState(false);
+
+  
+  useEffect(() => {
+    if (!loading && !user) {
+      // ถ้ายังไม่ login -> redirect กลับไปหน้า login หรือ landing page
+      router.replace('/');
+    }
+    else if (user) {
+      router.replace('/dashboard');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) return null; // ป้องกันการกระพริบ
 
   const handleRegister = async () => {
     // Validation

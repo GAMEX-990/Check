@@ -9,8 +9,6 @@ import { Menu, X, User as Home, Info, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserData, UserData } from '@/utils/getcurrentuser';
 import Image from 'next/image';
-import { toast } from 'sonner';
-
 
 const Navbar = () => {
     const [userData, setUserData] = useState<UserData | null>(null);
@@ -18,11 +16,6 @@ const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    const handletoast = () => {
-        toast.success("กรุณารอสักครู่ครับ",{
-            duration: 1000,
-        });
-    }
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, async (currentUser) => {
@@ -45,13 +38,13 @@ const Navbar = () => {
     }, []);
 
     const navLinks = user ? [
-        { name: 'Dashboard',onclick:handletoast, href: '/dashboard', icon: <Home size={18} /> },
-        { name: 'About Us',onclick:handletoast, href: '/about', icon: <Info size={18} /> },
-        { name: 'Contact',onclick:handletoast, href: '/contact', icon: <Mail size={18} /> },
+        { name: 'Dashboard', href: '/dashboard', icon: <Home size={18} /> },
+        { name: 'About Us', href: '/about', icon: <Info size={18} /> },
+        { name: 'Contact', href: '/contact', icon: <Mail size={18} /> },
     ] : [
-        { name: 'Home',onclick:handletoast, href: '/', icon: <Home size={18} /> },
-        { name: 'About Us',onclick:handletoast, href: '/about', icon: <Info size={18} /> },
-        { name: 'Contact',onclick:handletoast, href: '/contact', icon: <Mail size={18} /> },
+        { name: 'Home', href: '/', icon: <Home size={18} /> },
+        { name: 'About Us', href: '/about', icon: <Info size={18} /> },
+        { name: 'Contact', href: '/contact', icon: <Mail size={18} /> },
     ];
 
     return (
@@ -72,7 +65,6 @@ const Navbar = () => {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                onClick={link.onclick}
                                 className='flex items-center space-x-1 text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200'
                             >
                                 <span className="text-purple-600">{link.icon}</span>

@@ -8,7 +8,7 @@ import { ChevronLeft, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { updateProfile, EmailAuthProvider, linkWithCredential, onAuthStateChanged } from 'firebase/auth';
+import { updateProfile, EmailAuthProvider, linkWithCredential } from 'firebase/auth';
 import { Button } from "@/components/ui/button";
 import { useAuthState } from "react-firebase-hooks/auth";
 

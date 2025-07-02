@@ -9,7 +9,9 @@ import Image from "next/image";
 import { Input } from '@/components/ui/input';
 import { Label } from '@radix-ui/react-label'; import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-;
+import { useAuthRedirect } from '@/hook/useAuthRedirect';
+import Loader from '@/components/Loader/Loader';
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,6 +19,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [ishandleManualLogin, sethandleManualLogin] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const {user,loading} = useAuthRedirect('guest-only');
+
   // Manual login
   const handleManualLogin = async () => {
     sethandleManualLogin(true);
@@ -41,8 +46,6 @@ export default function LoginPage() {
 
 
   // Google login
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-
   const handleGoogleLogin = async () => {
     // Prevent multiple login attempts
     if (isLoggingIn) return;
@@ -110,6 +113,19 @@ export default function LoginPage() {
       setIsLoggingIn(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 flex items-center justify-center">
+        <div className="text-center">
+        <div className="text-purple-600"><Loader/></div>
+        </div>
+      </div>
+    );
+  }
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 flex items-center justify-center p-4">

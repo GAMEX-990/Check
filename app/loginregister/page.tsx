@@ -6,10 +6,13 @@ import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { ChevronLeft, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { updateProfile, EmailAuthProvider, linkWithCredential } from 'firebase/auth';
 import { Button } from "@/components/ui/button";
+import { useAuthRedirect } from "@/hook/useAuthRedirect";
+import Loader from "@/components/Loader/Loader";
+import { toast } from "sonner";
 
 export default function LoginRegisterPage() {
   const [fullname, setFullname] = useState("");
@@ -21,6 +24,28 @@ export default function LoginRegisterPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const [ishandleManualLogin, sethandleManualLogin] = useState(false);
+
+  const { user, loading } = useAuthRedirect('guest-only');
+
+  // ถ้าไม่มี user (ไม่ได้ login ด้วย Google) ให้ redirect ไป login
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login');
+    }
+  }, [loading, user, router]);
+
+  // แสดง loading ขณะตรวจสอบ auth status
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-purple-600"><Loader /></div>
+        </div>
+      </div>
+    );
+  }
+
+
 
   const handleRegister = async () => {
     // Validation
@@ -84,8 +109,12 @@ export default function LoginRegisterPage() {
         updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString()
       });
-
       router.push("/dashboard");
+      toast.success("ยินดีตอนรับสู่ Check", {
+        style: {
+          color: '#22c55e',
+        }
+      })
     } catch (err: unknown) {
       console.error("Registration error:", err);
       if (typeof err === 'object' && err !== null && 'code' in err) {
@@ -103,7 +132,7 @@ export default function LoginRegisterPage() {
         }
       } else {
         setError("เกิดข้อผิดพลาดในการลงทะเบียน");
-      } 
+      }
     } finally {
       sethandleManualLogin(false);
     }
@@ -188,8 +217,8 @@ export default function LoginRegisterPage() {
                   type="button"
                   onClick={() => setRole('student')}
                   className={`p-4 rounded-xl border-2 transition-all duration-200 ${role === 'student'
-                      ? 'border-purple-500 bg-purple-50 text-purple-700'
-                      : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-purple-500 bg-purple-50 text-purple-700'
+                    : 'border-gray-200 hover:border-gray-300'
                     }`}
                 >
                   <div className="text-2xl mb-2">🎓</div>
@@ -199,8 +228,8 @@ export default function LoginRegisterPage() {
                   type="button"
                   onClick={() => setRole('teacher')}
                   className={`p-4 rounded-xl border-2 transition-all duration-200 ${role === 'teacher'
-                      ? 'border-purple-500 bg-purple-50 text-purple-700'
-                      : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-purple-500 bg-purple-50 text-purple-700'
+                    : 'border-gray-200 hover:border-gray-300'
                     }`}
                 >
                   <div className="text-2xl mb-2">👨‍🏫</div>
@@ -281,14 +310,14 @@ export default function LoginRegisterPage() {
                 <div className="mt-3">
                   <div className="flex items-center space-x-2">
                     <div className={`h-2 flex-1 rounded-full ${password.length < 6 ? 'bg-red-200' :
-                        password.length < 8 ? 'bg-yellow-200' : 'bg-green-200'
+                      password.length < 8 ? 'bg-yellow-200' : 'bg-green-200'
                       }`}>
                       <div className={`h-full rounded-full transition-all duration-300 ${password.length < 6 ? 'w-1/3 bg-red-500' :
-                          password.length < 8 ? 'w-2/3 bg-yellow-500' : 'w-full bg-green-500'
+                        password.length < 8 ? 'w-2/3 bg-yellow-500' : 'w-full bg-green-500'
                         }`}></div>
                     </div>
                     <span className={`text-xs font-medium ${password.length < 6 ? 'text-red-600' :
-                        password.length < 8 ? 'text-yellow-600' : 'text-green-600'
+                      password.length < 8 ? 'text-yellow-600' : 'text-green-600'
                       }`}>
                       {password.length < 6 ? 'อ่อน' :
                         password.length < 8 ? 'ปานกลาง' : 'แข็งแรง'}

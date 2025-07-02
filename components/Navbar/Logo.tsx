@@ -23,7 +23,7 @@ const Logo = () => {
             />
         </div>
         <div className="ml-3 flex items-center">
-          <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-500">Check-Name</span>
+          <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-500">Check</span>
           <CheckCircle size={16} className="ml-1 text-green-500" />
         </div>
       </motion.div>

@@ -1,14 +1,15 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { ChevronLeft, Loader2Icon } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db, provider } from '@/lib/firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import Image from "next/image";
 import { Input } from '@/components/ui/input';
 import { Label } from '@radix-ui/react-label'; import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,16 +17,6 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [ishandleManualLogin, sethandleManualLogin] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.replace('/dashboard');
-      }
-    });
-
-    return () => unsubscribe();
-  }, [router]);
   // Manual login
   const handleManualLogin = async () => {
     sethandleManualLogin(true);
@@ -237,7 +228,7 @@ export default function LoginPage() {
             >
               สร้างบัญชีใหม่
             </Button>
-            <Button variant='link' className=" text-sm font-medium text-purple-600 hover:text-purple-800 cursor-pointer">
+            <Button  variant='link' className=" text-sm font-medium text-purple-600 hover:text-purple-800 cursor-pointer">
               ลืมรหัสผ่าน?
             </Button>
           </div>

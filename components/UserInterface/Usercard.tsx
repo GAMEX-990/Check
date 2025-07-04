@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowLeft, LogIn, X, Pencil, CheckCircle, XCircle, Loader2Icon } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -51,7 +51,7 @@ const Usercard = () => {
   }, [router]);
 
   // Function to check if student ID already exists
-  const checkStudentIdExists = async (studentIdToCheck: string) => {
+  const checkStudentIdExists = useCallback(async (studentIdToCheck: string) => {
     if (!studentIdToCheck || studentIdToCheck.trim() === '') {
       setStudentIdStatus('idle');
       setStudentIdError('');
@@ -95,7 +95,7 @@ const Usercard = () => {
     } finally {
       setIsCheckingStudentId(false);
     }
-  };
+  }, [data]);
 
   // Debounced student ID check
   useEffect(() => {
@@ -109,7 +109,7 @@ const Usercard = () => {
       setStudentIdStatus('idle');
       setStudentIdError('');
     }
-  }, [studentId, data]);
+  }, [studentId, checkStudentIdExists]);
 
   // Reset validation when modal closes
   useEffect(() => {

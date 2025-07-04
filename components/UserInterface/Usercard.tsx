@@ -1,11 +1,11 @@
 'use client';
 
-import { ArrowLeft, LogIn, X, Pencil } from 'lucide-react';
+import { ArrowLeft, LogIn, X, Pencil, CheckCircle, XCircle, Loader2Icon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore'; // ✅ missing import
+import { doc, onSnapshot, query, collection, where, getDocs } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Input } from '../ui/input';
@@ -24,6 +24,11 @@ const Usercard = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<UserData | null>(null);
   const router = useRouter();
+
+  // Student ID validation states
+  const [isCheckingStudentId, setIsCheckingStudentId] = useState(false);
+  const [studentIdStatus, setStudentIdStatus] = useState<'checking' | 'available' | 'taken' | 'idle'>('idle');
+  const [studentIdError, setStudentIdError] = useState("");
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
@@ -45,12 +50,98 @@ const Usercard = () => {
     return () => unsubscribeAuth();
   }, [router]);
 
+  // Function to check if student ID already exists
+  const checkStudentIdExists = async (studentIdToCheck: string) => {
+    if (!studentIdToCheck || studentIdToCheck.trim() === '') {
+      setStudentIdStatus('idle');
+      setStudentIdError('');
+      return false;
+    }
+
+    // Skip checking if it's the same as current student ID
+    if (data && studentIdToCheck.trim() === data.studentId) {
+      setStudentIdStatus('idle');
+      setStudentIdError('');
+      return false;
+    }
+
+    setIsCheckingStudentId(true);
+    setStudentIdStatus('checking');
+    setStudentIdError('');
+
+    try {
+      const q = query(
+        collection(db, "users"),
+        where("studentId", "==", studentIdToCheck.trim()),
+        where("role", "==", "student")
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        setStudentIdStatus('taken');
+        setStudentIdError('รหัสนักศึกษานี้ถูกใช้งานแล้ว');
+        return true;
+      } else {
+        setStudentIdStatus('available');
+        setStudentIdError('');
+        return false;
+      }
+    } catch (error) {
+      console.error("Error checking student ID:", error);
+      setStudentIdStatus('idle');
+      setStudentIdError('ไม่สามารถตรวจสอบรหัสนักศึกษาได้');
+      return false;
+    } finally {
+      setIsCheckingStudentId(false);
+    }
+  };
+
+  // Debounced student ID check
+  useEffect(() => {
+    if (studentId) {
+      const timeoutId = setTimeout(() => {
+        checkStudentIdExists(studentId);
+      }, 500); // Wait 500ms after user stops typing
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      setStudentIdStatus('idle');
+      setStudentIdError('');
+    }
+  }, [studentId, data]);
+
+  // Reset validation when modal closes
+  useEffect(() => {
+    if (!showModal) {
+      setStudentId('');
+      setStudentIdStatus('idle');
+      setStudentIdError('');
+    }
+  }, [showModal]);
+
   const handleLogout = async () => {
     await signOut(auth);
     router.push('/');
   };
 
-  const handleUpdateStudentId = () => {
+  const handleUpdateStudentId = async () => {
+    // Check if student ID is taken
+    if (studentIdStatus === 'taken') {
+      return;
+    }
+
+    if (studentIdStatus === 'checking') {
+      return;
+    }
+
+    // Double check student ID before updating
+    const isStudentIdTaken = await checkStudentIdExists(studentId);
+    if (isStudentIdTaken) {
+      return;
+    }
+
+    // Call the original handler
     handleUpdateStudentIdHandler(studentId, setLoading, setShowModal, setData);
   };
 
@@ -121,14 +212,55 @@ const Usercard = () => {
               </button>
 
               <h2 className="text-lg font-bold text-purple-700 mb-4">กรอกรหัสนักศึกษา</h2>
-              <Input
-                type="text"
-                placeholder="xxxxxxxxxxx-x"
-                value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
-                className="w-full border border-gray-300 px-3 py-2 mb-4 rounded-2xl"
-                disabled={loading}
-              />
+              
+              {/* Student ID Input with validation */}
+              <div className="relative mb-4">
+                <Input
+                  type="text"
+                  placeholder="xxxxxxxxxxx-x"
+                  value={studentId}
+                  onChange={(e) => setStudentId(e.target.value)}
+                  className={`w-full border px-3 py-2 pr-10 rounded-2xl ${
+                    studentIdStatus === 'taken' ? 'border-red-300 focus:ring-red-500' :
+                    studentIdStatus === 'available' ? 'border-green-300 focus:ring-green-500' :
+                    'border-gray-300'
+                  }`}
+                  disabled={loading}
+                />
+
+                {/* Status icon */}
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  {isCheckingStudentId && (
+                    <Loader2Icon className="h-5 w-5 animate-spin text-gray-400" />
+                  )}
+                  {studentIdStatus === 'available' && (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  )}
+                  {studentIdStatus === 'taken' && (
+                    <XCircle className="h-5 w-5 text-red-500" />
+                  )}
+                </div>
+              </div>
+
+              {/* Status message */}
+              {studentIdError && (
+                <p className="mb-4 text-sm text-red-600 flex items-center">
+                  <XCircle className="h-4 w-4 mr-1" />
+                  {studentIdError}
+                </p>
+              )}
+              {studentIdStatus === 'available' && (
+                <p className="mb-4 text-sm text-green-600 flex items-center">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  รหัสนักศึกษานี้สามารถใช้งานได้
+                </p>
+              )}
+              {studentIdStatus === 'checking' && (
+                <p className="mb-4 text-sm text-gray-500 flex items-center">
+                  <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                  กำลังตรวจสอบรหัสนักศึกษา...
+                </p>
+              )}
 
               <div className="flex justify-end gap-2">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 1 }}>
@@ -143,8 +275,8 @@ const Usercard = () => {
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 1 }}>
                   <button
                     onClick={handleUpdateStudentId}
-                    className="px-4 py-2 bg-purple-700 text-white rounded-2xl hover:bg-purple-800"
-                    disabled={loading}
+                    className="px-4 py-2 bg-purple-700 text-white rounded-2xl hover:bg-purple-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={loading || studentIdStatus === 'taken' || studentIdStatus === 'checking' || !studentId.trim()}
                   >
                     {loading ? 'กำลังอัปเดต...' : 'บันทึก'}
                   </button>

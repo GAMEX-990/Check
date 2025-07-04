@@ -3,8 +3,8 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth, db } from "@/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
-import { ChevronLeft, Loader2Icon } from "lucide-react";
+import { doc, setDoc, query, collection, where, getDocs } from "firebase/firestore";
+import { ChevronLeft, Loader2Icon, CheckCircle, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -25,6 +25,11 @@ export default function LoginRegisterPage() {
   const router = useRouter();
   const [ishandleManualLogin, sethandleManualLogin] = useState(false);
 
+  // Student ID validation states
+  const [isCheckingStudentId, setIsCheckingStudentId] = useState(false);
+  const [studentIdStatus, setStudentIdStatus] = useState<'checking' | 'available' | 'taken' | 'idle'>('idle');
+  const [studentIdError, setStudentIdError] = useState("");
+
   const { user, loading } = useAuthRedirect('guest-only');
 
   // ถ้าไม่มี user (ไม่ได้ login ด้วย Google) ให้ redirect ไป login
@@ -33,6 +38,69 @@ export default function LoginRegisterPage() {
       router.replace('/login');
     }
   }, [loading, user, router]);
+
+  // Function to check if student ID already exists
+  const checkStudentIdExists = async (studentIdToCheck: string) => {
+    if (!studentIdToCheck || studentIdToCheck.trim() === '') {
+      setStudentIdStatus('idle');
+      setStudentIdError('');
+      return false;
+    }
+
+    setIsCheckingStudentId(true);
+    setStudentIdStatus('checking');
+    setStudentIdError('');
+
+    try {
+      const q = query(
+        collection(db, "users"),
+        where("studentId", "==", studentIdToCheck.trim()),
+        where("role", "==", "student")
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        setStudentIdStatus('taken');
+        setStudentIdError('รหัสนักศึกษานี้ถูกใช้งานแล้ว');
+        return true;
+      } else {
+        setStudentIdStatus('available');
+        setStudentIdError('');
+        return false;
+      }
+    } catch (error) {
+      console.error("Error checking student ID:", error);
+      setStudentIdStatus('idle');
+      setStudentIdError('ไม่สามารถตรวจสอบรหัสนักศึกษาได้');
+      return false;
+    } finally {
+      setIsCheckingStudentId(false);
+    }
+  };
+
+  // Debounced student ID check
+  useEffect(() => {
+    if (role === 'student' && studentId) {
+      const timeoutId = setTimeout(() => {
+        checkStudentIdExists(studentId);
+      }, 500); // Wait 500ms after user stops typing
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      setStudentIdStatus('idle');
+      setStudentIdError('');
+    }
+  }, [studentId, role]);
+
+  // Reset student ID validation when role changes
+  useEffect(() => {
+    if (role === 'teacher') {
+      setStudentIdStatus('idle');
+      setStudentIdError('');
+      setStudentId('');
+    }
+  }, [role]);
 
   // แสดง loading ขณะตรวจสอบ auth status
   if (loading || !user) {
@@ -45,18 +113,37 @@ export default function LoginRegisterPage() {
     );
   }
 
-
-
   const handleRegister = async () => {
     // Validation
-
     sethandleManualLogin(true);
-
 
     if (!fullname || !institution || (role === 'student' && !studentId)) {
       setError("กรุณากรอกข้อมูลให้ครบ");
       sethandleManualLogin(false);
       return;
+    }
+
+    // Check if student ID is taken (for students only)
+    if (role === 'student') {
+      if (studentIdStatus === 'taken') {
+        setError("รหัสนักศึกษานี้ถูกใช้งานแล้ว กรุณาใช้รหัสนักศึกษาอื่น");
+        sethandleManualLogin(false);
+        return;
+      }
+
+      if (studentIdStatus === 'checking') {
+        setError("กรุณารอสักครู่ ระบบกำลังตรวจสอบรหัสนักศึกษา");
+        sethandleManualLogin(false);
+        return;
+      }
+
+      // Double check student ID before registration
+      const isStudentIdTaken = await checkStudentIdExists(studentId);
+      if (isStudentIdTaken) {
+        setError("รหัสนักศึกษานี้ถูกใช้งานแล้ว กรุณาใช้รหัสนักศึกษาอื่น");
+        sethandleManualLogin(false);
+        return;
+      }
     }
 
     if (!password || !confirmPassword) {
@@ -76,6 +163,7 @@ export default function LoginRegisterPage() {
       sethandleManualLogin(false);
       return;
     }
+
     const user = auth.currentUser;
     if (!user || !user.email) {
       setError("ไม่ได้เข้าสู่ระบบด้วย Google หรือไม่พบอีเมล");
@@ -100,7 +188,7 @@ export default function LoginRegisterPage() {
       // บันทึกข้อมูลลง users collection เท่านั้น
       await setDoc(doc(db, "users", linkedUser.uid), {
         name: fullname,
-        studentId: role === 'student' ? studentId : '',
+        studentId: role === 'student' ? studentId.trim() : '',
         email: user.email,
         photoURL: user.photoURL,
         role: role,
@@ -109,6 +197,7 @@ export default function LoginRegisterPage() {
         updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString()
       });
+
       router.push("/dashboard");
       toast.success("ยินดีตอนรับสู่ Check", {
         style: {
@@ -244,13 +333,51 @@ export default function LoginRegisterPage() {
                 <Label className="block text-sm font-medium text-gray-700 mb-2">
                   รหัสนักศึกษา
                 </Label>
-                <Input
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  type="text"
-                  placeholder="กรอกรหัสนักศึกษาของคุณ"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    className={`w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${studentIdStatus === 'taken' ? 'border-red-300 focus:ring-red-500' :
+                        studentIdStatus === 'available' ? 'border-green-300 focus:ring-green-500' :
+                          'border-gray-200'
+                      }`}
+                    type="text"
+                    placeholder="กรอกรหัสนักศึกษาของคุณ"
+                    value={studentId}
+                    onChange={(e) => setStudentId(e.target.value)}
+                  />
+
+                  {/* Status icon */}
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    {isCheckingStudentId && (
+                      <Loader2Icon className="h-5 w-5 animate-spin text-gray-400" />
+                    )}
+                    {studentIdStatus === 'available' && (
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    )}
+                    {studentIdStatus === 'taken' && (
+                      <XCircle className="h-5 w-5 text-red-500" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Status message */}
+                {studentIdError && (
+                  <p className="mt-2 text-sm text-red-600 flex items-center">
+                    <XCircle className="h-4 w-4 mr-1" />
+                    {studentIdError}
+                  </p>
+                )}
+                {studentIdStatus === 'available' && (
+                  <p className="mt-2 text-sm text-green-600 flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    รหัสนักศึกษานี้สามารถใช้งานได้
+                  </p>
+                )}
+                {studentIdStatus === 'checking' && (
+                  <p className="mt-2 text-sm text-gray-500 flex items-center">
+                    <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                    กำลังตรวจสอบรหัสนักศึกษา...
+                  </p>
+                )}
               </div>
             )}
 
@@ -331,12 +458,11 @@ export default function LoginRegisterPage() {
           {/* Submit button */}
           <Button
             onClick={handleRegister}
-            disabled={ishandleManualLogin}
-            className="w-full mt-8 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 transform hover:-translate-y-0.5"
+            disabled={ishandleManualLogin || (role === 'student' && (studentIdStatus === 'taken' || studentIdStatus === 'checking'))}
+            className="w-full mt-8 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            {ishandleManualLogin && <Loader2Icon className="animate-spin" />}
+            {ishandleManualLogin && <Loader2Icon className="animate-spin mr-2" />}
             {ishandleManualLogin ? 'กำลังเริ่มต้นใช้งาน' : 'เริ่มต้นใช้งาน'}
-            เริ่มใช้งาน
           </Button>
         </div>
       </div>

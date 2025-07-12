@@ -26,7 +26,7 @@ const ClassSection = ({ onPageChange, onClassSelect }: ClassSectionProps) => {
 
   const tabs = [
     { id: "myclass", label: "My Classes" },
-    { id: "class", label: "All Classes" },
+    { id: "class", label: "Classes" },
   ];
 
   // Smooth Tab Switcher Component

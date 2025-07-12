@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
-import { createAttendanceSummary } from "@/utils/Summary";
 import DeleteClassModal from "./DeleteClassModal";
-import AttendanceSummaryModal from "./AttenSummary";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Trash2, } from "lucide-react";
 import {
   ViewClassDetailPageProps,
   CheckedInUser,
-  AttendanceSummaryItem,
   AttendanceRecord
 } from "@/types/classDetailTypes";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { ClassData } from "@/types/classTypes";
+import { useAuthState } from "react-firebase-hooks/auth";
+import CreateQRCodeAndUpload from "../FromUser/FusionButtonqrup";
 
 
 export const ViewClassDetailPage = ({
@@ -23,13 +23,27 @@ export const ViewClassDetailPage = ({
   const [dailyCheckedIn, setDailyCheckedIn] = useState<
     { date: string; users: CheckedInUser[] }[]
   >([]);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
-  const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummaryItem[]>([]);
-
+  // --------------------------------------
+  const [currectPang] = useState<"myclass" | "class" | "view">("view");
+  const [selectedClass, setSelectedClass] = useState<Partial<ClassData> | null>(classData);
   const auth = getAuth();
+  const [user] = useAuthState(auth);
+  // --------------------------------------
+  const [openDates, setOpenDates] = useState<Record<string, boolean>>({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const currentUser = auth.currentUser;
   const currentUid = currentUser?.uid;
+
+  useEffect(() => {
+    setSelectedClass(classData);
+  }, [classData]);
+
+  const toggleDate = (date: string) => {
+    setOpenDates((prev) => ({
+      ...prev,
+      [date]: !prev[date],
+    }));
+  };
 
   useEffect(() => {
     if (!classData?.id) return;
@@ -76,9 +90,6 @@ export const ViewClassDetailPage = ({
 
         setDailyCheckedIn(processedData);
 
-        const allUsers = processedData.flatMap(d => d.users);
-        const summary = createAttendanceSummary(allUsers);
-        setAttendanceSummary(summary);
       }
     });
 
@@ -86,8 +97,6 @@ export const ViewClassDetailPage = ({
     return () => unsubscribe();
   }, [classData?.id, currentUser?.email, currentUid]);
 
-  const handleShowSummary = () => setShowSummary(true);
-  const handleCloseSummary = () => setShowSummary(false);
   const handlsShowDeleteModal = () => setShowDeleteModal(true);
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
   const handleDeleteSuccess = () => {
@@ -99,88 +108,115 @@ export const ViewClassDetailPage = ({
 
   return (
     <div>
-      <div className="h-auto w-100 border-2 border-purple-500 rounded-2xl p-4 relative">
-        <div className="flex justify-center">
-          <h1 className="text-2xl font-bold text-purple-800 text-center flex-grow">
-            {classData.name}
-          </h1>
-          <div className="absolute right-0 mx-4">
-            {isClassOwner && (
-              <button
-                className="text-red-500 hover:text-red-700 p-1"
-                onClick={handlsShowDeleteModal}
-                title="ลบคลาส"
-              >
-                <Trash2 size={24} />
-              </button>
-            )}
-            <button className="text-2xl text-purple-600" onClick={onBack}>
-              <ArrowLeft size={28} />
-            </button>
+      <div className=" w-100 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
+        <div className="flex justify-between">
+          <div>
+            <h1 className="text-lg font-bold text-purple-800">
+              {classData.name}
+            </h1>
           </div>
-        </div>
+          {/* ------------ */}
+          <div className="flex gap-x-2">
+            {currectPang === "view" && selectedClass && (
+              <div className=" text-purple-600">
+                <CreateQRCodeAndUpload
+                  classId={selectedClass?.id ?? ""}
+                  currentUser={user ? { uid: user.uid, email: user.email || '' } : null}
+                />
+              </div>
+            )}
+            <div className="flex gap-x-2">
+              {isClassOwner && (
+                <div>
+                  <button
+                    className="text-red-500 hover:text-red-700"
+                    onClick={handlsShowDeleteModal}
+                    title="ลบคลาส"
+                  >
+                    <Trash2 size={24} />
+                  </button>
+                </div>
+              )}
+              <div>
+                <button className="text-purple-600" onClick={onBack}>
+                  <ArrowLeft size={28} />
+                </button>
+              </div>
+            </div>
 
-        <div className="text-purple-800 flex justify-between m-4">
-          <p>ชื่อ-สกุล</p>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 1.05 }}
-          >
-            <button
-              className="border-1 border-purple-700 p-1 rounded-4xl cursor-pointer"
-              onClick={handleShowSummary}
-            >
-              ดูสรุปการเข้าเรียน
-            </button>
-          </motion.div>
-          <p>รหัส นศ.</p>
+          </div>
+          {/* ------------ */}
         </div>
-
-        <p className="text-right text-purple-800">
-          จำนวนสมาชิกที่เช็คชื่อ: {classData?.checkedInCount || 0}
-        </p>
 
         <div className="overflow-scroll h-80 relative">
           {dailyCheckedIn.map(({ date, users }) => (
-            <div key={date} className="mb-4">
-              <div>
-                <h2 className="text-md text-purple-700 mb-1">
-                  วันที่: {new Date(date).toLocaleDateString("th-TH", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </h2>
-              </div>
-              {users.map((user) => (
-                <div key={user.uid + date}>
+            <div key={date}>
+              <div className="my-2 ">
+                <button
+                  onClick={() => toggleDate(date)}
+                  className="flex flex-row items-center gap-x-2 text-md text-purple-700 p-0.5 w-full bg-purple-50 hover:bg-purple-100 rounded-4xl shadow-xl transition duration-300 cursor-pointer"
+                >
+                  <div
+                    className={`transition-transform duration-300 ${openDates[date] ? "rotate-0" : "rotate-90"
+                      }`}
+                  >
+                    <ChevronDown size={20} />
+                  </div>
                   <div>
-                    <p className="text-sm text-purple-900">
-                      {user.timestamp.toLocaleTimeString("th-TH", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
+                    วันที่:{" "}
+                    {new Date(date).toLocaleDateString("th-TH", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </div>
-                  <div className="flex flex-row justify-between mt-1">
-                    <p className="text-sm text-purple-900">{user.name}</p>
-                    <p className="text-sm text-purple-900">{user.studentId}</p>
+                  <div>
+                    ({users.length}) คน
                   </div>
-                </div>
-              ))}
+                </button>
+              </div>
+
+              <AnimatePresence initial={false}>
+                {openDates[date] && (
+                  <motion.div
+                    key={date}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden p-4 rounded-xl shadow-lg bg-white mt-2"
+                  >
+                    {/* หัวตาราง */}
+                    <div className="flex flex-row justify-between text-purple-700 pb-1 border-purple-400">
+                      <div className="w-1/4">เวลา</div>
+                      <div className="w-1/2">ชื่อ - สกุล</div>
+                      <div className="w-1/4 text-right">รหัส นศ.</div>
+                    </div>
+
+                    {/* รายชื่อ */}
+                    {users.map((user) => (
+                      <div
+                        key={user.uid + date}
+                        className="flex flex-row justify-between items-center py-2 border-b border-purple-300"
+                      >
+                        <div className="text-sm text-purple-900 w-1/4">
+                          {" "}
+                          {user.timestamp.toLocaleTimeString("th-TH", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                        <div className="text-sm text-purple-900 w-1/2">{user.name}</div>
+                        <div className="text-sm text-purple-900 w-1/3 text-right">{user.studentId}</div>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
         </div>
-
       </div>
-
-      <AttendanceSummaryModal
-        isOpen={showSummary}
-        onClose={handleCloseSummary}
-        classData={classData}
-        attendanceSummary={attendanceSummary}
-      />
-
       <DeleteClassModal
         isOpen={showDeleteModal}
         onClose={handleCloseDeleteModal}

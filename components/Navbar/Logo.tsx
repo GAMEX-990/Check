@@ -1,13 +1,11 @@
 'use client'
 import React from 'react'
 import {  CheckCircle } from 'lucide-react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Image from "next/image";
 
 const Logo = () => {
   return (
-    <Link href="/" className="flex items-center group">
       <motion.div 
         className="relative flex items-center"
         whileHover={{ scale: 1.05 }}
@@ -27,7 +25,6 @@ const Logo = () => {
           <CheckCircle size={16} className="ml-1 text-green-500" />
         </div>
       </motion.div>
-    </Link>
   )
 }
 

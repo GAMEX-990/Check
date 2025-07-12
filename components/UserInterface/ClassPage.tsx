@@ -7,23 +7,27 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
-import { ArrowLeft } from "lucide-react";
+import { Check } from "lucide-react";
 import { useHasScanned } from "@/utils/hasScanned";
 import { ClassData } from "@/types/classTypes";
 import { motion } from "framer-motion";
+import { ClassPageType } from "@/types/classTypes";
 import Loader from "../Loader/Loader";
 
 interface ClassPageProps {
-  onBack: () => void;
+  page: ClassPageType;
   onSelectClass: (classData: ClassData) => void;
+  onPageChange: (page: ClassPageType) => void;
 }
 
-const ClassPage = ({ onBack, onSelectClass }: ClassPageProps) => {
+const ClassPage = ({ onSelectClass }: ClassPageProps) => {
   const { user, hasScanned, loading } = useHasScanned();
   const [joinedClasses, setJoinedClasses] = useState<ClassData[]>([]);
   const [classesLoading, setClassesLoading] = useState(false);
   const [isEntering, setIsEntering] = useState(false);
   const [delayDone, setdelayDone] = useState(false);
+
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -69,7 +73,7 @@ const ClassPage = ({ onBack, onSelectClass }: ClassPageProps) => {
 
   if (loading || !delayDone) {
     return (
-      <div className="border-2 border-purple-500 rounded-2xl p-4 h-95">
+      <div>
         <div className="flex justify-center items-center h-full">
           <div className="text-purple-600"><Loader /></div>
         </div>
@@ -79,64 +83,60 @@ const ClassPage = ({ onBack, onSelectClass }: ClassPageProps) => {
 
   return (
     <div>
-      <div className="w-100 h-auto border-2 border-purple-500 rounded-2xl p-4 relative">
-        <div className="flex justify-center">
-          <h1 className="text-2xl font-bold text-purple-800 text-center">Class</h1>
-          <div className="absolute right-0 mx-4">
-            <button className="text-2xl text-purple-600" onClick={onBack}>
-              <ArrowLeft size={28} />
-            </button>
-          </div>
-        </div>
-        <div className="overflow-scroll h-80">
-          <div className="flex flex-col gap-4 p-4">
-            {classesLoading ? (
-              <div className="absolute inset-0 bg-white/70 flex items-center justify-center ">
-                <Loader />
-              </div>
-            ) : isEntering ? (
-              <div className="absolute inset-0 bg-white/70 flex items-center justify-center ">
-                <Loader />
-              </div>
-            ) : (
-              <>
-                {joinedClasses.map((cls) => (
-                  <div key={cls.id}>
-                    <motion.div
-                      key={cls.id}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 1.05 }}
+
+      <div className="overflow-scroll h-80 ">
+        <div className="flex flex-col gap-4 p-4">
+          {classesLoading ? (
+            <div className="absolute inset-0 bg-white/70 flex items-center justify-center ">
+              <Loader />
+            </div>
+          ) : isEntering ? (
+            <div className="absolute inset-0 bg-white/70 flex items-center justify-center ">
+              <Loader />
+            </div>
+          ) : (
+            <>
+              {joinedClasses.map((cls) => (
+                <div key={cls.id}>
+                  <motion.div
+                    key={cls.id}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 1.05 }}
+                  >
+                    <div
+                      className="flex justify-between items-center bg-purple-50 hover:bg-purple-100 p-4 rounded-4xl shadow-lg cursor-pointer relative"
+                      onClick={() => {
+                        setIsEntering(true);
+                        setTimeout(() => {
+                          onSelectClass(cls);
+                        }, 2000);
+                      }}
                     >
-                      <div
-                        className="flex relative justify-between items-center bg-purple-200 hover:bg-purple-300 p-4 rounded-4xl cursor-pointer"
-                        onClick={() => {
-                          setIsEntering(true);
-                          setTimeout(() => {
-                            onSelectClass(cls);
-                          }, 2000);
-                        }}
-                      >
-                        <div className=" flex items-center gap-3">
-                          <div className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center rounded-full">
-                            {cls.name.charAt(0)}
+                      <div className="flex gap-3">
+                        <div className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center rounded-full">
+                          {cls.name.charAt(0)}
+                        </div>
+                        <div className="flex flex-col">
+                          <div className="flex gap-x-1">
+                            <p className="text-md font-bold text-purple-800">{cls.name}</p>
+                            <div>
+                              {user?.uid && cls.checkedInMembers?.includes(user.uid) && (
+                                <p className="text-green-600"><Check /></p>
+                              )}
+                            </div>
                           </div>
                           <div>
-                            <p className="text-md font-bold text-purple-800">{cls.name}</p>
                             <p className="text-sm text-purple-600 break-words">{cls.owner_email}</p>
                           </div>
                         </div>
-                        <div className=" absolute right-1">
-                          {user?.uid && cls.checkedInMembers?.includes(user.uid) && (
-                            <p className="text-green-600 text-xs tracking-tight whitespace-nowrap">เช็คชื่อแล้ว</p>
-                          )}
-                        </div>
                       </div>
-                    </motion.div>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
+
+                    </div>
+                  </motion.div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -35,9 +35,9 @@ export const exportMonthlyAttendanceToXLSX = (
       if (data?.present) {
         attended++;
         if (data.late) lateCount++;
-        row.push(data.late ? '✔ (สาย)' : '✔');
+        row.push(data.late ? '!' : '✓');
       } else {
-        row.push('✘');
+        row.push('X');
       }
     });
 

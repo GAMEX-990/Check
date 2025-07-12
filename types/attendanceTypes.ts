@@ -20,8 +20,6 @@ export interface StudentAttendanceSummary {
 }
 
 export interface AttendanceSummaryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   classData: ClassData;
   attendanceSummary: StudentAttendanceSummary[];
 }

@@ -6,31 +6,32 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
-import { ArrowRight } from "lucide-react";
 import { useHasScanned } from "@/utils/hasScanned";
 import { ClassData } from "@/types/classTypes";
 import { motion } from "framer-motion";
+import { ClassPageType } from "@/types/classTypes";
 import Loader from "../Loader/Loader";
 
 interface MyClassPageProps {
-  onNext: () => void;
+  page: ClassPageType;
   onSelectClass: (classData: ClassData) => void;
+  onPageChange: (page: ClassPageType) => void;
 }
 
-const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
+const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
   const { user, loading } = useHasScanned();
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [isEntering, setIsEntering] = useState(false);
-  const [delayDone,setdelayDone] = useState(false);
+  const [delayDone, setdelayDone] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setdelayDone(true);
     }, 2000); // 600ms ดีเลย์
-  
+
     return () => clearTimeout(timer);
   }, []);
-  
+
 
   useEffect(() => {
     if (loading || !user) return;
@@ -57,9 +58,9 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
 
   if (loading || !delayDone) {
     return (
-      <div className="border-2 border-purple-500 rounded-2xl p-4 h-95">
+      <div>
         <div className="flex justify-center items-center h-full">
-          <div className="text-purple-600"><Loader/></div>
+          <div className="text-purple-600"><Loader /></div>
         </div>
       </div>
     );
@@ -67,16 +68,8 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
 
   return (
     <div>
-      <div className="w-100 h-auto border-2 border-purple-500 rounded-2xl p-4 relative">
-        <div className="flex justify-center">
-          <h1 className="text-2xl font-bold text-purple-800 text-center">My Class</h1>
-          <div className="absolute right-0 mx-4">
-            <button className="text-2xl text-purple-600" onClick={onNext}>
-              <ArrowRight size={28} />
-            </button>
-          </div>
-        </div>
-        <div className=" overflow-scroll h-80 ">
+      <div className="">
+        <div className="overflow-scroll h-80 ">
           <div className="flex flex-col gap-4 p-4">
             {isEntering ? (
               <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
@@ -91,7 +84,7 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
                 >
                   <div
                     key={cls.id}
-                    className="flex justify-between items-center bg-purple-200 hover:bg-purple-300 p-4 rounded-4xl cursor-pointer"
+                    className="flex justify-between items-center bg-purple-50 hover:bg-purple-100 p-4 rounded-4xl shadow-lg cursor-pointer"
                     onClick={() => {
                       setIsEntering(true);
                       setTimeout(() => {
@@ -100,7 +93,7 @@ const MyClassPage = ({ onNext, onSelectClass }: MyClassPageProps) => {
                     }}
                   >
                     <span className="text-lg font-semibold text-purple-800">{cls.name}</span>
-                    <div className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center rounded-full">
+                    <div className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center rounded-full shadow-lg">
                       {cls.name.charAt(0)}
                     </div>
                   </div>

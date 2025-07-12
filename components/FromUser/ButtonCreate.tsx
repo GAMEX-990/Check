@@ -7,7 +7,7 @@ import { handleQRDetected as handleQRUtility } from "@/utils/qrScanner";
 import { useHasScanned } from "@/utils/hasScanned";
 import { handleCreateClass } from "@/utils/CreateClass";
 import { useCameraScanner } from "@/utils/useQRScanner";
-import { X } from "lucide-react";
+import { HousePlus, ScanQrCode, X } from "lucide-react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { motion } from "framer-motion";
@@ -89,35 +89,41 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
 
   // ส่วน JSX ที่จะ render
   return (
-    <div className="">
-      <div className=" flex flex-row md:flex-col gap-2 items-center justify-center">
-        <div>
-          <motion.div
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 1 }}
-          >
-            <button
-              className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
-              onClick={() => setScanning(true)}
-              disabled={!user}
-            >
-              {hasScanned ? "Scan QR" : "Scan QR"}
-            </button>
-          </motion.div>
+    <div>
+      <div className="border-2 border-purple-50 rounded-2xl shadow-lg">
+        <div className="mt-4 ml-2 max-w-fit">
+          <h1 className="text-purple-700 font-bold">จัดการคลาส</h1>
+          <h1 className="text-purple-700 text-sm">สร้างคลาสหรือเข้าร่วม</h1>
         </div>
-        <div>
-          <motion.div
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 1 }}
-          >
-            <button
-              className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
-              onClick={() => setShowPopup(true)}
-              disabled={!user}
+        <div className="flex flex-row p-5 gap-2 items-center justify-center md:flex-col">
+          <div>
+            <motion.div
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 1 }}
             >
-              Add a class
-            </button>
-          </motion.div>
+              <button
+                className="flex gap-x-2 w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+                onClick={() => setScanning(true)}
+                disabled={!user}
+              >
+                <ScanQrCode /> Scan QR
+              </button>
+            </motion.div>
+          </div>
+          <div>
+            <motion.div
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 1 }}
+            >
+              <button
+                className="flex gap-x-2 w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+                onClick={() => setShowPopup(true)}
+                disabled={!user}
+              >
+                <HousePlus /> Add a class
+              </button>
+            </motion.div>
+          </div>
         </div>
       </div>
 
@@ -243,7 +249,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
               }
             }}
           >
-            <X/>
+            <X />
           </button>
         </div>
       )}

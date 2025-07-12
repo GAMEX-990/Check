@@ -4,7 +4,7 @@ import { handleExportXLSX } from "@/utils/exportXLSXHandler";
 import { uploadStudentsFromFile } from "@/utils/parseCSVFile";
 import { doc, getDoc } from "firebase/firestore";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { Download, FileUp, Loader, QrCode, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
@@ -82,14 +82,6 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
 
   // เมื่อกดปุ่ม Upload CSV ให้เปิด input file
   const onUploadButtonClick = () => {
-    // ตรวจสอบสิทธิ์ก่อนอัปโหลด
-    if (!isOwner) {
-      toast.error(
-        "คุณไม่มีสิทธิ์ในการอัปโหลดไฟล์\nเฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้"
-      );
-      return;
-    }
-
     fileInputRef.current?.click();
   };
 
@@ -97,62 +89,61 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
     handleExportXLSX(classId, currentUser);
   };
 
+  if (isLoadingOwner) {
+    return (
+      <div>
+        <div className="flex justify-center items-center h-full">
+          <div className="text-purple-600"><Loader /></div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div>
-      <div className="flex flex-row md:flex-col gap-2 items-center justify-center">
+      <div className="flex gap-x-2">
         <div>
           <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
             <button
-              className="w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+              className="cursor-pointer"
               onClick={handleCreateQR}
             >
-              Create QR
+              <QrCode />
             </button>
           </motion.div>
         </div>
-        <div>
-          {/* ซ่อน input ไฟล์ไว้ */}
-          <input
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            ref={fileInputRef}
-            style={{ display: "none" }}
-            onChange={(e) => handleFileUpload(e, classId)}
-          />
-          {/* ปุ่มสำหรับเปิด input file */}
-          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
-            <button
-              onClick={onUploadButtonClick}
-              className={`w-auto h-auto border-1 p-2 rounded-2xl transition-colors ${
-                isLoadingOwner || !isOwner
-                  ? "border-gray-400 text-gray-400 cursor-not-allowed"
-                  : "border-purple-600 text-purple-600 hover:bg-purple-100"
-              }`}
-              title={
-                !isOwner ? "เฉพาะเจ้าของคลาสเท่านั้นที่สามารถอัปโหลดได้" : ""
-              }
-            >
-              Upload CSV
-            </button>
-          </motion.div>
-        </div>
-        <div>
-          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
-            <button
-              onClick={handleExportClick}
-              className={`w-auto h-auto border-1 p-2 rounded-2xl transition-colors ${
-                isLoadingOwner || !isOwner
-                  ? "border-gray-400 text-gray-400 cursor-not-allowed"
-                  : "border-purple-600 text-purple-600 hover:bg-purple-100"
-              }`}
-              title={
-                !isOwner ? "เฉพาะเจ้าของคลาสเท่านั้นที่สามารถ Export ได้" : ""
-              }
-            >
-              Export
-            </button>
-          </motion.div>
-        </div>
+        {!isLoadingOwner && isOwner && (
+          <div className="flex gap-x-2">
+            {/* ซ่อน input ไฟล์ไว้ */}
+            <input
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={(e) => handleFileUpload(e, classId)}
+            />
+            {/* ปุ่มสำหรับเปิด input file */}
+            <div>
+              <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
+                <button
+                  onClick={onUploadButtonClick}
+                  className="cursor-pointer"
+                >
+                  <FileUp />
+                </button>
+              </motion.div>
+            </div>
+            <div>
+              <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
+                <button
+                  onClick={handleExportClick}
+                  className="cursor-pointer"
+                >
+                  <Download />
+                </button>
+              </motion.div>
+            </div>
+          </div>
+        )}
       </div>
       {/* Modal สำหรับแสดง QR Code */}
       {showQRModal && qrCode && (

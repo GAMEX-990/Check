@@ -81,6 +81,7 @@ const Router = useRouter();
                 className="border-2 border-purple-600 text-purple-600 text-lg font-semibold px-8 py-4 rounded-xl hover:bg-purple-50 transition-colors duration-300"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => Router.push('/about')}
               >
                 Learn More
               </motion.button>

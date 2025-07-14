@@ -149,7 +149,7 @@ const Usercard = () => {
 
   return (
     <div className="flex justify-center">
-      <div className=" border-2 border-purple-50 rounded-2xl shadow-lg  w-85">
+      <div className="w-80 md:w-85 border-2 border-purple-50 rounded-2xl shadow-lg">
         <div className="flex justify-between p-4">
           <button className="text-purple-600 text-2xl" onClick={() => router.back()}>
             <ArrowLeft />

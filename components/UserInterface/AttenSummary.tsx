@@ -59,7 +59,7 @@ export const AttendanceSummaryModal = ({
 
   return (
     <div>
-      <div className="md:w-200 w-100 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
+      <div className="md:w-200 w-85 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
         <div></div>
         <motion.div
           initial={{ opacity: 0, y: -30 }}

@@ -41,13 +41,13 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="flex justify-center h-screen">
-        <div className="flex flex-col md:flex-row gap-4 mt-15">
+        <div className="flex flex-col gap-4 mt-15 md:flex-row">
           {currectPang !== 'view' && (
             <div className="max-h-fit">
               <Usercard />
             </div>
           )}
-          <div className='md:hidden'>
+          <div className='md:hidden flex items-center justify-center'>
             {currectPang !== 'view' && (
               <div className="max-h-fit">
                 <AddClassPopup />
@@ -55,7 +55,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="w-100 h-auto flex-shrink-0 max-h-fit">
+          <div className="flex max-h-fit items-center justify-center">
             <ClassSection onPageChange={handlePageChange} onClassSelect={setSelectedClass} />
           </div>
 

@@ -108,7 +108,7 @@ export const ViewClassDetailPage = ({
 
   return (
     <div>
-      <div className=" w-100 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
+      <div className="w-85 md:w-100 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
         <div className="flex justify-between">
           <div>
             <h1 className="text-lg font-bold text-purple-800">

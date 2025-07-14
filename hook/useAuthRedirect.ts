@@ -31,7 +31,6 @@ export const useAuthRedirect = (redirectType: 'auth-only' | 'guest-only' = 'gues
               router.replace('/loginregister');
             }
           } catch (error) {
-            console.error("Error checking user profile:", error);
             // ถ้าเกิด error ให้ส่งไป dashboard anyway
             router.replace('/dashboard');
           }

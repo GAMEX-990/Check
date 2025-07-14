@@ -70,7 +70,6 @@ export default function LoginRegisterPage() {
         return false;
       }
     } catch (error) {
-      console.error("Error checking student ID:", error);
       setStudentIdStatus('idle');
       setStudentIdError('ไม่สามารถตรวจสอบรหัสนักศึกษาได้');
       return false;
@@ -205,7 +204,6 @@ export default function LoginRegisterPage() {
         }
       })
     } catch (err: unknown) {
-      console.error("Registration error:", err);
       if (typeof err === 'object' && err !== null && 'code' in err) {
         const firebaseError = err as { code?: string; message?: string };
         if (firebaseError.code === 'auth/email-already-in-use') {

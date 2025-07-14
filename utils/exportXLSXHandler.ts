@@ -40,7 +40,6 @@ export const handleExportXLSX = async (
 
     // อ่านจากโครงสร้างใหม่: dailyCheckedInRecord
     const dailyCheckedInRecord = classDataFromDB.dailyCheckedInRecord || {};
-    console.log('Daily checked in record:', dailyCheckedInRecord);
 
     /* 4. รวบรวมข้อมูลจากทุกวัน */
     const allCheckedInUsers: UserData[] = [];
@@ -61,9 +60,6 @@ export const handleExportXLSX = async (
         }
       });
     });
-
-    console.log('All checked in users:', allCheckedInUsers.length);
-
     if (allCheckedInUsers.length === 0) {
       toast.error('ไม่มีข้อมูลผู้เข้าเรียนสำหรับ Export');
       return;
@@ -87,8 +83,6 @@ export const handleExportXLSX = async (
       const dd = localDate.getDate().toString().padStart(2, '0');
       const mm = (localDate.getMonth() + 1).toString().padStart(2, '0');
       const dateStr = `${dd}/${mm}`;
-      
-      console.log('Processing date:', dateStr, 'from timestamp:', timestamp);
       
       dateSet.add(dateStr);
       allDates.push(localDate);
@@ -132,8 +126,6 @@ export const handleExportXLSX = async (
       return m1 === m2 ? d1 - d2 : m1 - m2;
     });
 
-    console.log('Date list:', dateList);
-
     /* 7. หาชื่อเดือน / ปี (อ้างอิงวันที่น้อยที่สุด) */
     const earliestDate = allDates
       .slice()
@@ -161,7 +153,6 @@ export const handleExportXLSX = async (
       dateList
     );
   } catch (err) {
-    console.error('Export XLSX Error:', err);
     toast.error('เกิดข้อผิดพลาดในการ Export Excel');
   }
 };

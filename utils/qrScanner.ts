@@ -149,7 +149,6 @@ export const handleQRDetected = async ({
       toast.error('ไม่พบข้อมูลคลาสนี้');
     }
   } catch (error) {
-    console.error('Error details:', error);
     toast.error(`เกิดข้อผิดพลาดในการเช็คชื่อ: ${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
     setLoading(false);

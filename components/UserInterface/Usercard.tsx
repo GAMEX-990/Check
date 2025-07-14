@@ -88,7 +88,6 @@ const Usercard = () => {
         return false;
       }
     } catch (error) {
-      console.error("Error checking student ID:", error);
       setStudentIdStatus('idle');
       setStudentIdError('ไม่สามารถตรวจสอบรหัสนักศึกษาได้');
       return false;

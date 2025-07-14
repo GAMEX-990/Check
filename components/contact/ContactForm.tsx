@@ -29,7 +29,6 @@ export const ContactForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Form submitted:', formData)
     alert('ข้อความของคุณถูกส่งเรียบร้อยแล้ว!')
     setFormData({ name: '', email: '', subject: '', message: '' })
   }

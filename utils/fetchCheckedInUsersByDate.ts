@@ -31,7 +31,6 @@ export const fetchCheckedInUsersByDate = async (
       result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       return result;
     } catch (error) {
-      console.error("Error fetching daily records:", error);
       return [];
     }
   };

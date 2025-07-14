@@ -39,21 +39,17 @@ export default function RegisterPage() {
         userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
           const userData = userSnap.data();
-          console.log("User profile data:", userData);
 
           // ตรวจสอบ role จากข้อมูลใน Firestore
           if (userData.role) {
-            console.log("User role:", userData.role);
           }
         }
       } catch (firestoreError) {
-        console.error("Firestore access error:", firestoreError);
         setError("ไม่สามารถตรวจสอบข้อมูลโปรไฟล์ได้ กรุณาลองอีกครั้ง");
         return;
       }
 
       if (userSnap.exists()) {
-        console.log("User profile found, redirecting to dashboard");
         toast.success("เข้าสู่ระบบสำเร็จ!!", {
           style: {
             color: '#22c55e',
@@ -61,12 +57,10 @@ export default function RegisterPage() {
         });
         router.push("/dashboard");
       } else {
-        console.log("No profile found, redirecting to registration");
         router.push("/loginregister");
       }
 
     } catch (err: unknown) {
-      console.error("Google login error:", err);
 
       // Type narrowing for Firebase Auth errors
       const firebaseError = err as { code?: string; message?: string };

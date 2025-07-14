@@ -14,7 +14,7 @@ export async function openCamera(videoElement) {
         width: { ideal: 1280 },
         height: { ideal: 720 },
         facingMode: 'environment', // ใช้กล้องหลังสำหรับมือถือ
-        frameRate: { ideal: 30, max: 60 }  // <= เพิ่มตรงนี้
+        frameRate: { ideal: 60, max: 60 }  // <= เพิ่มตรงนี้
       }
     };
     
@@ -24,13 +24,11 @@ export async function openCamera(videoElement) {
       try {
         await videoElement.play();
       } catch (playError) {
-        console.error("ไม่สามารถเล่นวิดีโอได้:", playError);
         throw playError;
       }
     }
     return stream;
   } catch (err) {
-    console.error("ไม่สามารถเปิดกล้องได้:", err);
     if (err.name === 'NotAllowedError') {
       throw new Error('กรุณาอนุญาตการใช้งานกล้อง');
     } else if (err.name === 'NotFoundError') {

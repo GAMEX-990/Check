@@ -71,7 +71,6 @@ export const handleDeleteClass = async ({
     }
 
   } catch (error) {
-    console.error("เกิดข้อผิดพลาดในการลบคลาส:", error);
 
     if (error instanceof Error) {
       setError(`เกิดข้อผิดพลาด: ${error.message}`);

@@ -38,8 +38,7 @@ interface UseCameraScannerProps {
               };
             }
           })
-          .catch((error) => {
-            console.error("ไม่สามารถเปิดกล้องได้:", error);
+          .catch(() => {
             toast.error("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบการอนุญาตการใช้งานกล้อง");
           });
       }

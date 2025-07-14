@@ -37,12 +37,9 @@ export const updateUserProfile = async (data: UpdateProfileData): Promise<Profil
     if (data.role !== undefined) updateData.role = data.role;
 
     await updateDoc(userRef, updateData);
-    
-    console.log('✅ อัปเดตโปรไฟล์สำเร็จ:', updateData);
     return { success: true };
     
   } catch (error) {
-    console.error('❌ เกิดข้อผิดพลาดในการอัปเดตโปรไฟล์:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ' 

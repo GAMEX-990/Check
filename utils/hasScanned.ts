@@ -36,7 +36,6 @@ export const useHasScanned = () => {
                     setHasScanned(false);
                 }
             } catch (error) {
-                console.error("Error fetching scan status:", error);
                 setHasScanned(false);
             } finally {
                 setLoading(false);
@@ -58,7 +57,6 @@ export const useHasScanned = () => {
             });
             setHasScanned(newStatus);
         } catch (error) {
-            console.error("Error updating scan status:", error);
             // ถ้า document ไม่มี ให้สร้างใหม่
             try {
                 await setDoc(userDocRef, {
@@ -69,7 +67,6 @@ export const useHasScanned = () => {
                 });
                 setHasScanned(newStatus);
             } catch (createError) {
-                console.error("Error creating user document:", createError);
             }
         }
     }, [user?.uid]);
@@ -87,9 +84,7 @@ export const useHasScanned = () => {
                 })
             },{merge: true});
             setHasScanned(newStatus);
-            console.log("Scan status updated successfully", newStatus);
         } catch (error) {
-            console.error("Error updating scan status:", error);
         }
     }, [user?.uid]);
 

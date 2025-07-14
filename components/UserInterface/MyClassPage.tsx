@@ -49,7 +49,6 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
         setClasses(classList);
       },
       (error) => {
-        console.error("Error listening to owner classes:", error);
       }
     );
 

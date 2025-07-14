@@ -8,15 +8,11 @@ export const uploadStudentsToSubcollection = async (
   classId: string
 ) => {
   try {
-    console.log("Starting file upload process...", { fileName: file.name, classId });
-
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data, { type: "buffer" });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
-
-    console.log("Parsed data:", jsonData);
 
     // เก็บใน subcollection: classes/{classId}/students
     const classRef = doc(db, "classes", classId);
@@ -46,18 +42,13 @@ export const uploadStudentsToSubcollection = async (
           await addDoc(studentsCollectionRef, studentData);
           uploadedStudents.push(studentData);
 
-          console.log("Uploaded student to subcollection:", studentData);
         } else {
           errors.push(`ข้อมูลไม่ครบถ้วนในแถว: ${JSON.stringify(row)}`);
         }
       } catch (rowError) {
-        console.error("Error processing row:", row, rowError);
         errors.push(`ข้อผิดพลาดในแถว: ${JSON.stringify(row)}`);
       }
     }
-
-    console.log(`Upload completed. Success: ${uploadedStudents.length}, Errors: ${errors.length}`);
-
     return {
       success: true,
     };

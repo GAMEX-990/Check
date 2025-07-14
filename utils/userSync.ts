@@ -4,8 +4,8 @@ import { doc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 
 export const SyncUserToFirebase = () => {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [, setUser] = useState<User | null>(null);
+    const [, setLoading] = useState(true);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {

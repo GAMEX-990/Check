@@ -28,7 +28,6 @@ export const getUserData = async (uid: string): Promise<UserData | null> => {
       return null;
     }
   } catch (error) {
-    console.error("🔥 getUserData error:", error);
     return null;
   }
 };

@@ -40,7 +40,6 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
   useEffect(() => {
     if (!user?.uid || loading) return;
 
-    console.log("Setting up classes listener for user:", user.uid);
     setClassesLoading(true);
 
     const classesRef = collection(db, "classes");
@@ -60,13 +59,11 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
         setClassesLoading(false);
       },
       (error) => {
-        console.error("Error listening to classes:", error);
         setClassesLoading(false);
       }
     );
 
     return () => {
-      console.log("Cleaning up classes listener");
       unsubscribe();
     };
   }, [user?.uid, hasScanned, loading]);

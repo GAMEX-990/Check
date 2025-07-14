@@ -18,7 +18,7 @@ const SignedOutLinks = ({ fullWidth = false }: SignedOutLinksProps) => {
       await signOut(auth);
       toast.success("Logged out successfully");
       router.push("/");
-    } catch (error) {
+    } catch {
       toast.error("Failed to log out");
     }
   };

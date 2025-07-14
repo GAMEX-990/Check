@@ -36,7 +36,7 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
 
-    } catch (error) {
+    } catch{
       setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
     } finally {
       sethandleManualLogin(false);
@@ -71,7 +71,7 @@ export default function LoginPage() {
           if (userData.role) {
           }
         }
-      } catch (firestoreError) {
+      } catch {
         setError("ไม่สามารถตรวจสอบข้อมูลโปรไฟล์ได้ กรุณาลองอีกครั้ง");
         return;
       }

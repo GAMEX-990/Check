@@ -58,7 +58,7 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
         setJoinedClasses(classes);
         setClassesLoading(false);
       },
-      (error) => {
+      () => {
         setClassesLoading(false);
       }
     );

@@ -44,7 +44,7 @@ export default function RegisterPage() {
           if (userData.role) {
           }
         }
-      } catch (firestoreError) {
+      } catch {
         setError("ไม่สามารถตรวจสอบข้อมูลโปรไฟล์ได้ กรุณาลองอีกครั้ง");
         return;
       }

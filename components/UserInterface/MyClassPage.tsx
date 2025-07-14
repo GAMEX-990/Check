@@ -48,8 +48,6 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
         }));
         setClasses(classList);
       },
-      (error) => {
-      }
     );
 
     return () => unsubscribe();

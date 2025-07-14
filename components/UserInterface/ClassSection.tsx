@@ -76,7 +76,7 @@ const ClassSection = ({ onPageChange, onClassSelect }: ClassSectionProps) => {
           }}
         />
       ) : (
-        <div className="md:w-100 w-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4 relative overflow-hidden">
+        <div className="md:w-100 w-85  border-2 border-purple-50 rounded-2xl shadow-lg p-4 relative overflow-hidden">
           {/* Smooth Tab Switcher */}
           <div className="flex justify-center">
             <SmoothTabSwitcher />

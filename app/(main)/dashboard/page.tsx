@@ -1,28 +1,52 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Usercard from '@/components/UserInterface/Usercard';
 import ClassSection from '@/components/UserInterface/ClassSection';
 import AddClassPopup from '@/components/FromUser/ButtonCreate';
 import AttendanceSummaryModal from '@/components/UserInterface/AttenSummary';
 import Loader from '@/components/Loader/Loader';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import type { ClassData } from '@/types/classTypes';
 import { useAttendanceSummary } from '@/hook/useAttendanceSummary';
+import { getDoc, doc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { getFingerprint } from '@/utils/getFingerprint';
+
+const verifyDeviceAccess = async (uid: string) => {
+  const currentFingerprint = await getFingerprint();
+  const docRef = doc(db, 'devices', uid);
+  const docSnap = await getDoc(docRef);
+
+  if (!docSnap.exists()) {
+    throw new Error('ไม่มีข้อมูลอุปกรณ์ที่ลงทะเบียน');
+  }
+
+  const savedFingerprint = docSnap.data()?.fingerprint;
+  if (savedFingerprint !== currentFingerprint) {
+    throw new Error('อุปกรณ์นี้ไม่ใช่ของเจ้าของบัญชี');
+  }
+};
 
 export default function DashboardPage() {
   const [currectPang, setCurrectPang] = useState<'myclass' | 'class' | 'view'>('myclass');
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
   const { attendanceSummary } = useAttendanceSummary(selectedClass, currectPang === 'view');
-  const [, loading, error] = useAuthState(auth);
-  // เมื่อเปลี่ยนหน้าเป็น "view" และเลือกคลาส → โหลดข้อมูล summary
+  const [user, loading, error] = useAuthState(auth);
+  const router = useRouter();
 
+  useEffect(() => {
+    if (loading || !user) return; // รอโหลด user ให้เรียบร้อยก่อน
 
-  // เปลี่ยนหน้า
-  const handlePageChange = (page: 'myclass' | 'class' | 'view') => {
-    setCurrectPang(page);
-  };
+    verifyDeviceAccess(user.uid).catch((err) => {
+      toast.error(err.message || 'อุปกรณ์นี้ไม่ได้รับอนุญาต');
+      signOut(auth);
+      router.push('/login');
+    });
+  }, [user, loading, router]);
 
   // โหลดอยู่
   if (loading) {
@@ -47,7 +71,7 @@ export default function DashboardPage() {
               <Usercard />
             </div>
           )}
-          <div className='md:hidden flex items-center justify-center'>
+          <div className="md:hidden flex items-center justify-center">
             {currectPang !== 'view' && (
               <div className="max-h-fit">
                 <AddClassPopup />
@@ -56,10 +80,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex max-h-fit items-center justify-center">
-            <ClassSection onPageChange={handlePageChange} onClassSelect={setSelectedClass} />
+            <ClassSection onPageChange={setCurrectPang} onClassSelect={setSelectedClass} />
           </div>
 
-          <div className='hidden md:flex'>
+          <div className="hidden md:flex">
             {currectPang !== 'view' && (
               <div className="max-h-fit">
                 <AddClassPopup />
@@ -67,17 +91,13 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className=''>
+          <div>
             {currectPang === 'view' && selectedClass && (
-              <div className='max-h-fit'>
-                <AttendanceSummaryModal
-                  classData={selectedClass}
-                  attendanceSummary={attendanceSummary}
-                />
+              <div className="max-h-fit">
+                <AttendanceSummaryModal classData={selectedClass} attendanceSummary={attendanceSummary} />
               </div>
             )}
           </div>
-
         </div>
       </div>
     </div>

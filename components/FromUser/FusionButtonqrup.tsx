@@ -1,3 +1,4 @@
+"use client";
 import { db } from "@/lib/firebase";
 import { CreateQRCodeAndUploadProps } from "@/types/Fusionqrup";
 import { handleExportXLSX } from "@/utils/exportXLSXHandler";
@@ -18,6 +19,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
   const [showQRModal, setShowQRModal] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [isLoadingOwner, setIsLoadingOwner] = useState(true);
+  const [remainingTime, setRemainingTime] = useState<number>(0);
 
   useEffect(() => {
     const checkOwnerStatus = async () => {
@@ -30,10 +32,8 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
       try {
         const classRef = doc(db, "classes", classId);
         const classSnap = await getDoc(classRef);
-
         if (classSnap.exists()) {
           const classData = classSnap.data();
-          // ตรวจสอบว่า currentUser เป็นเจ้าของคลาสหรือไม่
           const isClassOwner =
             classData.owner_email === currentUser.email ||
             classData.created_by === currentUser.uid;
@@ -41,7 +41,6 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
         } else {
           setIsOwner(false);
         }
-      } catch {
       } finally {
         setIsLoadingOwner(false);
       }
@@ -50,7 +49,65 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
     checkOwnerStatus();
   }, [currentUser, classId]);
 
-  // ฟังก์ชันสำหรับจัดการการอัปโหลดไฟล์
+  // Countdown QR Code modal 3 นาที
+  useEffect(() => {
+    if (showQRModal) {
+      setRemainingTime(60);
+
+      const interval = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            setShowQRModal(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [showQRModal]);
+
+  // กันแคปหน้าจอ
+  useEffect(() => {
+    const blockKeys = (e: KeyboardEvent) => {
+      const overlay = document.getElementById("qr-blur-overlay");
+      if (!overlay) return;
+
+      if (
+        e.key === "PrintScreen" ||
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && e.key === "I")
+      ) {
+        e.preventDefault();
+        overlay.classList.remove("hidden");
+        setTimeout(() => {
+          overlay.classList.add("hidden");
+        }, 3000);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      const overlay = document.getElementById("qr-blur-overlay");
+      if (!overlay) return;
+
+      if (document.visibilityState === "hidden") {
+        overlay.classList.remove("hidden");
+      } else {
+        overlay.classList.add("hidden");
+      }
+    };
+
+    window.addEventListener("keydown", blockKeys);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("keydown", blockKeys);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     classId: string
@@ -59,7 +116,6 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
     if (!file) return;
 
     const result = await uploadStudentsFromFile(file, classId);
-
     if (result.success) {
       toast.success("อัปโหลดข้อมูลนักเรียนสำเร็จ!");
     } else {
@@ -67,53 +123,43 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
     }
   };
 
-  // ฟังก์ชันสำหรับสร้าง QR Code
   const handleCreateQR = () => {
-    // สร้าง link สำหรับ QR code โดยใช้ classId
     const qrLink = `https://your-app-url/class/${classId}`;
     setQrCode(qrLink);
-    setShowQRModal(true); // แสดง modal QR code
+    setShowQRModal(true);
   };
 
-  // ฟังก์ชันสำหรับปิด modal QR code
   const handleCloseQR = () => {
     setShowQRModal(false);
   };
 
-  // เมื่อกดปุ่ม Upload CSV ให้เปิด input file
   const onUploadButtonClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleExportClick = async () => {
+  const handleExportClick = () => {
     handleExportXLSX(classId, currentUser);
   };
 
   if (isLoadingOwner) {
     return (
-      <div>
-        <div className="flex justify-center items-center h-full">
-          <div className="text-purple-600"><Loader /></div>
-        </div>
+      <div className="flex justify-center items-center h-full text-purple-600">
+        <Loader />
       </div>
     );
   }
+
   return (
     <div>
       <div className="flex gap-x-2">
-        <div>
-          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
-            <button
-              className="cursor-pointer"
-              onClick={handleCreateQR}
-            >
-              <QrCode />
-            </button>
-          </motion.div>
-        </div>
+        <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
+          <button onClick={handleCreateQR} className="cursor-pointer">
+            <QrCode />
+          </button>
+        </motion.div>
+
         {!isLoadingOwner && isOwner && (
           <div className="flex gap-x-2">
-            {/* ซ่อน input ไฟล์ไว้ */}
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
@@ -121,33 +167,23 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
               style={{ display: "none" }}
               onChange={(e) => handleFileUpload(e, classId)}
             />
-            {/* ปุ่มสำหรับเปิด input file */}
-            <div>
-              <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
-                <button
-                  onClick={onUploadButtonClick}
-                  className="cursor-pointer"
-                >
-                  <FileUp />
-                </button>
-              </motion.div>
-            </div>
-            <div>
-              <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
-                <button
-                  onClick={handleExportClick}
-                  className="cursor-pointer"
-                >
-                  <Download />
-                </button>
-              </motion.div>
-            </div>
+            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
+              <button onClick={onUploadButtonClick} className="cursor-pointer">
+                <FileUp />
+              </button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
+              <button onClick={handleExportClick} className="cursor-pointer">
+                <Download />
+              </button>
+            </motion.div>
           </div>
         )}
       </div>
-      {/* Modal สำหรับแสดง QR Code */}
+
+      {/* QR Code Modal */}
       {showQRModal && qrCode && (
-        <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-20">
+        <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-20 select-none">
           <motion.div
             className="fixed inset-0 flex items-center justify-center z-10"
             initial={{ opacity: 0, scale: 0 }}
@@ -157,23 +193,32 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
               scale: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
             }}
           >
-            {/* กล่อง modal */}
-            <div className="relative bg-white rounded-4xl mx-5 shadow-lg overflow-hidden md:h-150 md:w-250">
-              {/* วงกลมสีม่วงที่มุมขวาบน */}
+            <div
+              className="relative bg-white rounded-4xl mx-5 shadow-lg overflow-hidden md:h-150 md:w-250"
+              onContextMenu={(e) => e.preventDefault()}
+            >
               <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500 rounded-full"></div>
-              {/* ปุ่มปิด modal - วางไว้บนวงกลมสีมวง */}
-              <div>
-                <button
-                  onClick={handleCloseQR}
-                  className="absolute top-2 right-2 z-10 text-white hover:text-gray-200 transition-colors"
-                >
-                  <X />
-                </button>
-              </div>
+              <button
+                onClick={handleCloseQR}
+                className="absolute top-2 right-2 z-10 text-white hover:text-gray-200 transition-colors"
+              >
+                <X />
+              </button>
 
-              {/* ส่วนแสดง QR Code */}
-              <div className="flex items-center justify-center p-15  md:p-40">
-                <QRCode value={qrCode} size={280} />
+              <div className="flex flex-col items-center justify-center p-15 md:p-40 relative">
+                <QRCode
+                  value={qrCode}
+                  size={280}
+                  className="pointer-events-none select-none"
+                />
+                <div
+                  id="qr-blur-overlay"
+                  className="absolute inset-0 bg-white/60 backdrop-blur-sm hidden transition duration-300"
+                />
+                <div className="mt-4 text-sm text-gray-500">
+                  QR จะหมดอายุใน {Math.floor(remainingTime / 60)}:
+                  {String(remainingTime % 60).padStart(2, "0")} นาที
+                </div>
               </div>
             </div>
           </motion.div>

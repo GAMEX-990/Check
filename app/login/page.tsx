@@ -11,6 +11,7 @@ import { Label } from '@radix-ui/react-label'; import { Button } from '@/compone
 import { toast } from 'sonner';
 import { useAuthRedirect } from '@/hook/useAuthRedirect';
 import Loader from '@/components/Loader/Loader';
+import { saveDeviceId } from '@/utils/saveDeviceId';
 
 
 export default function LoginPage() {
@@ -34,6 +35,7 @@ export default function LoginPage() {
     try {
       // Login ผ่าน Firebase Auth โดยตรง
       await signInWithEmailAndPassword(auth, email, password);
+      await saveDeviceId(auth.currentUser!.uid);
       router.push('/dashboard');
 
     } catch{
@@ -59,6 +61,7 @@ export default function LoginPage() {
       // Attempt sign in with popup
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      await saveDeviceId(user.uid);
       // Check if user profile exists in Firestore
       const userRef = doc(db, "users", user.uid);
       let userSnap;

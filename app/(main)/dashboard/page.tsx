@@ -21,10 +21,6 @@ const verifyDeviceAccess = async (uid: string) => {
   const docRef = doc(db, 'devices', uid);
   const docSnap = await getDoc(docRef);
 
-  if (!docSnap.exists()) {
-    throw new Error('ไม่มีข้อมูลอุปกรณ์ที่ลงทะเบียน');
-  }
-
   const savedFingerprint = docSnap.data()?.fingerprint;
   if (savedFingerprint !== currentFingerprint) {
     throw new Error('อุปกรณ์นี้ไม่ใช่ของเจ้าของบัญชี');

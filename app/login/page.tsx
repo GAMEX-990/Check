@@ -11,7 +11,7 @@ import { Label } from '@radix-ui/react-label'; import { Button } from '@/compone
 import { toast } from 'sonner';
 import { useAuthRedirect } from '@/hook/useAuthRedirect';
 import Loader from '@/components/Loader/Loader';
-import { saveDeviceId } from '@/utils/saveDeviceId';
+import { saveAndCleanupDeviceId } from '@/utils/getFingerprint';
 
 
 export default function LoginPage() {
@@ -21,7 +21,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [ishandleManualLogin, sethandleManualLogin] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const {user,loading} = useAuthRedirect('guest-only');
+  const { user, loading } = useAuthRedirect('guest-only');
 
   // Manual login
   const handleManualLogin = async () => {
@@ -35,10 +35,10 @@ export default function LoginPage() {
     try {
       // Login ผ่าน Firebase Auth โดยตรง
       await signInWithEmailAndPassword(auth, email, password);
-      await saveDeviceId(auth.currentUser!.uid);
+      await saveAndCleanupDeviceId();
       router.push('/dashboard');
 
-    } catch{
+    } catch {
       setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
     } finally {
       sethandleManualLogin(false);
@@ -61,7 +61,7 @@ export default function LoginPage() {
       // Attempt sign in with popup
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      await saveDeviceId(user.uid);
+      await saveAndCleanupDeviceId();;
       // Check if user profile exists in Firestore
       const userRef = doc(db, "users", user.uid);
       let userSnap;
@@ -113,7 +113,7 @@ export default function LoginPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 flex items-center justify-center">
         <div className="text-center">
-        <div className="text-purple-600"><Loader/></div>
+          <div className="text-purple-600"><Loader /></div>
         </div>
       </div>
     );
@@ -239,7 +239,7 @@ export default function LoginPage() {
             >
               สร้างบัญชีใหม่
             </Button>
-            <Button  variant='link' className=" text-sm font-medium text-purple-600 hover:text-purple-800 cursor-pointer">
+            <Button variant='link' className=" text-sm font-medium text-purple-600 hover:text-purple-800 cursor-pointer">
               ลืมรหัสผ่าน?
             </Button>
           </div>

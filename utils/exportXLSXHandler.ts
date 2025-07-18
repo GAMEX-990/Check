@@ -10,13 +10,13 @@ export const handleExportXLSX = async (
   currentUser: { uid: string } | null
 ): Promise<void> => {
   try {
-    /* 1. ตรวจสิทธิ์ */
+    // (1) ตรวจสิทธิ์
     if (!currentUser) {
       toast.error('คุณยังไม่ได้ล็อกอิน');
       return;
     }
 
-    /* 2. ดึงข้อมูลคลาส */
+    // (2) ดึงข้อมูลคลาส
     const classRef = doc(db, 'classes', classId);
     const classSnap = await getDoc(classRef);
 
@@ -32,23 +32,18 @@ export const handleExportXLSX = async (
       return;
     }
 
-    /* 3. เตรียมข้อมูลคลาส */
+    // (3) เตรียมข้อมูลคลาส
     const classData: ClassData = {
       name: classDataFromDB.name || 'ไม่ทราบชื่อคลาส',
       checkedInCount: classDataFromDB.checkedInCount || 0
     };
 
-    // อ่านจากโครงสร้างใหม่: dailyCheckedInRecord
     const dailyCheckedInRecord = classDataFromDB.dailyCheckedInRecord || {};
 
-    /* 4. รวบรวมข้อมูลจากทุกวัน */
+    // (4) รวบรวมข้อมูลจากทุกวัน
     const allCheckedInUsers: UserData[] = [];
-    
-    // วนลูปทุกวันที่มีข้อมูล
     Object.keys(dailyCheckedInRecord).forEach(dateKey => {
       const dayRecord = dailyCheckedInRecord[dateKey];
-      
-      // วนลูปทุกคนในวันนั้น
       Object.values(dayRecord).forEach((record: any) => {
         if (record && record.timestamp && typeof record.timestamp.toDate === 'function') {
           allCheckedInUsers.push({
@@ -60,30 +55,30 @@ export const handleExportXLSX = async (
         }
       });
     });
+
     if (allCheckedInUsers.length === 0) {
       toast.error('ไม่มีข้อมูลผู้เข้าเรียนสำหรับ Export');
       return;
     }
 
-    /* 5. เรียงตามเวลา (สำคัญสำหรับหาคนแรกต่อวัน) */
+    // (5) เรียงตามเวลา
     allCheckedInUsers.sort(
       (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
     );
 
-    /* 6. สร้าง AttendanceRecord + dateList + ตรวจสาย */
+    // (6) ประมวลผลข้อมูล
     const attendanceData: AttendanceRecord = {};
     const dateSet = new Set<string>();
-    const earliestByDate: Record<string, Date> = {}; // เก็บคนแรกของแต่ละวัน
+    const earliestByDate: Record<string, Date> = {};
     const allDates: Date[] = [];
 
-    // --- Pass 1: หาเวลาคนแรกของแต่ละวัน ---
+    // Pass 1: หาคนแรกของแต่ละวัน
     allCheckedInUsers.forEach(({ timestamp }) => {
-      // ใช้ local timezone
       const localDate = new Date(timestamp.getTime() + (timestamp.getTimezoneOffset() * 60000));
       const dd = localDate.getDate().toString().padStart(2, '0');
       const mm = (localDate.getMonth() + 1).toString().padStart(2, '0');
       const dateStr = `${dd}/${mm}`;
-      
+
       dateSet.add(dateStr);
       allDates.push(localDate);
 
@@ -95,18 +90,28 @@ export const handleExportXLSX = async (
       }
     });
 
-    // --- Pass 2: เติม attendanceData พร้อม flag late ---
-    allCheckedInUsers.forEach(({ studentId, name, timestamp }) => {
-      // ใช้ local timezone
-      const localDate = new Date(timestamp.getTime() + (timestamp.getTimezoneOffset() * 60000));
+    // สร้าง map สำหรับบันทึกว่าใครมาในวันไหน
+    const presentMap: Record<string, Set<string>> = {};
+    Object.keys(earliestByDate).forEach(date => {
+      presentMap[date] = new Set();
+    });
 
+    // Pass 2: บันทึกผู้มาเช็คชื่อในแต่ละวัน
+    allCheckedInUsers.forEach(({ studentId, name, timestamp }) => {
+      const localDate = new Date(timestamp.getTime() + (timestamp.getTimezoneOffset() * 60000));
       const dd = localDate.getDate().toString().padStart(2, '0');
       const mm = (localDate.getMonth() + 1).toString().padStart(2, '0');
       const dateStr = `${dd}/${mm}`;
 
       const firstTimeThisDate = earliestByDate[dateStr];
       const lateCutoff = new Date(firstTimeThisDate.getTime() + 15 * 60 * 1000);
+      const absentCutoff = new Date(firstTimeThisDate.getTime() + 3 * 60 * 60 * 1000); // 3 ชั่วโมง
+
       const isLate = localDate.getTime() > lateCutoff.getTime();
+      const isAbsent = localDate.getTime() > absentCutoff.getTime();
+
+      // ข้ามถ้ามาสายเกิน 3 ชม.
+      if (isAbsent) return;
 
       if (!attendanceData[studentId]) {
         attendanceData[studentId] = {
@@ -114,10 +119,33 @@ export const handleExportXLSX = async (
           attendance: {}
         };
       }
+
       attendanceData[studentId].attendance[dateStr] = {
         present: true,
         late: isLate
       };
+
+      presentMap[dateStr].add(studentId);
+    });
+
+    // Pass 3: เติม "ขาด" ให้คนที่ไม่ได้มาในวันนั้น
+    const allStudentIds = new Set<string>(allCheckedInUsers.map(u => u.studentId));
+    dateSet.forEach(date => {
+      allStudentIds.forEach(studentId => {
+        if (!presentMap[date].has(studentId)) {
+          if (!attendanceData[studentId]) {
+            const student = allCheckedInUsers.find(u => u.studentId === studentId);
+            attendanceData[studentId] = {
+              name: student?.name || 'ไม่ทราบชื่อ',
+              attendance: {}
+            };
+          }
+          attendanceData[studentId].attendance[date] = {
+            present: false,
+            late: false
+          };
+        }
+      });
     });
 
     const dateList = Array.from(dateSet).sort((a, b) => {
@@ -126,27 +154,16 @@ export const handleExportXLSX = async (
       return m1 === m2 ? d1 - d2 : m1 - m2;
     });
 
-    /* 7. หาชื่อเดือน / ปี (อ้างอิงวันที่น้อยที่สุด) */
     const earliestDate = allDates
       .slice()
       .sort((a, b) => a.getTime() - b.getTime())[0];
     const monthsTH = [
-      'มกราคม',
-      'กุมภาพันธ์',
-      'มีนาคม',
-      'เมษายน',
-      'พฤษภาคม',
-      'มิถุนายน',
-      'กรกฎาคม',
-      'สิงหาคม',
-      'กันยายน',
-      'ตุลาคม',
-      'พฤศจิกายน',
-      'ธันวาคม'
+      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
     ];
     const monthLabel = `${monthsTH[earliestDate.getMonth()]} ${earliestDate.getFullYear() + 543}`;
 
-    /* 8. Export เป็น .xlsx */
+    // (7) Export
     exportMonthlyAttendanceToXLSX(
       { name: classData.name, month: monthLabel },
       attendanceData,

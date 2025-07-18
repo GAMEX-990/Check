@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthRedirect } from "@/hook/useAuthRedirect";
 import Loader from "@/components/Loader/Loader";
 import { toast } from "sonner";
-import { saveDeviceId } from "@/utils/saveDeviceId";
+import { saveAndCleanupDeviceId } from "@/utils/getFingerprint";
 
 export default function LoginRegisterPage() {
   const [fullname, setFullname] = useState("");
@@ -178,7 +178,7 @@ export default function LoginRegisterPage() {
       // ลิงค์ credential กับ user ปัจจุบัน
       const result = await linkWithCredential(user, credential);
       const linkedUser = result.user;
-      await saveDeviceId(linkedUser.uid);
+      await saveAndCleanupDeviceId();;
 
       // อัพเดท profile
       await updateProfile(linkedUser, {

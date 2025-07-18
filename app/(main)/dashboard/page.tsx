@@ -10,7 +10,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
 import type { ClassData } from '@/types/classTypes';
 import { useAttendanceSummary } from '@/hook/useAttendanceSummary';
-import { getDoc, doc } from 'firebase/firestore';
+import { getDoc, doc, setDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -21,11 +21,37 @@ const verifyDeviceAccess = async (uid: string) => {
   const docRef = doc(db, 'devices', uid);
   const docSnap = await getDoc(docRef);
 
-  const savedFingerprint = docSnap.data()?.fingerprint;
+  if (!docSnap.exists()) {
+    // ถ้ายังไม่มี fingerprint ในฐานข้อมูล
+    // ให้บันทึก fingerprint ใหม่เลย
+    await setDoc(docRef, {
+      fingerprint: currentFingerprint,
+      createdAt: new Date(),
+    });
+    return; // ลงทะเบียนเสร็จ จบการตรวจสอบ
+  }
+
+  const data = docSnap.data();
+  const savedFingerprint = data.fingerprint;
+  const createdAt = data.createdAt?.toMillis?.() ?? 0;
+
+  const now = Date.now();
+  const FOUR_HOURS = 4 * 60 * 60 * 1000; // 4 ชั่วโมง (เดิม)
   if (savedFingerprint !== currentFingerprint) {
-    throw new Error('อุปกรณ์นี้ไม่ใช่ของเจ้าของบัญชี');
+    const expired = now - createdAt > FOUR_HOURS;
+
+    if (!expired) {
+      throw new Error('อุปกรณ์นี้ไม่ใช่อุปกรณ์ที่ลงทะเบียนไว้ในช่วง 4 ชั่วโมงนี้');
+    }
+
+    // หมดอายุ → ลบของเก่าและเก็บ fingerprint ใหม่
+    await setDoc(docRef, {
+      fingerprint: currentFingerprint,
+      createdAt: new Date(),
+    });
   }
 };
+
 
 export default function DashboardPage() {
   const [currectPang, setCurrectPang] = useState<'myclass' | 'class' | 'view'>('myclass');

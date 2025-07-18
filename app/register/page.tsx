@@ -9,6 +9,7 @@ import React, { useState } from 'react'
 import Image from "next/image";
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { saveAndCleanupDeviceId } from '@/utils/getFingerprint';
 
 
 export default function RegisterPage() {
@@ -18,6 +19,7 @@ export default function RegisterPage() {
   // Google login
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // Google login
   const handleGoogleLogin = async () => {
     // Prevent multiple login attempts
     if (isLoggingIn) return;
@@ -32,6 +34,7 @@ export default function RegisterPage() {
       // Attempt sign in with popup
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      await saveAndCleanupDeviceId();;
       // Check if user profile exists in Firestore
       const userRef = doc(db, "users", user.uid);
       let userSnap;
@@ -61,7 +64,6 @@ export default function RegisterPage() {
       }
 
     } catch (err: unknown) {
-
       // Type narrowing for Firebase Auth errors
       const firebaseError = err as { code?: string; message?: string };
 
@@ -79,6 +81,7 @@ export default function RegisterPage() {
       setIsLoggingIn(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 flex items-center justify-center p-4">

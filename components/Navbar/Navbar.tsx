@@ -5,7 +5,7 @@ import Logo from './Logo'
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase'
 import SignedOutLinks from './SignedOutLinks'
-import { Menu, X, User as Home, Info, Mail, ScanQrCode, HousePlus } from 'lucide-react'
+import { Menu, X, User as Home, Info, Mail} from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserData, UserData } from '@/utils/getcurrentuser';
 import Image from 'next/image';
@@ -16,8 +16,6 @@ const Navbar = () => {
     const [user, setUser] = useState<User | null>(null);
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [scanning, setScanning] = useState(false);
-    const [showPopup, setShowPopup] = useState(false);
 
 
     useEffect(() => {

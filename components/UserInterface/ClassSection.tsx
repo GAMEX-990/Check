@@ -53,7 +53,7 @@ const ClassSection = ({ onPageChange, onClassSelect }: ClassSectionProps) => {
             <button
               key={tab.id}
               onClick={() => handlePageChange(tab.id as ClassPageType)}
-              className="relative z-10 flex items-center gap-2 px-6 py-3 rounded-full transition-colors duration-200 justify-center "
+              className="relative flex items-center gap-2 px-6 py-3 rounded-full transition-colors duration-200 justify-center"
             >
               <span className="text-purple-700 text-sm">{tab.label}</span>
             </button>

@@ -105,13 +105,13 @@ export default function DashboardPage() {
             <ClassSection onPageChange={setCurrectPang} onClassSelect={setSelectedClass} />
           </div>
 
-          <div className="hidden md:flex">
+          {/* <div className="hidden md:flex">
             {currectPang !== 'view' && (
               <div className="max-h-fit">
                 <AddClassPopup />
               </div>
             )}
-          </div>
+          </div> */}
 
           <div>
             {currectPang === 'view' && selectedClass && (

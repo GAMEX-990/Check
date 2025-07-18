@@ -90,44 +90,68 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
   // ส่วน JSX ที่จะ render
   return (
     <div>
-      <div className="w-85 md:w-auto border-2 border-purple-50 rounded-2xl shadow-lg">
-        <div className="mt-4 ml-2 max-w-fit">
-          <h1 className="text-purple-700 font-bold">จัดการคลาส</h1>
-          <h1 className="text-purple-700 text-sm">สร้างคลาสหรือเข้าร่วม</h1>
-        </div>
-        <div className="flex flex-row p-5 gap-2 items-center justify-center md:flex-col">
+      <div className="hidden md:block">
+        <div className="flex flex-row space-x-4 items-center justify-center">
           <div>
-            <motion.div
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 1 }}
+            <button
+              className="flex gap-x-1 text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200"
+              onClick={() => setScanning(true)}
+              disabled={!user}
             >
-              <button
-                className="flex gap-x-2 w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
-                onClick={() => setScanning(true)}
-                disabled={!user}
-              >
-                <ScanQrCode /> Scan QR
-              </button>
-            </motion.div>
+              <ScanQrCode style={{color: "var(--color-purple-600)"}}
+              /> Scan QR
+            </button>
           </div>
           <div>
-            <motion.div
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 1 }}
+            <button
+              className="flex gap-x-1 text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200"
+              onClick={() => setShowPopup(true)}
+              disabled={!user}
             >
-              <button
-                className="flex gap-x-2 w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
-                onClick={() => setShowPopup(true)}
-                disabled={!user}
-              >
-                <HousePlus /> Add a class
-              </button>
-            </motion.div>
+              <HousePlus style={{color: "var(--color-purple-600)"}}/> Add a class
+            </button>
           </div>
         </div>
       </div>
-
-
+      {/* ------------------------------------------------------------------------------------------------------------ */}
+      <div className="block md:hidden">
+        <div className="w-85 md:w-auto border-2 border-purple-50 rounded-2xl shadow-lg">
+          <div className="mt-4 ml-2 max-w-fit">
+            <h1 className="text-purple-700 font-bold">จัดการคลาส</h1>
+            <h1 className="text-purple-700 text-sm">สร้างคลาสหรือเข้าร่วม</h1>
+          </div>
+          <div className="flex flex-row p-5 space-2 items-center justify-center md:flex-col">
+            <div>
+              <motion.div
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 1 }}
+              >
+                <button
+                  className="flex space-x-2 w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+                  onClick={() => setScanning(true)}
+                  disabled={!user}
+                >
+                  <ScanQrCode /> Scan QR
+                </button>
+              </motion.div>
+            </div>
+            <div>
+              <motion.div
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 1 }}
+              >
+                <button
+                  className="flex space-x-2 w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+                  onClick={() => setShowPopup(true)}
+                  disabled={!user}
+                >
+                  <HousePlus /> Add a class
+                </button>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </div>
       {showPopup && (
         <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-20">
           <motion.div
@@ -166,7 +190,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
                 <div className="p-8 md:ml-auto">
                   <div className="bg-white p-8 rounded-2xl shadow-lg ">
                     <div>
-                      <h2 className="text-purple-700 font-bold text-xl mb-6 flex items-center gap-2">
+                      <h2 className="text-purple-700 font-bold text-xl mb-6 flex items-center space-2">
                         <span>🏠</span> ชื่อคลาส
                       </h2>
                     </div>

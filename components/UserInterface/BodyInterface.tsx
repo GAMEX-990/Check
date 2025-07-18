@@ -111,43 +111,6 @@ const BodyInterface = () => {
             <div className="relative w-full max-w-md">
               <div className="absolute -top-6 -left-6 w-24 h-24 bg-purple-200 rounded-full opacity-60 animate-pulse"></div>
               <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-purple-300 rounded-full opacity-50"></div>
-
-              <div className="relative z-10 bg-white rounded-2xl shadow-xl p-6 border border-purple-100">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  </div>
-                  <div className="text-xs text-gray-400 font-medium">check-in.app</div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="h-12 bg-purple-100 rounded-lg w-full flex items-center px-4">
-                    <div className="w-6 h-6 rounded-full bg-purple-500 mr-3 flex items-center justify-center">
-                      <CheckCircle size={14} color="white" />
-                    </div>
-                    <div className="text-sm text-purple-700 font-medium">Web Development</div>
-                  </div>
-
-                  <div className="h-12 bg-gray-100 rounded-lg w-full flex items-center px-4">
-                    <div className="w-6 h-6 rounded-full bg-gray-300 mr-3"></div>
-                    <div className="text-sm text-gray-500">Data Structures</div>
-                  </div>
-
-                  <div className="h-12 bg-gray-100 rounded-lg w-full flex items-center px-4">
-                    <div className="w-6 h-6 rounded-full bg-gray-300 mr-3"></div>
-                    <div className="text-sm text-gray-500">Mobile App Design</div>
-                  </div>
-
-                  <div className="mt-6 flex justify-end">
-                    <button className="bg-purple-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-300 flex items-center space-x-1">
-                      <span>Check-in Now</span>
-                      <ArrowRight size={14} />
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
           </motion.div>
         </div>

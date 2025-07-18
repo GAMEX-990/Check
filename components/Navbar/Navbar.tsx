@@ -5,16 +5,19 @@ import Logo from './Logo'
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase'
 import SignedOutLinks from './SignedOutLinks'
-import { Menu, X, User as Home, Info, Mail } from 'lucide-react'
+import { Menu, X, User as Home, Info, Mail, ScanQrCode, HousePlus } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserData, UserData } from '@/utils/getcurrentuser';
 import Image from 'next/image';
+import AddClassPopup from '../FromUser/ButtonCreate';
 
 const Navbar = () => {
     const [userData, setUserData] = useState<UserData | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [scanning, setScanning] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
 
 
     useEffect(() => {
@@ -39,8 +42,6 @@ const Navbar = () => {
 
     const navLinks = user ? [
         { name: 'Dashboard', href: '/dashboard', icon: <Home size={18} /> },
-        { name: 'About Us', href: '/about', icon: <Info size={18} /> },
-        { name: 'Contact', href: '/contact', icon: <Mail size={18} /> },
     ] : [
         { name: 'Home', href: '/', icon: <Home size={18} /> },
         { name: 'About Us', href: '/about', icon: <Info size={18} /> },
@@ -59,8 +60,9 @@ const Navbar = () => {
                 <Logo />
 
                 {/* Desktop Navigation */}
-                <div className='hidden md:flex items-center space-x-8'>
-                    <div className='flex items-center space-x-6'>
+                <div className='hidden md:flex items-center space-x-4'>
+                    <div className='flex items-center space-x-4'>
+                        {user && <div><AddClassPopup/></div>}
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}
@@ -102,12 +104,14 @@ const Navbar = () => {
                         >
                             Login
                         </Link>
+
                     )}
                 </div>
 
                 {/* Mobile menu button */}
                 <div className="md:hidden">
                     <button
+
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         className="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100"
                         aria-label="Toggle mobile menu"

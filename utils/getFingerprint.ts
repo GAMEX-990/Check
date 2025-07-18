@@ -26,7 +26,7 @@ export const saveAndCleanupDeviceId = async (): Promise<string> => {
   await setDoc(
     docRef,
     {
-      createdAt: serverTimestamp(),
+      createdAt: Timestamp.now(),
     },
     { merge: true }
   );

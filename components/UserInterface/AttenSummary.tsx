@@ -234,7 +234,7 @@ export const AttendanceSummaryModal = ({
   };
 
   // Custom tooltip for bar chart
-  const CustomBarTooltip = ({ active, payload, label }: { 
+  const CustomBarTooltip = ({ active, payload }: { 
     active?: boolean; 
     payload?: Array<{
       value: number;

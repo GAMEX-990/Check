@@ -3,6 +3,16 @@ import { motion } from "framer-motion";
 import { StudentAttendanceSummary } from "@/types/attendanceTypes";
 import { ClassData } from "@/types/classTypes";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { useEffect, useState } from 'react';
+import { collection, getDocs, doc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+
+interface Student {
+  id: string;
+  studentId: string;
+  name: string;
+  status: string;
+}
 
 export const AttendanceSummaryModal = ({
   classData,
@@ -11,18 +21,67 @@ export const AttendanceSummaryModal = ({
   classData: ClassData;
   attendanceSummary: StudentAttendanceSummary[];
 }) => {
-  const totalStudents = attendanceSummary.length;
-  const studentsWithAttendance = attendanceSummary.filter(student => student.count > 0).length;
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // ดึงรายชื่อนักเรียนทั้งหมดจาก subcollection
+  useEffect(() => {
+    const fetchAllStudents = async () => {
+      if (!classData.id) return;
+      
+      try {
+        setIsLoading(true);
+        const classRef = doc(db, "classes", classData.id);
+        const studentsCollectionRef = collection(classRef, "students");
+        const studentsSnapshot = await getDocs(studentsCollectionRef);
+        
+        const students: Student[] = studentsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as Student));
+        
+        setAllStudents(students);
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        setAllStudents([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAllStudents();
+  }, [classData.id]);
+
+  // รวมข้อมูลนักเรียนทั้งหมดกับข้อมูลการเข้าเรียน
+  const completeAttendanceSummary = allStudents.map(student => {
+    const attendanceRecord = attendanceSummary.find(
+      record => record.studentId === student.studentId
+    );
+    
+    return {
+      uid: attendanceRecord?.uid || student.id,
+      name: student.name,
+      studentId: student.studentId,
+      email: attendanceRecord?.email || '',
+      count: attendanceRecord?.count || 0,
+      lastAttendance: attendanceRecord?.lastAttendance || null,
+      status: student.status
+    };
+  });
+
+  const totalStudents = completeAttendanceSummary.length;
+  const studentsWithAttendance = completeAttendanceSummary.filter(student => student.count > 0).length;
   const studentsWithoutAttendance = totalStudents - studentsWithAttendance;
 
   // Data for Pie Chart
   const pieData = [
     { name: 'เข้าเรียน', value: studentsWithAttendance, color: '#10B981' },
     { name: 'ไม่เข้าเรียน', value: studentsWithoutAttendance, color: '#EF4444' }
-  ];
+  ].filter(item => item.value > 0); // กรองเฉพาะที่มีค่ามากกว่า 0
 
   // Data for Bar Chart - Top 10 students with highest attendance
-  const barData = attendanceSummary
+  const barData = completeAttendanceSummary
+    .filter(student => student.count > 0) // เฉพาะคนที่เข้าเรียน
     .sort((a, b) => b.count - a.count)
     .slice(0, 10)
     .map(student => ({
@@ -57,6 +116,16 @@ export const AttendanceSummaryModal = ({
     return null;
   };
 
+  if (isLoading) {
+    return (
+      <div className="md:w-200 w-85 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
+        <div className="flex items-center justify-center h-40">
+          <div className="text-purple-600">กำลังโหลดข้อมูล...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="md:w-200 w-85 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
@@ -71,7 +140,8 @@ export const AttendanceSummaryModal = ({
           <div className="mb-6 bg-purple-50 rounded-lg p-4 text-center">
             <p className="text-purple-800 font-medium text-lg mb-1">คลาส: {classData.name}</p>
             <p className="text-purple-700 text-sm">นักเรียนทั้งหมด: {totalStudents} คน</p>
-            <p className="text-purple-700 text-sm">เข้าเรียนแล้ว: {studentsWithAttendance} คน</p>
+            <p className="text-green-600 text-sm font-medium">เข้าเรียนแล้ว: {studentsWithAttendance} คน</p>
+            <p className="text-red-600 text-sm font-medium">ไม่เข้าเรียน: {studentsWithoutAttendance} คน</p>
           </div>
 
           {/* Charts Section */}
@@ -105,7 +175,7 @@ export const AttendanceSummaryModal = ({
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip formatter={(value) => [value, 'คน']} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -145,7 +215,7 @@ export const AttendanceSummaryModal = ({
           {/* Student List */}
           <div className="space-y-3 max-h-[300px] overflow-y-auto">
             <h3 className="text-lg font-semibold text-purple-800 mb-3">รายชื่อนักเรียน</h3>
-            {attendanceSummary.map((student, index) => (
+            {completeAttendanceSummary.map((student, index) => (
               <motion.div
                 key={student.uid}
                 initial={{ opacity: 0, x: -20 }}
@@ -167,8 +237,8 @@ export const AttendanceSummaryModal = ({
               </motion.div>
             ))}
 
-            {attendanceSummary.length === 0 && (
-              <div className="text-center py-6 text-purple-500">ยังไม่มีข้อมูลการเข้าเรียน</div>
+            {completeAttendanceSummary.length === 0 && (
+              <div className="text-center py-6 text-purple-500">ยังไม่มีข้อมูลนักเรียนในระบบ</div>
             )}
           </div>
         </motion.div>

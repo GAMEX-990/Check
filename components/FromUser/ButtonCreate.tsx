@@ -120,7 +120,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
             <h1 className="text-purple-700 font-bold">จัดการคลาส</h1>
             <h1 className="text-purple-700 text-sm">สร้างคลาสหรือเข้าร่วม</h1>
           </div>
-          <div className="flex flex-row p-5 space-2 items-center justify-center md:flex-col">
+          <div className="flex flex-row p-5 space-x-2 items-center justify-center md:flex-col">
             <div>
               <motion.div
                 whileHover={{ scale: 1.2 }}

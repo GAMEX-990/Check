@@ -1,25 +1,27 @@
 import { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import DeleteClassModal from "./DeleteClassModal";
-import { ArrowLeft, ChevronDown, Trash2, } from "lucide-react";
+import { ArrowLeft, ChevronDown, Trash2 } from "lucide-react";
 import {
   ViewClassDetailPageProps,
   CheckedInUser,
   AttendanceRecord
 } from "@/types/classDetailTypes";
 import { AnimatePresence, motion } from "framer-motion";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { ClassData } from "@/types/classTypes";
 import { useAuthState } from "react-firebase-hooks/auth";
 import CreateQRCodeAndUpload from "../FromUser/FusionButtonqrup";
 
-
 export const ViewClassDetailPage = ({
   classData,
   onBack,
-  onDeleteSuccess
-}: ViewClassDetailPageProps) => {
+  onDeleteSuccess,
+  onClassChange
+}: ViewClassDetailPageProps & {
+  onClassChange?: (newClassData: ClassData) => void;
+}) => {
   const [dailyCheckedIn, setDailyCheckedIn] = useState<
     { date: string; users: CheckedInUser[] }[]
   >([]);
@@ -34,9 +36,31 @@ export const ViewClassDetailPage = ({
   const currentUser = auth.currentUser;
   const currentUid = currentUser?.uid;
 
+  // เพิ่ม state สำหรับ dropdown
+  const [myClasses, setMyClasses] = useState<ClassData[]>([]);
+  const [showClassDropdown, setShowClassDropdown] = useState(false);
+
   useEffect(() => {
     setSelectedClass(classData);
   }, [classData]);
+
+  // เพิ่ม useEffect สำหรับ fetch My Classes
+  useEffect(() => {
+    if (!currentUser?.email) return;
+
+    const classesRef = collection(db, "classes");
+    const q = query(classesRef, where("owner_email", "==", currentUser.email));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const classList: ClassData[] = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<ClassData, "id">),
+      }));
+      setMyClasses(classList);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser?.email]);
 
   const toggleDate = (date: string) => {
     setOpenDates((prev) => ({
@@ -45,10 +69,23 @@ export const ViewClassDetailPage = ({
     }));
   };
 
-  useEffect(() => {
-    if (!classData?.id) return;
+  // ฟังก์ชันสำหรับเปลี่ยนคลาส - แก้ไขให้ส่งข้อมูลไปยัง parent component
+  const handleClassChange = (newClassData: ClassData) => {
+    setSelectedClass(newClassData);
+    setShowClassDropdown(false);
+    // รีเซ็ต states
+    setDailyCheckedIn([]);
+    setOpenDates({});
 
-    const classRef = doc(db, "classes", classData.id);
+    // **แก้ไขตรงนี้: ส่งข้อมูลคลาสใหม่ไปยัง parent component ให้ AttendanceSummaryModal ได้รับข้อมูลใหม่**
+    onClassChange?.(newClassData);
+  };
+
+  useEffect(() => {
+    const classId = selectedClass?.id || classData?.id;
+    if (!classId) return;
+
+    const classRef = doc(db, "classes", classId);
 
     // สร้าง real-time listener
     const unsubscribe = onSnapshot(classRef, (doc) => {
@@ -89,13 +126,12 @@ export const ViewClassDetailPage = ({
         processedData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
         setDailyCheckedIn(processedData);
-
       }
     });
 
     // Cleanup function
     return () => unsubscribe();
-  }, [classData?.id, currentUser?.email, currentUid]);
+  }, [selectedClass?.id, classData?.id, currentUser?.email, currentUid]);
 
   const handlsShowDeleteModal = () => setShowDeleteModal(true);
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
@@ -104,21 +140,72 @@ export const ViewClassDetailPage = ({
     onBack();
   };
 
-  const isClassOwner = classData.owner_email === currentUser?.email;
+  const isClassOwner = (selectedClass || classData).owner_email === currentUser?.email;
+  const currentClassData = selectedClass || classData;
 
   return (
     <div>
       <div className="w-85 md:w-100 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
         <div className="flex justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-purple-800">
-              {classData.name}
-            </h1>
+          <div className="relative">
+            {/* Class Title with Dropdown */}
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-purple-800">
+                {currentClassData.name}
+              </h1>
+              {isClassOwner && myClasses.length > 1 && (
+                <button
+                  onClick={() => setShowClassDropdown(!showClassDropdown)}
+                  className="text-purple-600 hover:text-purple-800 transition-colors"
+                  title="เลือกคลาสอื่น"
+                >
+                  <ChevronDown
+                    size={20}
+                    className={`transition-transform duration-200 ${showClassDropdown ? 'rotate-180' : 'rotate-0'
+                      }`}
+                  />
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown Menu */}
+            <AnimatePresence>
+              {showClassDropdown && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-full left-0 mt-2 w-64 bg-white border border-purple-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto"
+                >
+                  <div className="py-2">
+                    {myClasses.map((cls) => (
+                      <button
+                        key={cls.id}
+                        onClick={() => handleClassChange(cls)}
+                        className={`w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors ${cls.id === currentClassData.id
+                            ? 'bg-purple-100 text-purple-800 font-medium'
+                            : 'text-purple-700'
+                          }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="bg-purple-500 text-white text-sm font-bold w-8 h-8 flex items-center justify-center rounded-full">
+                            {cls.name.charAt(0)}
+                          </div>
+                          <span className="truncate">{cls.name}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          {/* ------------ */}
+
+          {/* Right side buttons */}
           <div className="flex gap-x-2">
             {currectPang === "view" && selectedClass && (
-              <div className=" text-purple-600">
+              <div className="text-purple-600">
                 <CreateQRCodeAndUpload
                   classId={selectedClass?.id ?? ""}
                   currentUser={user ? { uid: user.uid, email: user.email || '' } : null}
@@ -143,9 +230,7 @@ export const ViewClassDetailPage = ({
                 </button>
               </div>
             </div>
-
           </div>
-          {/* ------------ */}
         </div>
 
         <div className="overflow-scroll h-80 relative">
@@ -221,9 +306,9 @@ export const ViewClassDetailPage = ({
         isOpen={showDeleteModal}
         onClose={handleCloseDeleteModal}
         classData={{
-          id: classData.id,
-          name: classData.name,
-          memberCount: classData.checkedInCount
+          id: currentClassData.id ?? "",
+          name: currentClassData.name ?? "",
+          memberCount: currentClassData.checkedInCount
         }}
         user={currentUser}
         onDeleteSuccess={handleDeleteSuccess}

@@ -8,7 +8,10 @@ import { ViewClassDetailPage } from "./ViewClassDetailPage";
 import { SyncUserToFirebase } from "@/utils/userSync";
 import { ClassSectionProps, ClassData, ClassPageType } from "@/types/classTypes";
 
-const ClassSection = ({ onPageChange, onClassSelect }: ClassSectionProps) => {
+// **เพิ่ม onClassChange prop**
+const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSectionProps & { 
+  onClassChange?: (newClassData: ClassData) => void 
+}) => {
   const [page, setPage] = useState<ClassPageType>("myclass");
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
 
@@ -22,6 +25,13 @@ const ClassSection = ({ onPageChange, onClassSelect }: ClassSectionProps) => {
   const handlePageChange = (newPage: ClassPageType) => {
     setPage(newPage);
     onPageChange?.(newPage);
+  };
+
+  // **เพิ่ม function สำหรับจัดการการเปลี่ยนคลาสจาก ViewClassDetailPage**
+  const handleClassChangeFromView = (newClassData: ClassData) => {
+    setSelectedClass(newClassData);
+    onClassSelect?.(newClassData);
+    onClassChange?.(newClassData); // ส่งไปยัง parent component
   };
 
   const tabs = [
@@ -74,6 +84,7 @@ const ClassSection = ({ onPageChange, onClassSelect }: ClassSectionProps) => {
             setPage("myclass");
             onPageChange?.("myclass");
           }}
+          onClassChange={handleClassChangeFromView} // **ส่ง function ไปยัง ViewClassDetailPage**
         />
       ) : (
         <div className="md:w-100 w-85  border-2 border-purple-50 rounded-2xl shadow-lg p-4 relative overflow-hidden">

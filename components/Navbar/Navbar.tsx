@@ -39,7 +39,7 @@ const Navbar = () => {
     }, []);
 
     const navLinks = user ? [
-        { name: 'Dashboard', href: '/dashboard', icon: <Home size={18} /> },
+        { name: 'Home', href: '/dashboard', icon: <Home size={25} /> },
     ] : [
         { name: 'Home', href: '/', icon: <Home size={18} /> },
         { name: 'About Us', href: '/about', icon: <Info size={18} /> },
@@ -60,7 +60,6 @@ const Navbar = () => {
                 {/* Desktop Navigation */}
                 <div className='hidden md:flex items-center space-x-4'>
                     <div className='flex items-center space-x-4'>
-                        {user && <div><AddClassPopup/></div>}
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}
@@ -71,6 +70,7 @@ const Navbar = () => {
                                 <span>{link.name}</span>
                             </Link>
                         ))}
+                        {user && <div><AddClassPopup/></div>}
                     </div>
 
                     <div className="h-8 w-px bg-gray-200 mx-2"></div>

@@ -60,6 +60,11 @@ export default function DashboardPage() {
   const [user, loading, error] = useAuthState(auth);
   const router = useRouter();
 
+  // **เพิ่ม function สำหรับจัดการการเปลี่ยนแปลงคลาสจาก ViewClassDetailPage**
+  const handleClassChange = (newClassData: ClassData) => {
+    setSelectedClass(newClassData);
+  };
+
   useEffect(() => {
     if (loading || !user) return; // รอโหลด user ให้เรียบร้อยก่อน
 
@@ -102,17 +107,13 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex max-h-fit items-center justify-center">
-            <ClassSection onPageChange={setCurrectPang} onClassSelect={setSelectedClass} />
+            {/* **เพิ่ม onClassChange prop สำหรับ ClassSection** */}
+            <ClassSection 
+              onPageChange={setCurrectPang} 
+              onClassSelect={setSelectedClass}
+              onClassChange={handleClassChange} 
+            />
           </div>
-
-          {/* <div className="hidden md:flex">
-            {currectPang !== 'view' && (
-              <div className="max-h-fit">
-                <AddClassPopup />
-              </div>
-            )}
-          </div> */}
-
           <div>
             {currectPang === 'view' && selectedClass && (
               <div className="max-h-fit">

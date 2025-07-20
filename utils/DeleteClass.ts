@@ -3,7 +3,6 @@ import { User } from "firebase/auth";
 import { db } from "@/lib/firebase";
 import { toast } from "sonner";
 
-
 interface DeleteClassParams {
   classId: string;
   user: User | null;
@@ -45,23 +44,28 @@ export const handleDeleteClass = async ({
       where("classId", "==", classId)
     );
     const attendanceSnapshot = await getDocs(attendanceQuery);
-
     attendanceSnapshot.docs.forEach((doc) => {
       batch.delete(doc.ref);
     });
 
-    // 3. ลบข้อมูลสมาชิกคลาส (ถ้ามี collection แยก)
+    // 3. ลบข้อมูลสมาชิกคลาส (จาก collection classMembers)
     const membersQuery = query(
       collection(db, "classMembers"),
       where("classId", "==", classId)
     );
     const membersSnapshot = await getDocs(membersQuery);
-
     membersSnapshot.docs.forEach((doc) => {
       batch.delete(doc.ref);
     });
 
-    // Execute batch delete
+    // 4. ลบ subcollection "students"
+    const studentsRef = collection(db, `classes/${classId}/students`);
+    const studentsSnapshot = await getDocs(studentsRef);
+    studentsSnapshot.docs.forEach((studentDoc) => {
+      batch.delete(studentDoc.ref);
+    });
+
+    // 5. ดำเนินการลบทั้งหมด
     await batch.commit();
 
     toast.success("ลบคลาสสำเร็จ");
@@ -71,7 +75,6 @@ export const handleDeleteClass = async ({
     }
 
   } catch (error) {
-
     if (error instanceof Error) {
       setError(`เกิดข้อผิดพลาด: ${error.message}`);
     } else {

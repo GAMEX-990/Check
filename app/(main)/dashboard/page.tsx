@@ -92,13 +92,13 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="flex justify-center h-screen">
-        <div className="flex flex-col gap-4 mt-15 md:flex-row">
+        <div className="flex flex-col gap-4 mt-15 xl:flex-row">
           {currectPang !== 'view' && (
             <div className="max-h-fit">
               <Usercard />
             </div>
           )}
-          <div className="md:hidden flex items-center justify-center">
+          <div className="xl:hidden flex items-center justify-center">
             {currectPang !== 'view' && (
               <div className="max-h-fit">
                 <AddClassPopup />

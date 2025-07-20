@@ -9,7 +9,6 @@ import Loader from '@/components/Loader/Loader';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
 import type { ClassData } from '@/types/classTypes';
-import { useAttendanceSummary } from '@/hook/useAttendanceSummary';
 import { getDoc, doc, setDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
@@ -56,7 +55,6 @@ const verifyDeviceAccess = async (uid: string) => {
 export default function DashboardPage() {
   const [currectPang, setCurrectPang] = useState<'myclass' | 'class' | 'view'>('myclass');
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
-  const { attendanceSummary } = useAttendanceSummary(selectedClass, currectPang === 'view');
   const [user, loading, error] = useAuthState(auth);
   const router = useRouter();
 

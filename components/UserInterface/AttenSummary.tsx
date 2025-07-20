@@ -21,46 +21,9 @@ import {
   Tooltip,
 } from "recharts";
 import Loader from "../Loader/Loader";
+import type { DailyCheckedInRecord, FirestoreTimestamp, Props, Student, StudentAttendanceWithStatus } from "@/types/SummaryTypes";
 
-interface Student {
-  id: string;
-  studentId: string;
-  name: string;
-  status: string;
-}
 
-interface StudentAttendanceWithStatus {
-  uid: string;
-  name: string;
-  studentId: string;
-  email: string;
-  count: number;
-  lateCount: number;
-  onTimeCount: number;
-  lastAttendance: string | null;
-  status: string;
-}
-
-interface DailyCheckedInRecord {
-  [dateKey: string]: {
-    [uid: string]: {
-      uid: string;
-      studentId: string;
-      timestamp: any; // Firebase Timestamp or ISO string
-      name: string;
-      email: string;
-      status: string;
-      date: string;
-    };
-  };
-}
-
-interface Props {
-  classData: {
-    id: string;
-    name: string;
-  };
-}
 
 const AttendanceSummaryModal = ({ classData }: Props) => {
   const [allStudents, setAllStudents] = useState<Student[]>([]);
@@ -119,10 +82,10 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
       >();
 
       // Helper to convert timestamp to Date
-      const toDateObj = (ts: any) => {
+      const toDateObj = (ts: FirestoreTimestamp) => {
         if (!ts) return null;
         if (typeof ts === "string") return new Date(ts);
-        if (typeof ts.toDate === "function") return ts.toDate();
+        if (typeof (ts as { toDate: () => Date }).toDate === "function") return (ts as { toDate: () => Date }).toDate();
         return null;
       };
 

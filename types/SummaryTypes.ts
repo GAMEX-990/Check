@@ -1,6 +1,18 @@
 // สำหรับ Firestore Timestamp หรือ string
 export type FirestoreTimestamp = { toDate: () => Date } | string;
 
+export interface UserAttendance {
+  uid: string;
+  name: string;
+  studentId: string;
+  count: number;
+}
+
+export interface UserData {
+  uid: string;
+  name: string;
+  studentId: string;
+}
 // สำหรับข้อมูลการเช็คชื่อแต่ละคนในแต่ละวัน
 export interface DailyCheckedInUser {
   uid: string;

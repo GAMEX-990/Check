@@ -117,7 +117,7 @@ export default function DashboardPage() {
           <div>
             {currectPang === 'view' && selectedClass && (
               <div className="max-h-fit">
-                <AttendanceSummaryModal classData={selectedClass} attendanceSummary={attendanceSummary} />
+                <AttendanceSummaryModal classData={selectedClass}/>
               </div>
             )}
           </div>

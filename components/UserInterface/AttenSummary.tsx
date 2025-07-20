@@ -19,11 +19,41 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  TooltipProps,
 } from "recharts";
 import Loader from "../Loader/Loader";
 import type { DailyCheckedInRecord, FirestoreTimestamp, Props, Student, StudentAttendanceWithStatus } from "@/types/SummaryTypes";
 
+// Types for chart data
+interface PieChartData {
+  name: string;
+  value: number;
+  color: string;
+}
 
+interface BarChartData {
+  name: string;
+  fullName: string;
+  onTime: number;
+  late: number;
+  total: number;
+  studentId: string;
+}
+
+// Types for tooltip props
+type PieTooltipProps = TooltipProps<number, string> & {
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+  }>;
+};
+
+type BarTooltipProps = TooltipProps<number, string> & {
+  payload?: Array<{
+    payload: BarChartData;
+  }>;
+};
 
 const AttendanceSummaryModal = ({ classData }: Props) => {
   const [allStudents, setAllStudents] = useState<Student[]>([]);
@@ -159,13 +189,13 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
   const totalOnTime = attendanceWithLateStatus.reduce((sum, s) => sum + s.onTimeCount, 0);
   const totalLate = attendanceWithLateStatus.reduce((sum, s) => sum + s.lateCount, 0);
 
-  const pieData = [
+  const pieData: PieChartData[] = [
     { name: "เข้าเรียนตรงเวลา", value: totalOnTime, color: "#10B981" },
     { name: "เข้าเรียนสาย", value: totalLate, color: "#F59E0B" },
     { name: "ไม่เข้าเรียน", value: totalAbsent, color: "#EF4444" },
   ].filter((item) => item.value > 0);
 
-  const barData = attendanceWithLateStatus
+  const barData: BarChartData[] = attendanceWithLateStatus
     .filter((s) => s.count > 0)
     .sort((a, b) => b.count - a.count)
     .slice(0, 10)
@@ -178,7 +208,7 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
       studentId: s.studentId,
     }));
 
-  const CustomPieTooltip = ({ active, payload }: any) => {
+  const CustomPieTooltip = ({ active, payload }: PieTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0];
       const totalCount = totalOnTime + totalLate + totalAbsent;
@@ -196,7 +226,7 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
     return null;
   };
 
-  const CustomBarTooltip = ({ active, payload }: any) => {
+  const CustomBarTooltip = ({ active, payload }: BarTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (

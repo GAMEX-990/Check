@@ -1,8 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronLeft, Users, Target, Award, Heart } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Users, Target, Award, Heart } from 'lucide-react'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import Loader from '@/components/Loader/Loader'
 import { auth } from '@/lib/firebase'
@@ -10,7 +9,6 @@ import Image from 'next/image'
 
 
 const AboutPage = () => {
-  const router = useRouter()
   const [, loading] = useAuthState(auth);
   const [delayDone, setdelayDone] = useState(false);
 
@@ -116,18 +114,6 @@ const AboutPage = () => {
         initial="hidden"
         animate="visible"
       >
-        {/* Back button */}
-        <motion.button
-          onClick={() => router.push('/')}
-          className="cursor-pointer flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200 mb-8"
-          variants={itemVariants}
-          whileHover={{ x: -5 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ChevronLeft size={24} />
-          <span className="ml-1 text-sm font-medium">กลับหน้าหลัก</span>
-        </motion.button>
-
         {/* Header */}
         <motion.div className="text-center mb-12" variants={itemVariants}>
           <motion.h1
@@ -239,33 +225,63 @@ const AboutPage = () => {
             variants={cardVariants}
             whileHover="hover"
           >
+            <div className=''>
             <h2 className="text-2xl font-bold text-gray-800 text-center mb-8">ทีมพัฒนา</h2>
-            <div className="text-center">
-              <div className="inline-block relative">
-                <motion.div
-                  className="w-32 h-32 rounded-full mx-auto mb-4 flex items-center justify-center"
-                  whileHover={{
-                    scale: 1.1,
-                    rotate: 360,
-                  }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <span>
-                    <Image
-                    src="/assets/images/Logocheck.PNG"
-                    width={100}
-                    height={100}
-                    alt='Check Logo'
-                    />
-                  </span>
-                </motion.div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">ทีม Check</h3>
-                <p className="text-gray-600 max-w-md mx-auto">
-                  ทีมนักพัฒนาที่มีประสบการณ์ในการสร้างระบบการศึกษาดิจิทัล
-                  พร้อมมุ่งมั่นที่จะพัฒนาเครื่องมือที่ดีที่สุดสำหรับการเรียนการสอน
-                </p>
-              </div>
             </div>
+            <div className='items-center justify-center flex flex-col gap-y-8 md:gap-x-18 md:flex-row'>
+              {/* --------------------------------------------------------- */}
+              <div className='flex flex-col items-center'>
+                <div>
+                  <Image
+                    src="/assets/images/Myme.png"
+                    height={80}
+                    width={80}
+                    alt='ime'
+                  />
+                </div>
+                <div className='text-center'>
+                  <p>Thanachot Yinkhunthod</p>
+                  <p>thanachotyinkhunthod@gmail.com</p>
+                  <p>0640746639</p>
+                </div>
+              </div>
+              {/* --------------------------------------------------------- */}
+              {/* --------------------------------------------------------- */}
+              <div className='flex flex-col items-center'>
+                <div>
+                  <Image
+                    src="/assets/images/Crap.png"
+                    height={80}
+                    width={80}
+                    alt='ime'
+                  />
+                </div>
+                <div className='text-center'>
+                  <p>Yodsawat Chansungnoen</p>
+                  <p>karpleo76@gmail.con</p>
+                  <p>0955179730</p>
+                </div>
+              </div>
+              {/* --------------------------------------------------------- */}
+              {/* --------------------------------------------------------- */}
+              <div className='flex flex-col items-center'>
+                <div>
+                  <Image
+                    src="/assets/images/papyy.png"
+                    height={80}
+                    width={80}
+                    alt='ime'
+                  />
+                </div>
+                <div className='text-center'>
+                  <p>sornthep chimsuntorn</p>
+                  <p>sornthep1001@gmail.com</p>
+                  <p>0637350595</p>
+                </div>
+              </div>
+              {/* --------------------------------------------------------- */}
+            </div>
+
           </motion.div>
         </div>
       </motion.div>

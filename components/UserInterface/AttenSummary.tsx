@@ -1,6 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { Funnel } from 'lucide-react';
 import {
   collection,
   doc,
@@ -19,46 +20,18 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  TooltipProps,
 } from "recharts";
 import Loader from "../Loader/Loader";
-import type { DailyCheckedInRecord, FirestoreTimestamp, Props, Student, StudentAttendanceWithStatus } from "@/types/SummaryTypes";
+import type { BarChartData, BarTooltipProps, DailyCheckedInRecord, FilterType, FirestoreTimestamp, PieChartData, PieTooltipProps, Props, Student, StudentAttendanceWithStatus } from "@/types/SummaryTypes";
+import FilterDropdown from "./FilterDropdown";
 
-// Types for chart data
-interface PieChartData {
-  name: string;
-  value: number;
-  color: string;
-}
-
-interface BarChartData {
-  name: string;
-  fullName: string;
-  onTime: number;
-  late: number;
-  total: number;
-  studentId: string;
-}
-
-// Types for tooltip props
-type PieTooltipProps = TooltipProps<number, string> & {
-  payload?: Array<{
-    name: string;
-    value: number;
-    color: string;
-  }>;
-};
-
-type BarTooltipProps = TooltipProps<number, string> & {
-  payload?: Array<{
-    payload: BarChartData;
-  }>;
-};
 
 const AttendanceSummaryModal = ({ classData }: Props) => {
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [attendanceWithLateStatus, setAttendanceWithLateStatus] = useState<StudentAttendanceWithStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [filterType, setFilterType] = useState<FilterType>('all');
+  const [totalClassDays, setTotalClassDays] = useState(0);
 
   // Real-time listen to students subcollection
   useEffect(() => {
@@ -90,7 +63,6 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
   useEffect(() => {
     if (!classData.id) return;
     const classRef = doc(db, "classes", classData.id);
-
     const unsubscribe = onSnapshot(classRef, (docSnap) => {
       if (!docSnap.exists()) {
         setAttendanceWithLateStatus([]);
@@ -98,6 +70,8 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
       }
       const classDocData = docSnap.data() as DocumentData;
       const dailyCheckedInRecord: DailyCheckedInRecord = classDocData.dailyCheckedInRecord || {};
+      const totalDays = Object.keys(dailyCheckedInRecord).length;
+      setTotalClassDays(totalDays);
 
       // Map studentId => attendance stats
       const studentAttendanceMap = new Map<
@@ -119,9 +93,9 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
         return null;
       };
 
+      // พัง = แตกสวยพี่สวย
       Object.keys(dailyCheckedInRecord).forEach((dateKey) => {
         const dayRecord = dailyCheckedInRecord[dateKey];
-
         const timestamps = Object.values(dayRecord)
           .map((record) => toDateObj(record.timestamp))
           .filter(Boolean) as Date[];
@@ -190,24 +164,47 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
   const totalLate = attendanceWithLateStatus.reduce((sum, s) => sum + s.lateCount, 0);
 
   const pieData: PieChartData[] = [
-    { name: "เข้าเรียนตรงเวลา", value: totalOnTime, color: "#10B981" },
-    { name: "เข้าเรียนสาย", value: totalLate, color: "#F59E0B" },
-    { name: "ไม่เข้าเรียน", value: totalAbsent, color: "#EF4444" },
+    { name: "เข้าเรียน", value: totalOnTime, color: "#10B981", fontSize: 12 },
+    { name: "สาย", value: totalLate, color: "#F59E0B", fontSize: 12 },
+    { name: "ขาด", value: totalAbsent, color: "#EF4444", fontSize: 12 },
   ].filter((item) => item.value > 0);
 
-  const barData: BarChartData[] = attendanceWithLateStatus
-    .filter((s) => s.count > 0)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10)
+  // สร้างข้อมูล bar chart พร้อมจำนวนวันขาด
+  const allBarData: BarChartData[] = attendanceWithLateStatus
     .map((s) => ({
       name: s.name.length > 10 ? `${s.name.substring(0, 10)}...` : s.name,
       fullName: s.name,
       onTime: s.onTimeCount,
       late: s.lateCount,
       total: s.count,
+      absent: Math.max(0, totalClassDays - s.count),
       studentId: s.studentId,
     }));
 
+  // Filter ข้อมูลตาม filterType
+  const getFilteredBarData = () => {
+    let filtered: BarChartData[];
+    switch (filterType) {
+      case 'absent-1':
+        filtered = allBarData.filter(s => s.absent === 1);
+        break;
+      case 'absent-2':
+        filtered = allBarData.filter(s => s.absent === 2);
+        break;
+      case 'absent-3+':
+        filtered = allBarData.filter(s => s.absent >= 3);
+        break;
+      default:
+        filtered = allBarData.filter(s => s.total > 0);
+        break;
+    }
+
+    return filtered
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+  };
+
+  const barData = getFilteredBarData();
   const CustomPieTooltip = ({ active, payload }: PieTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0];
@@ -235,7 +232,8 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
           <p className="text-sm">รหัส: {data.studentId}</p>
           <p className="text-sm text-green-600">ตรงเวลา: {data.onTime} วัน</p>
           <p className="text-sm text-yellow-600">สาย: {data.late} วัน</p>
-          <p className="text-sm text-blue-600">รวม: {data.total} วัน</p>
+          <p className="text-sm text-red-600">ขาด: {data.absent} วัน</p>
+          <p className="text-sm text-blue-600">รวมเข้าเรียน: {data.total} วัน</p>
         </div>
       );
     }
@@ -261,14 +259,13 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
 
         <div className="mb-6 bg-purple-50 rounded-lg p-4 text-center">
           <p className="text-purple-800 font-medium text-lg mb-1">คลาส: {classData.name}</p>
-          <p className="text-purple-700 text-sm">นักเรียนทั้งหมด: {totalStudents} คน</p>
+          <p className="text-purple-700 text-sm">นักเรียนทั้งหมด: {totalStudents} คน | วันเรียนทั้งหมด: {totalClassDays} วัน</p>
           <div className="flex justify-center gap-4 mt-2 text-sm">
             <p className="text-green-600 font-medium">ตรงเวลา: {totalOnTime} วัน</p>
             <p className="text-yellow-600 font-medium">สาย: {totalLate} วัน</p>
             <p className="text-red-600 font-medium">ขาดเรียน: {totalAbsent} คน</p>
           </div>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="p-4 bg-white rounded-lg border">
             <ResponsiveContainer width="100%" height={250}>
@@ -279,7 +276,7 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
                   cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
-                  outerRadius={70}
+                  outerRadius={60}
                   dataKey="value"
                 >
                   {pieData.map((entry, i) => (
@@ -291,45 +288,70 @@ const AttendanceSummaryModal = ({ classData }: Props) => {
             </ResponsiveContainer>
           </div>
 
-          {barData.length > 0 && (
-            <div className="p-4 bg-white rounded-lg border">
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={barData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
-                  <YAxis />
-                  <Tooltip content={<CustomBarTooltip />} />
-                  <Bar dataKey="onTime" stackId="a" fill="#10B981" name="ตรงเวลา" />
-                  <Bar dataKey="late" stackId="a" fill="#F59E0B" name="สาย" />
-                </BarChart>
-              </ResponsiveContainer>
+          <div className="p-4 bg-white rounded-lg border relative">
+            {/* Filter dropdown */}
+            <div className="absolute top-2 right-2 z-10">
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <FilterDropdown value={filterType} onChange={(val) => setFilterType(val)} />
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <Funnel className="w-4 h-4 text-gray-400" />
+                </div>
+              </div>
             </div>
-          )}
+
+            <div className="pt-8">
+              {barData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={barData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
+                    <YAxis />
+                    <Tooltip content={<CustomBarTooltip />} />
+                    <Bar dataKey="onTime" stackId="a" fill="#10B981" name="ตรงเวลา" />
+                    <Bar dataKey="late" stackId="a" fill="#F59E0B" name="สาย" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[250px] flex items-center justify-center text-gray-500">
+                  ไม่มีข้อมูลนักเรียนในหมวดหมู่นี้
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="mt-6 max-h-[300px] overflow-y-auto space-y-3">
           <h3 className="text-lg font-semibold text-purple-800">รายชื่อนักเรียน</h3>
-          {attendanceWithLateStatus.map((s, i) => (
-            <motion.div
-              key={s.uid}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.03 }}
-              className="p-3 border rounded-lg"
-            >
-              <p className="font-semibold text-purple-900">{s.name}</p>
-              <p className="text-sm text-purple-600">รหัส: {s.studentId}</p>
-              {s.count > 0 ? (
-                <div className="mt-1 text-sm">
-                  <p>เข้าเรียนรวม {s.count} วัน</p>
-                  <p className="text-green-600">ตรงเวลา: {s.onTimeCount} วัน</p>
-                  {s.lateCount > 0 && <p className="text-yellow-600">สาย: {s.lateCount} วัน</p>}
-                </div>
-              ) : (
-                <p className="text-red-600 mt-1">ยังไม่เคยเข้าเรียน</p>
-              )}
-            </motion.div>
-          ))}
+          {attendanceWithLateStatus.map((s, i) => {
+            const absentDays = Math.max(0, totalClassDays - s.count);
+            return (
+              <motion.div
+                key={s.uid}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className="p-3 border rounded-lg"
+              >
+                <p className="font-semibold text-purple-900">{s.name}</p>
+                <p className="text-sm text-purple-600">รหัส: {s.studentId}</p>
+                {s.count > 0 ? (
+                  <div className="mt-1 text-sm">
+                    <p>เข้าเรียนรวม {s.count} วัน</p>
+                    <p className="text-green-600">ตรงเวลา: {s.onTimeCount} วัน</p>
+                    {s.lateCount > 0 && <p className="text-yellow-600">สาย: {s.lateCount} วัน</p>}
+                    {absentDays > 0 && <p className="text-red-600">ขาด: {absentDays} วัน</p>}
+                  </div>
+                ) : (
+                  <div className="mt-1 text-sm">
+                    <p className="text-red-600">ยังไม่เคยเข้าเรียน</p>
+                    {totalClassDays > 0 && <p className="text-red-600">ขาด: {totalClassDays} วัน</p>}
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
         </div>
       </motion.div>
     </div>

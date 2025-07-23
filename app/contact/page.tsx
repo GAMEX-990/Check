@@ -1,8 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronLeft } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { BackgroundDecorations } from '../../components/ui/BackgroundDecorations'
 import { ContactInfo } from '../../components/contact/ContactInfo'
 import { ContactForm } from '../../components/contact/ContactForm'
@@ -13,7 +11,6 @@ import { auth } from '@/lib/firebase'
 import Loader from '@/components/Loader/Loader'
 
 const ContactPage = () => {
-  const router = useRouter()
   const [, loading] = useAuthState(auth);
   const [delayDone, setdelayDone] = useState(false);
 
@@ -41,18 +38,6 @@ const ContactPage = () => {
         initial="hidden"
         animate="visible"
       >
-        {/* Back button */}
-        <motion.button
-          onClick={() => router.push('/')}
-          className="flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200 mb-8"
-          variants={itemVariants}
-          whileHover={{ x: -5 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ChevronLeft size={24} />
-          <span className="ml-1 text-sm font-medium">กลับหน้าหลัก</span>
-        </motion.button>
-
         {/* Header */}
         <motion.div className="text-center mb-12" variants={itemVariants}>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">

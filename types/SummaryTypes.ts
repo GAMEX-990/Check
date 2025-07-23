@@ -1,3 +1,5 @@
+import { TooltipProps } from "recharts";
+
 // สำหรับ Firestore Timestamp หรือ string
 export type FirestoreTimestamp = { toDate: () => Date } | string;
 
@@ -48,6 +50,40 @@ export interface Props {
     name: string;
   };
 }
+
+export interface PieChartData {
+  name: string;
+  value: number;
+  color: string;
+  fontSize?: number;
+}
+
+export interface BarChartData {
+  name: string;
+  fullName: string;
+  onTime: number;
+  late: number;
+  total: number;
+  absent: number;
+  studentId: string;
+}
+
+export type FilterType = 'all' | 'absent-1' | 'absent-2' | 'absent-3+';
+
+export type PieTooltipProps = TooltipProps<number, string> & {
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+  }>;
+};
+
+export type BarTooltipProps = TooltipProps<number, string> & {
+  payload?: Array<{
+    payload: BarChartData;
+  }>;
+};
+
 // สำหรับข้อมูลการเช็คชื่อในแต่ละวัน
 export type DailyCheckedInRecord = {
   [dateKey: string]: {

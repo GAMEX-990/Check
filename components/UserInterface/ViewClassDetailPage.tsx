@@ -124,8 +124,6 @@ export const ViewClassDetailPage = ({
     }
   };
 
-  // ได้รับ classes ที่จะแสดงตาม class type ที่เลือก
-  const currentClasses = classType === 'owned' ? myClasses : joinedClasses;
 
   useEffect(() => {
     const classId = selectedClass?.id || classData?.id;

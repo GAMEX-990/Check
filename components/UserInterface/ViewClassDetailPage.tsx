@@ -40,7 +40,7 @@ export const ViewClassDetailPage = ({
   const [myClasses, setMyClasses] = useState<ClassData[]>([]);
   const [joinedClasses, setJoinedClasses] = useState<ClassData[]>([]);
   const [showClassDropdown, setShowClassDropdown] = useState(false);
-  const [, setClassType] = useState<'owned' | 'joined'>('owned'); // เพิ่ม state สำหรับ toggle
+  const [classType, setClassType] = useState<'owned' | 'joined'>('owned'); // เพิ่ม state สำหรับ toggle
 
   useEffect(() => {
     setSelectedClass(classData);
@@ -124,6 +124,8 @@ export const ViewClassDetailPage = ({
     }
   };
 
+  // ได้รับ classes ที่จะแสดงตาม class type ที่เลือก
+  const currentClasses = classType === 'owned' ? myClasses : joinedClasses;
 
   useEffect(() => {
     const classId = selectedClass?.id || classData?.id;
@@ -188,7 +190,7 @@ export const ViewClassDetailPage = ({
 
   return (
     <div>
-      <div className="w-85 md:w-110 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
+      <div className="w-85 md:w-100 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
         <div className="flex justify-between">
           <div className="relative">
             {/* Class Title with Dropdown */}
@@ -196,7 +198,7 @@ export const ViewClassDetailPage = ({
               <h1 className="text-lg font-bold text-purple-800">
                 {currentClassData.name}
               </h1>
-              {isClassOwner && myClasses.length > 1 && (
+              {currentClasses.length > 1 && (
                 <button
                   onClick={() => setShowClassDropdown(!showClassDropdown)}
                   className="text-purple-600 hover:text-purple-800 transition-colors"
@@ -211,7 +213,6 @@ export const ViewClassDetailPage = ({
               )}
             </div>
 
-
             {/* Dropdown Menu */}
             <AnimatePresence>
               {showClassDropdown && (
@@ -223,20 +224,30 @@ export const ViewClassDetailPage = ({
                   className="absolute top-full left-0 mt-2 w-64 bg-white border border-purple-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto"
                 >
                   <div className="py-2">
-                    {myClasses.map((cls) => (
+                    <div className="px-3 py-1 text-xs font-medium text-purple-500 uppercase tracking-wide">
+                      {classType === 'owned' ? 'คลาสที่เป็นเจ้าของ' : 'คลาสที่เข้าร่วม'}
+                    </div>
+                    {currentClasses.map((cls) => (
                       <button
                         key={cls.id}
                         onClick={() => handleClassChange(cls)}
                         className={`w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors ${cls.id === currentClassData.id
-                          ? 'bg-purple-100 text-purple-800 font-medium'
-                          : 'text-purple-700'
+                            ? 'bg-purple-100 text-purple-800 font-medium'
+                            : 'text-purple-700'
                           }`}
                       >
                         <div className="flex items-center gap-3">
                           <div className="bg-purple-500 text-white text-sm font-bold w-8 h-8 flex items-center justify-center rounded-full">
                             {cls.name.charAt(0)}
                           </div>
-                          <span className="truncate">{cls.name}</span>
+                          <div className="flex-1">
+                            <div className="truncate">{cls.name}</div>
+                            {classType === 'joined' && (
+                              <div className="text-xs text-purple-500 truncate">
+                                โดย: {cls.owner_email}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </button>
                     ))}
@@ -248,7 +259,7 @@ export const ViewClassDetailPage = ({
 
           {/* Right side buttons */}
           <div className="flex gap-x-2">
-            {currectPang === "view" && selectedClass && (
+            {currectPang === "view" && selectedClass && isClassOwner && (
               <div className="text-purple-600">
                 <CreateQRCodeAndUpload
                   classId={selectedClass?.id ?? ""}
@@ -276,15 +287,13 @@ export const ViewClassDetailPage = ({
             </div>
           </div>
         </div>
-
-         {/* Class Type Toggle Buttons */}
-         <div className="justify-center flex gap-x-2 text-purple-700 mt-2 mb-4 ">
+        <div className="justify-center flex gap-x-2 text-purple-700 mt-2 mb-4 ">
           <button
             onClick={() => handleClassTypeToggle('owned')}
             className="flex items-center gap-x-1 p-1.5 border-2 border-purple-50 rounded-2xl shadow-lg text-sm transition-all duration-200 hover:bg-purple-50"
           >
             <BookOpen size={16} />
-            <span>My Classes</span>
+            <span>My Classes ({myClasses.length})</span>
           </button>
 
           <button
@@ -292,79 +301,88 @@ export const ViewClassDetailPage = ({
             className="flex items-center gap-x-1 p-1.5 border-2 border-purple-50 rounded-2xl shadow-lg text-sm transition-all duration-200 hover:bg-purple-50"
           >
             <Users size={16} />
-            <span>Classes</span>
+            <span>Classes ({joinedClasses.length})</span>
           </button>
         </div>
-
-        <div className="overflow-scroll h-80 md:h-114 relative">
-          {dailyCheckedIn.map(({ date, users }) => (
-            <div key={date}>
-              <div className="my-2 ">
-                <button
-                  onClick={() => toggleDate(date)}
-                  className="flex flex-row items-center gap-x-2 text-md text-purple-700 p-0.5 w-full bg-purple-50 hover:bg-purple-100 rounded-4xl shadow-xl transition duration-300 cursor-pointer"
-                >
-                  <div
-                    className={`transition-transform duration-300 ${openDates[date] ? "rotate-0" : "rotate-90"
-                      }`}
-                  >
-                    <ChevronDown size={20} />
-                  </div>
-                  <div>
-                    วันที่:{" "}
-                    {new Date(date).toLocaleDateString("th-TH", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </div>
-                  <div>
-                    ({users.length}) คน
-                  </div>
-                </button>
+        <div className="overflow-scroll h-80 relative">
+          {dailyCheckedIn.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-purple-500">
+              <div className="text-center">
+                <div className="text-4xl mb-2">📋</div>
+                <div>ยังไม่มีข้อมูลการเข้าร่วม</div>
               </div>
-
-              <AnimatePresence initial={false}>
-                {openDates[date] && (
-                  <motion.div
-                    key={date}
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="overflow-hidden p-4 rounded-xl shadow-lg bg-white mt-2"
-                  >
-                    {/* หัวตาราง */}
-                    <div className="flex flex-row justify-between text-purple-700 pb-1 border-purple-400">
-                      <div className="w-1/4">เวลา</div>
-                      <div className="w-1/2">ชื่อ - สกุล</div>
-                      <div className="w-1/4 text-right">รหัส นศ.</div>
-                    </div>
-
-                    {/* รายชื่อ */}
-                    {users.map((user) => (
-                      <div
-                        key={user.uid + date}
-                        className="flex flex-row justify-between items-center py-2 border-b border-purple-300"
-                      >
-                        <div className="text-sm text-purple-900 w-1/4">
-                          {" "}
-                          {user.timestamp.toLocaleTimeString("th-TH", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                        <div className="text-sm text-purple-900 w-1/2">{user.name}</div>
-                        <div className="text-sm text-purple-900 w-1/3 text-right">{user.studentId}</div>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
-          ))}
+          ) : (
+            dailyCheckedIn.map(({ date, users }) => (
+              <div key={date}>
+                <div className="my-2 ">
+                  <button
+                    onClick={() => toggleDate(date)}
+                    className="flex flex-row items-center gap-x-2 text-md text-purple-700 p-0.5 w-full bg-purple-50 hover:bg-purple-100 rounded-4xl shadow-xl transition duration-300 cursor-pointer"
+                  >
+                    <div
+                      className={`transition-transform duration-300 ${openDates[date] ? "rotate-0" : "rotate-90"
+                        }`}
+                    >
+                      <ChevronDown size={20} />
+                    </div>
+                    <div>
+                      วันที่:{" "}
+                      {new Date(date).toLocaleDateString("th-TH", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </div>
+                    <div>
+                      ({users.length}) คน
+                    </div>
+                  </button>
+                </div>
+
+                <AnimatePresence initial={false}>
+                  {openDates[date] && (
+                    <motion.div
+                      key={date}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden p-4 rounded-xl shadow-lg bg-white mt-2"
+                    >
+                      {/* หัวตาราง */}
+                      <div className="flex flex-row justify-between text-purple-700 pb-1 border-purple-400">
+                        <div className="w-1/4">เวลา</div>
+                        <div className="w-1/2">ชื่อ - สกุล</div>
+                        <div className="w-1/4 text-right">รหัส นศ.</div>
+                      </div>
+
+                      {/* รายชื่อ */}
+                      {users.map((user) => (
+                        <div
+                          key={user.uid + date}
+                          className="flex flex-row justify-between items-center py-2 border-b border-purple-300"
+                        >
+                          <div className="text-sm text-purple-900 w-1/4">
+                            {" "}
+                            {user.timestamp.toLocaleTimeString("th-TH", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                          <div className="text-sm text-purple-900 w-1/2">{user.name}</div>
+                          <div className="text-sm text-purple-900 w-1/3 text-right">{user.studentId}</div>
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))
+          )}
         </div>
       </div>
+
       <DeleteClassModal
         isOpen={showDeleteModal}
         onClose={handleCloseDeleteModal}

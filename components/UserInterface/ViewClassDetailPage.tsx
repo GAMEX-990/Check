@@ -40,7 +40,7 @@ export const ViewClassDetailPage = ({
   const [myClasses, setMyClasses] = useState<ClassData[]>([]);
   const [joinedClasses, setJoinedClasses] = useState<ClassData[]>([]);
   const [showClassDropdown, setShowClassDropdown] = useState(false);
-  const [classType, setClassType] = useState<'owned' | 'joined'>('owned'); // เพิ่ม state สำหรับ toggle
+  const [, setClassType] = useState<'owned' | 'joined'>('owned'); // เพิ่ม state สำหรับ toggle
 
   useEffect(() => {
     setSelectedClass(classData);

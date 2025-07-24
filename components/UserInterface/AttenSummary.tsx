@@ -23,7 +23,7 @@ import {
 } from "recharts";
 import Loader from "../Loader/Loader";
 import type { BarChartData, BarTooltipProps, DailyCheckedInRecord, FilterType, FirestoreTimestamp, PieChartData, PieTooltipProps, Props, Student, StudentAttendanceWithStatus } from "@/types/SummaryTypes";
-import FilterDropdown from "./FilterDropdown";
+import FilterDropdown from "../ui/FilterDropdown";
 
 
 const AttendanceSummaryModal = ({ classData }: Props) => {

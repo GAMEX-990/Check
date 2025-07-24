@@ -7,6 +7,7 @@ import ClassPage from "./ClassPage";
 import { ViewClassDetailPage } from "./ViewClassDetailPage";
 import { SyncUserToFirebase } from "@/utils/userSync";
 import { ClassSectionProps, ClassData, ClassPageType } from "@/types/classTypes";
+import SmoothTabSwitcher from "../ui/SmoothTabSwitcher";
 
 // **เพิ่ม onClassChange prop**
 const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSectionProps & { 
@@ -34,44 +35,11 @@ const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSecti
     onClassChange?.(newClassData); // ส่งไปยัง parent component
   };
 
+  // ข้อมูล tabs สำหรับ SmoothTabSwitcher
   const tabs = [
     { id: "myclass", label: "My Classes" },
     { id: "class", label: "Classes" },
   ];
-
-  // Smooth Tab Switcher Component
-  const SmoothTabSwitcher = () => (
-    <div className="relative bg-purple-100 rounded-full p-1 mb-4">
-      <div className="flex relative">
-        <motion.div
-          className="absolute top-1 bottom-1 bg-white rounded-full shadow-lg"
-          initial={false}
-          animate={{
-            left: page === "myclass" ? "4px" : "50%",
-            right: page === "myclass" ? "50%" : "4px",
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 500,
-            damping: 30,
-          }}
-        />
-
-        {/* Tab Buttons */}
-        {tabs.map((tab) => {
-          return (
-            <button
-              key={tab.id}
-              onClick={() => handlePageChange(tab.id as ClassPageType)}
-              className="relative flex items-center gap-2 px-6 py-3 rounded-full transition-colors duration-200 justify-center"
-            >
-              <span className="text-purple-700 text-sm">{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
 
   return (
     <div className="relative">
@@ -87,10 +55,15 @@ const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSecti
           onClassChange={handleClassChangeFromView} // **ส่ง function ไปยัง ViewClassDetailPage**
         />
       ) : (
-        <div className="md:w-100 w-85  border-2 border-purple-50 rounded-2xl shadow-lg p-4 relative overflow-hidden">
+        <div className="md:w-100 w-85 border-2 border-purple-50 rounded-2xl shadow-lg p-4 relative overflow-hidden">
           {/* Smooth Tab Switcher */}
-          <div className="flex justify-center">
-            <SmoothTabSwitcher />
+          <div className="flex justify-center mb-4">
+            <SmoothTabSwitcher
+              tabs={tabs}
+              activeTab={page}
+              onTabChange={(tabId) => handlePageChange(tabId as ClassPageType)}
+              className="mb-0"
+            />
           </div>
 
           {/* Content with Smooth Transitions */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, LogIn, X, Pencil, CheckCircle, XCircle, Loader2Icon } from 'lucide-react';
+import { LogIn, X, Pencil, CheckCircle, XCircle, Loader2Icon } from 'lucide-react';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
@@ -149,10 +149,7 @@ const Usercard = () => {
   return (
     <div className="flex justify-center">
       <div className="w-80 md:w-85 border-2 border-purple-50 rounded-2xl shadow-lg">
-        <div className="flex justify-between p-4">
-          <button className="text-purple-600 text-2xl" onClick={() => router.back()}>
-            <ArrowLeft />
-          </button>
+        <div className="flex justify-end m-4">
           <button onClick={handleLogout} className="text-purple-600">
             <LogIn />
           </button>

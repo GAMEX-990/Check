@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import DeleteClassModal from "./DeleteClassModal";
-import { ArrowLeft, ChevronDown, Trash2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Trash2, Users, BookOpen } from "lucide-react";
 import {
   ViewClassDetailPageProps,
   CheckedInUser,
@@ -25,26 +25,34 @@ export const ViewClassDetailPage = ({
   const [dailyCheckedIn, setDailyCheckedIn] = useState<
     { date: string; users: CheckedInUser[] }[]
   >([]);
-  // --------------------------------------
+
   const [currectPang] = useState<"myclass" | "class" | "view">("view");
   const [selectedClass, setSelectedClass] = useState<Partial<ClassData> | null>(classData);
   const auth = getAuth();
   const [user] = useAuthState(auth);
-  // --------------------------------------
+
   const [openDates, setOpenDates] = useState<Record<string, boolean>>({});
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const currentUser = auth.currentUser;
   const currentUid = currentUser?.uid;
 
-  // เพิ่ม state สำหรับ dropdown
+  // State สำหรับ dropdown และ class type toggle
   const [myClasses, setMyClasses] = useState<ClassData[]>([]);
+  const [joinedClasses, setJoinedClasses] = useState<ClassData[]>([]);
   const [showClassDropdown, setShowClassDropdown] = useState(false);
+  const [classType, setClassType] = useState<'owned' | 'joined'>('owned'); // เพิ่ม state สำหรับ toggle
 
   useEffect(() => {
     setSelectedClass(classData);
-  }, [classData]);
+    // กำหนด class type เริ่มต้นตามว่าเป็นเจ้าของหรือไม่
+    if (classData.owner_email === currentUser?.email) {
+      setClassType('owned');
+    } else {
+      setClassType('joined');
+    }
+  }, [classData, currentUser?.email]);
 
-  // เพิ่ม useEffect สำหรับ fetch My Classes
+  // Fetch My Classes (คลาสที่เป็นเจ้าของ)
   useEffect(() => {
     if (!currentUser?.email) return;
 
@@ -62,6 +70,29 @@ export const ViewClassDetailPage = ({
     return () => unsubscribe();
   }, [currentUser?.email]);
 
+  // Fetch Joined Classes (คลาสที่เข้าร่วม)
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+
+    const classesRef = collection(db, "classes");
+    const q = query(
+      classesRef,
+      where("checkedInMembers", "array-contains", currentUser.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const classList: ClassData[] = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<ClassData, "id">),
+      }));
+      // กรองเอาเฉพาะคลาสที่ไม่ใช่เจ้าของ
+      const filteredClasses = classList.filter(cls => cls.owner_email !== currentUser.email);
+      setJoinedClasses(filteredClasses);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser?.uid, currentUser?.email]);
+
   const toggleDate = (date: string) => {
     setOpenDates((prev) => ({
       ...prev,
@@ -69,17 +100,32 @@ export const ViewClassDetailPage = ({
     }));
   };
 
-  // ฟังก์ชันสำหรับเปลี่ยนคลาส - แก้ไขให้ส่งข้อมูลไปยัง parent component
+  // ฟังก์ชันสำหรับเปลี่ยนคลาส
   const handleClassChange = (newClassData: ClassData) => {
     setSelectedClass(newClassData);
     setShowClassDropdown(false);
     // รีเซ็ต states
     setDailyCheckedIn([]);
     setOpenDates({});
-
-    // **แก้ไขตรงนี้: ส่งข้อมูลคลาสใหม่ไปยัง parent component ให้ AttendanceSummaryModal ได้รับข้อมูลใหม่**
+    // ส่งข้อมูลคลาสใหม่ไปยัง parent component
     onClassChange?.(newClassData);
   };
+
+  // ฟังก์ชันสำหรับสลับประเภทคลาส
+  const handleClassTypeToggle = (type: 'owned' | 'joined') => {
+    setClassType(type);
+    setShowClassDropdown(false);
+
+    // เลือกคลาสแรกในประเภทที่เลือก (ถ้ามี)
+    const targetClasses = type === 'owned' ? myClasses : joinedClasses;
+    if (targetClasses.length > 0) {
+      const firstClass = targetClasses[0];
+      handleClassChange(firstClass);
+    }
+  };
+
+  // ได้รับ classes ที่จะแสดงตาม class type ที่เลือก
+  const currentClasses = classType === 'owned' ? myClasses : joinedClasses;
 
   useEffect(() => {
     const classId = selectedClass?.id || classData?.id;
@@ -129,7 +175,6 @@ export const ViewClassDetailPage = ({
       }
     });
 
-    // Cleanup function
     return () => unsubscribe();
   }, [selectedClass?.id, classData?.id, currentUser?.email, currentUid]);
 
@@ -145,7 +190,7 @@ export const ViewClassDetailPage = ({
 
   return (
     <div>
-      <div className="w-85 md:w-100 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
+      <div className="w-85 md:w-110 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
         <div className="flex justify-between">
           <div className="relative">
             {/* Class Title with Dropdown */}
@@ -168,6 +213,7 @@ export const ViewClassDetailPage = ({
               )}
             </div>
 
+
             {/* Dropdown Menu */}
             <AnimatePresence>
               {showClassDropdown && (
@@ -184,8 +230,8 @@ export const ViewClassDetailPage = ({
                         key={cls.id}
                         onClick={() => handleClassChange(cls)}
                         className={`w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors ${cls.id === currentClassData.id
-                            ? 'bg-purple-100 text-purple-800 font-medium'
-                            : 'text-purple-700'
+                          ? 'bg-purple-100 text-purple-800 font-medium'
+                          : 'text-purple-700'
                           }`}
                       >
                         <div className="flex items-center gap-3">
@@ -233,7 +279,26 @@ export const ViewClassDetailPage = ({
           </div>
         </div>
 
-        <div className="overflow-scroll h-80 relative">
+         {/* Class Type Toggle Buttons */}
+         <div className="justify-center flex gap-x-2 text-purple-700 mt-2 mb-4 ">
+          <button
+            onClick={() => handleClassTypeToggle('owned')}
+            className="flex items-center gap-x-1 p-1.5 border-2 border-purple-50 rounded-2xl shadow-lg text-sm transition-all duration-200 hover:bg-purple-50"
+          >
+            <BookOpen size={16} />
+            <span>My Classes</span>
+          </button>
+
+          <button
+            onClick={() => handleClassTypeToggle('joined')}
+            className="flex items-center gap-x-1 p-1.5 border-2 border-purple-50 rounded-2xl shadow-lg text-sm transition-all duration-200 hover:bg-purple-50"
+          >
+            <Users size={16} />
+            <span>Classes</span>
+          </button>
+        </div>
+
+        <div className="overflow-scroll h-80 md:h-114 relative">
           {dailyCheckedIn.map(({ date, users }) => (
             <div key={date}>
               <div className="my-2 ">

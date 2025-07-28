@@ -5,11 +5,13 @@ import Logo from './Logo'
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase'
 import SignedOutLinks from './SignedOutLinks'
-import { Menu, X, User as Home, Info, Mail} from 'lucide-react'
+import { Menu, X, User as Home, Info, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserData, UserData } from '@/utils/getcurrentuser';
 import Image from 'next/image';
 import AddClassPopup from '../FromUser/ButtonCreate';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet';
+import Usercard from '../UserInterface/Usercard';
 
 const Navbar = () => {
     const [userData, setUserData] = useState<UserData | null>(null);
@@ -70,7 +72,7 @@ const Navbar = () => {
                                 <span>{link.name}</span>
                             </Link>
                         ))}
-                        {user && <div><AddClassPopup/></div>}
+                        {user && <div><AddClassPopup /></div>}
                     </div>
 
                     <div className="h-8 w-px bg-gray-200 mx-2"></div>
@@ -78,20 +80,36 @@ const Navbar = () => {
                     {user ? (
                         <div className="flex items-center space-x-2">
                             <div className="flex items-center space-x-2 bg-purple-50 px-3 py-1 rounded-full">
-                                <div className="bg-purple-100 p-1 rounded-full">
-                                    {userData?.photoURL && (
-                                        <Image
-                                            width={40}
-                                            height={40}
-                                            src={userData.photoURL}
-                                            alt="Profile"
-                                            className="w-8 h-8 rounded-full border-4 border-purple-700 object-cover"
-                                        />
-                                    )}
-                                </div>
+                                <Sheet>
+                                    <SheetTrigger asChild>
+                                        <div className="cursor-pointer bg-purple-100 p-1 rounded-full">
+                                            {userData?.photoURL && (
+                                                <Image
+                                                    width={40}
+                                                    height={40}
+                                                    src={userData.photoURL}
+                                                    alt="Profile"
+                                                    className="w-8 h-8 rounded-full border-4 border-purple-700 object-cover"
+                                                />
+                                            )}
+                                        </div>
+                                    </SheetTrigger>
+                                    <SheetContent side="right" className="w-[300px] sm:w-[350px]">
+                                        <SheetHeader>
+                                            <SheetTitle className="text-lg">User Profile</SheetTitle>
+                                            <SheetDescription className="text-sm text-gray-500">
+                                                แก้ไขข้อมูลผู้ใช้งาน หรือดูข้อมูลของคุณได้ที่นี่
+                                            </SheetDescription>
+                                        </SheetHeader>
+                                        <div className="mt-4">
+                                            <Usercard />
+                                        </div>
+                                    </SheetContent>
+                                </Sheet>
                                 <span className="text-sm text-purple-700 font-medium truncate max-w-[100px]">
                                     {userData?.name?.split('@')[0]}
                                 </span>
+
                             </div>
                             <SignedOutLinks />
                         </div>

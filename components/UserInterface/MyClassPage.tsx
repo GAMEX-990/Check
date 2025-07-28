@@ -66,8 +66,8 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
   return (
     <div>
       <div className="">
-        <div className="overflow-scroll h-80 ">
-          <div className="flex flex-col gap-4 p-4">
+        <div className="overflow-scroll h-90 w-auto">
+          <div className="flex flex-col gap-y-4 p-8">
             {isEntering ? (
               <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
                 <Loader />
@@ -97,7 +97,7 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
                 </motion.div>
               ))
             ) : (
-              <p className="text-center text-purple-600 mt-4"></p>
+              <p></p>
             )}
           </div>
         </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Usercard from '@/components/UserInterface/Usercard';
 import ClassSection from '@/components/UserInterface/ClassSection';
 import AddClassPopup from '@/components/FromUser/ButtonCreate';
 import AttendanceSummaryModal from '@/components/UserInterface/AttenSummary';
@@ -91,11 +90,6 @@ export default function DashboardPage() {
     <div>
       <div className="flex justify-center h-screen">
         <div className="flex flex-col gap-4 mt-15 xl:flex-row">
-          {currectPang !== 'view' && (
-            <div className="max-h-fit">
-              <Usercard />
-            </div>
-          )}
           <div className="xl:hidden flex items-center justify-center">
             {currectPang !== 'view' && (
               <div className="max-h-fit">
@@ -112,7 +106,7 @@ export default function DashboardPage() {
               onClassChange={handleClassChange} 
             />
           </div>
-          <div>
+          <div className="flex max-h-fit items-center justify-center">
             {currectPang === 'view' && selectedClass && (
               <div className="max-h-fit">
                 <AttendanceSummaryModal classData={selectedClass}/>

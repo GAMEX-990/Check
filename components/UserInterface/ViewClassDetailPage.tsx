@@ -190,7 +190,7 @@ export const ViewClassDetailPage = ({
 
   return (
     <div>
-      <div className="w-85 md:w-100 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
+      <div className="w-100 md:w-120 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
         <div className="flex justify-between">
           <div className="relative">
             {/* Class Title with Dropdown */}

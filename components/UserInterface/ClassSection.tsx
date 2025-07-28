@@ -44,7 +44,6 @@ const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSecti
   return (
     <div className="relative">
       <SyncUserToFirebase />
-
       {page === "view" && selectedClass ? (
         <ViewClassDetailPage
           classData={selectedClass}
@@ -55,7 +54,7 @@ const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSecti
           onClassChange={handleClassChangeFromView} // **ส่ง function ไปยัง ViewClassDetailPage**
         />
       ) : (
-        <div className="md:w-100 w-85 border-2 border-purple-50 rounded-2xl shadow-lg p-4 relative overflow-hidden">
+        <div className="md:w-250 w-85 border-2 border-purple-50 rounded-2xl shadow-lg p-4 relative overflow-hidden">
           {/* Smooth Tab Switcher */}
           <div className="flex justify-center mb-4">
             <SmoothTabSwitcher
@@ -65,7 +64,6 @@ const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSecti
               className="mb-0"
             />
           </div>
-
           {/* Content with Smooth Transitions */}
           <div className="overflow-hidden">
             <AnimatePresence mode="wait">

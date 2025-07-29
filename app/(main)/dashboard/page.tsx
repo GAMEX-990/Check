@@ -3,16 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import ClassSection from '@/components/UserInterface/ClassSection';
 import AddClassPopup from '@/components/FromUser/ButtonCreate';
-import AttendanceSummaryModal from '@/components/UserInterface/AttenSummary';
 import Loader from '@/components/Loader/Loader';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
-import type { ClassData } from '@/types/classTypes';
 import { getDoc, doc, setDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { getFingerprint } from '@/utils/getFingerprint';
+import AttendanceSummaryModal from '@/components/UserInterface/AttenSummary';
+import { ClassData } from '@/types/classDetailTypes';
 
 const verifyDeviceAccess = async (uid: string) => {
   const currentFingerprint = await getFingerprint();
@@ -86,33 +86,37 @@ export default function DashboardPage() {
     return <div className="flex justify-center items-center h-screen">Error: {error.message}</div>;
   }
 
+  const isClassOwner = selectedClass && user ? selectedClass.owner_email === user.email : false;
+
   return (
     <div>
       <div className="flex justify-center h-screen">
         <div className="flex flex-col gap-4 mt-15 xl:flex-row">
-          <div className="xl:hidden flex items-center justify-center">
+          <div className="md:hidden flex items-center justify-center">
             {currectPang !== 'view' && (
               <div className="max-h-fit">
                 <AddClassPopup />
               </div>
             )}
           </div>
+          <div className='flex flex-col gap-y-4'>
+            <div className="flex max-h-fit items-center justify-center">
+              {/* **เพิ่ม onClassChange prop สำหรับ ClassSection** */}
+              <ClassSection
+                onPageChange={setCurrectPang}
+                onClassSelect={setSelectedClass}
+                onClassChange={handleClassChange}
+              />
+            </div>
+            <div className="flex max-h-fit items-center justify-center">
+              {currectPang === 'view' && selectedClass && (
+                <div className="max-h-fit">
+                  <AttendanceSummaryModal classData={selectedClass} isOwner={isClassOwner} />
+                </div>
+              )}
+            </div>
+          </div>
 
-          <div className="flex max-h-fit items-center justify-center">
-            {/* **เพิ่ม onClassChange prop สำหรับ ClassSection** */}
-            <ClassSection 
-              onPageChange={setCurrectPang} 
-              onClassSelect={setSelectedClass}
-              onClassChange={handleClassChange} 
-            />
-          </div>
-          <div className="flex max-h-fit items-center justify-center">
-            {currectPang === 'view' && selectedClass && (
-              <div className="max-h-fit">
-                <AttendanceSummaryModal classData={selectedClass}/>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

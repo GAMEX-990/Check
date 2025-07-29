@@ -6,7 +6,9 @@ import MyClassPage from "./MyClassPage";
 import ClassPage from "./ClassPage";
 import { ViewClassDetailPage } from "./ViewClassDetailPage";
 import { SyncUserToFirebase } from "@/utils/userSync";
-import { ClassSectionProps, ClassData, ClassPageType } from "@/types/classTypes";
+import { ClassPageType } from "@/types/classTypes";
+import { ClassData } from "@/types/classDetailTypes";
+import type { ClassSectionProps } from "@/types/classTypes";
 import SmoothTabSwitcher from "../ui/SmoothTabSwitcher";
 
 // **เพิ่ม onClassChange prop**

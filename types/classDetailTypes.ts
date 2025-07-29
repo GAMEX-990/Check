@@ -20,6 +20,7 @@ export interface ClassData {
     owner_email: string;
     checkedInCount: number;
     checkedInRecord?: Record<string, any>; // ถ้าคุณรู้โครงสร้าง detail ตรงนี้ บอกได้เลยครับ
+    checkedInMembers?: string[]; // ✅ เพิ่มบรรทัดนี้
   }
   
   export interface CheckedInUser {

@@ -49,6 +49,7 @@ export interface Props {
     id: string;
     name: string;
   };
+  isOwner?: boolean; // เพิ่ม prop นี้
 }
 
 export interface PieChartData {

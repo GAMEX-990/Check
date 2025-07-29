@@ -2,48 +2,58 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import {
   collection,
   doc,
-  serverTimestamp,
   setDoc,
   getDocs,
   deleteDoc,
-  Timestamp
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-const DEVICE_ID_TTL_HOURS = 4; // 4 ชั่วโมง (เดิม)
+const DEVICE_ID_TTL_HOURS = 4;
+
+// สร้าง Fingerprint ของอุปกรณ์
 export const getFingerprint = async (): Promise<string> => {
   const fp = await FingerprintJS.load();
   const result = await fp.get();
   return result.visitorId;
 };
 
-// ฟังก์ชันหลักที่รวม save และ clear
-export const saveAndCleanupDeviceId = async (): Promise<string> => {
+// ฟังก์ชันหลัก: บันทึก deviceId และลบที่หมดอายุ
+export const saveAndCleanupDeviceId = async (
+  checkInStartTime?: Timestamp
+): Promise<string> => {
   const deviceId = await getFingerprint();
+  const now = Timestamp.now();
 
-  // บันทึก deviceId
+  // TTL ปกติ 4 ชั่วโมง
+  let ttlMillis = DEVICE_ID_TTL_HOURS * 60 * 60 * 1000;
+
+  if (checkInStartTime) {
+    const endTime = checkInStartTime.toMillis() + ttlMillis;
+    const timeLeft = endTime - now.toMillis();
+    ttlMillis = Math.max(timeLeft, 0);
+  }
+
+  const expireAt = Timestamp.fromMillis(now.toMillis() + ttlMillis);
+
+  // บันทึก deviceId พร้อมวันหมดอายุ
   const docRef = doc(db, 'deviceIds', deviceId);
   await setDoc(
     docRef,
     {
-      createdAt: Timestamp.now(),
+      createdAt: now,
+      expireAt: expireAt,
     },
     { merge: true }
   );
 
-  // ลบ deviceId ที่หมดอายุ (เกิน 4 ชั่วโมง)
-  const now = Timestamp.now();
-  const cutoff = Timestamp.fromMillis(
-    now.toMillis() - DEVICE_ID_TTL_HOURS * 60 * 60 * 1000
-  );
-
+  // ลบ deviceId ที่หมดอายุ
   const snapshot = await getDocs(collection(db, 'deviceIds'));
-
   const deletePromises = snapshot.docs.map(async (docSnap) => {
     const data = docSnap.data();
-    const createdAt = data.createdAt as Timestamp;
+    const expire = data.expireAt as Timestamp;
 
-    if (createdAt?.toMillis() < cutoff.toMillis()) {
+    if (expire?.toMillis() < now.toMillis()) {
       await deleteDoc(docSnap.ref);
     }
   });

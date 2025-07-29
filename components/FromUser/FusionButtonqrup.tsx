@@ -5,14 +5,17 @@ import { handleExportXLSX } from "@/utils/exportXLSXHandler";
 import { uploadStudentsFromFile } from "@/utils/parseCSVFile";
 import { doc, getDoc } from "firebase/firestore";
 import { motion } from "framer-motion";
-import { Download, FileUp, Loader, QrCode, X } from "lucide-react";
+import { Download, FileUp, Loader, QrCode, X, Trash2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
+import DeleteClassModal from "../UserInterface/DeleteClassModal";
 
 const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
   classId,
-  currentUser,
+  user,
+  classData,
+  onDeleteSuccess,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [qrCode, setQrCode] = useState<string | null>(null);
@@ -20,10 +23,11 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
   const [isOwner, setIsOwner] = useState(false);
   const [isLoadingOwner, setIsLoadingOwner] = useState(true);
   const [remainingTime, setRemainingTime] = useState<number>(0);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const checkOwnerStatus = async () => {
-      if (!currentUser || !classId) {
+      if (!user || !classId) {
         setIsOwner(false);
         setIsLoadingOwner(false);
         return;
@@ -35,8 +39,8 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
         if (classSnap.exists()) {
           const classData = classSnap.data();
           const isClassOwner =
-            classData.owner_email === currentUser.email ||
-            classData.created_by === currentUser.uid;
+            classData.owner_email === user.email ||
+            classData.created_by === user.uid;
           setIsOwner(isClassOwner);
         } else {
           setIsOwner(false);
@@ -47,7 +51,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
     };
 
     checkOwnerStatus();
-  }, [currentUser, classId]);
+  }, [user, classId]);
 
   // Countdown QR Code modal 3 นาที
   useEffect(() => {
@@ -138,7 +142,20 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
   };
 
   const handleExportClick = () => {
-    handleExportXLSX(classId, currentUser);
+    handleExportXLSX(classId, user);
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+  };
+
+  const handleDeleteSuccess = () => {
+    onDeleteSuccess?.();
+    setShowDeleteModal(false);
   };
 
   if (isLoadingOwner) {
@@ -175,6 +192,16 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
             <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
               <button onClick={handleExportClick} className="cursor-pointer">
                 <Download />
+              </button>
+            </motion.div>
+            {/* ปุ่มลบที่ย้ายมาจากไฟล์เดิม */}
+            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
+              <button 
+                onClick={handleDeleteClick}
+                className="cursor-pointer text-red-500 hover:text-red-700"
+                title="ลบคลาส"
+              >
+                <Trash2 size={24} />
               </button>
             </motion.div>
           </div>
@@ -224,6 +251,23 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
           </motion.div>
         </div>
       )}
+
+      {/* Delete Class Modal */}
+      <DeleteClassModal
+        isOpen={showDeleteModal}
+        onClose={handleCloseDeleteModal}
+        classData={classData ? {
+          id: classData.id,
+          name: classData.name,
+          memberCount: classData.memberCount
+        } : {
+          id: classId,
+          name: "Unknown Class",
+          memberCount: 0
+        }}
+        user={user}
+        onDeleteSuccess={handleDeleteSuccess}
+      />
     </div>
   );
 };

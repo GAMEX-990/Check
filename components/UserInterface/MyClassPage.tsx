@@ -7,10 +7,10 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { useHasScanned } from "@/utils/hasScanned";
-import { ClassData } from "@/types/classTypes";
 import { motion } from "framer-motion";
 import { ClassPageType } from "@/types/classTypes";
 import Loader from "../Loader/Loader";
+import { ClassData } from "@/types/classDetailTypes";
 
 interface MyClassPageProps {
   page: ClassPageType;
@@ -67,7 +67,7 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
     <div>
       <div className="">
         <div className="overflow-scroll h-90 w-auto">
-          <div className="flex flex-col gap-y-4 p-8">
+          <div className="flex flex-col gap-y-4 p-8 md:items-center">
             {isEntering ? (
               <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
                 <Loader />
@@ -81,7 +81,7 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
                 >
                   <div
                     key={cls.id}
-                    className="flex justify-between items-center bg-purple-50 hover:bg-purple-100 p-4 rounded-4xl shadow-lg cursor-pointer"
+                    className=" flex justify-between md:w-100 items-center bg-purple-50 hover:bg-purple-100 p-4 rounded-4xl shadow-lg cursor-pointer"
                     onClick={() => {
                       setIsEntering(true);
                       setTimeout(() => {

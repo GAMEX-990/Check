@@ -10,6 +10,7 @@ export interface DeleteClassModalProps {
   isOpen: boolean;
   onClose: () => void;
   classData: ClassData;
-  user: User | null;
+  user: User | null; // <-- แก้ตรงนี้
   onDeleteSuccess?: () => void;
+  
 }

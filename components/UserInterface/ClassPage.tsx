@@ -9,10 +9,10 @@ import {
 } from "firebase/firestore";
 import { Check } from "lucide-react";
 import { useHasScanned } from "@/utils/hasScanned";
-import { ClassData } from "@/types/classTypes";
 import { motion } from "framer-motion";
 import { ClassPageType } from "@/types/classTypes";
 import Loader from "../Loader/Loader";
+import { ClassData } from "@/types/classDetailTypes";
 
 interface ClassPageProps {
   page: ClassPageType;
@@ -81,8 +81,8 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
   return (
     <div>
 
-      <div className="overflow-scroll h-80 ">
-        <div className="flex flex-col gap-4 p-4">
+      <div className="overflow-scroll h-90 w-auto">
+        <div className="flex flex-col gap-y-4 p-8 md:items-center">
           {classesLoading ? (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center ">
               <Loader />
@@ -101,7 +101,7 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
                     whileTap={{ scale: 1.05 }}
                   >
                     <div
-                      className="flex justify-between items-center bg-purple-50 hover:bg-purple-100 p-4 rounded-4xl shadow-lg cursor-pointer relative"
+                      className="flex justify-between md:w-100 items-center bg-purple-50 hover:bg-purple-100 p-4 rounded-4xl shadow-lg cursor-pointer"
                       onClick={() => {
                         setIsEntering(true);
                         setTimeout(() => {
@@ -110,7 +110,7 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
                       }}
                     >
                       <div className="flex gap-3">
-                        <div className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center rounded-full">
+                        <div className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center rounded-full shadow-lg">
                           {cls.name.charAt(0)}
                         </div>
                         <div className="flex flex-col">
@@ -123,7 +123,7 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
                             </div>
                           </div>
                           <div>
-                            <p className="text-sm text-purple-600 break-words">{cls.owner_email}</p>
+                            <p className="truncate w-full max-w-[80px] text-base md:max-w-full text-purple-500">{cls.owner_email}</p>
                           </div>
                         </div>
                       </div>

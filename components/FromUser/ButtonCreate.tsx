@@ -116,10 +116,6 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
       {/* ------------------------------------------------------------------------------------------------------------ */}
       <div className="block md:hidden">
         <div className="w-85 md:w-auto border-2 border-purple-50 rounded-2xl shadow-lg">
-          <div className="mt-4 ml-2 max-w-fit">
-            <h1 className="text-purple-700 font-bold">จัดการคลาส</h1>
-            <h1 className="text-purple-700 text-sm">สร้างคลาสหรือเข้าร่วม</h1>
-          </div>
           <div className="flex flex-row p-5 space-x-2 items-center justify-center md:flex-col">
             <div>
               <motion.div

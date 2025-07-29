@@ -147,17 +147,32 @@ const Navbar = () => {
                 <div className="px-4 py-3 space-y-3 border-t border-gray-100">
                     {user && (
                         <div className="flex items-center space-x-2 px-2 py-2 bg-purple-50 rounded-lg mb-3">
-                            <div className="bg-purple-100 p-1.5 rounded-full">
-                                {userData?.photoURL && (
-                                    <Image
-                                        width={40}
-                                        height={40}
-                                        src={userData.photoURL}
-                                        alt="Profile"
-                                        className="w-8 h-8 rounded-full border-4 border-purple-700 object-cover"
-                                    />
-                                )}
-                            </div>
+                            <Sheet>
+                                    <SheetTrigger asChild>
+                                        <div className="cursor-pointer bg-purple-100 p-1 rounded-full">
+                                            {userData?.photoURL && (
+                                                <Image
+                                                    width={40}
+                                                    height={40}
+                                                    src={userData.photoURL}
+                                                    alt="Profile"
+                                                    className="w-8 h-8 rounded-full border-4 border-purple-700 object-cover"
+                                                />
+                                            )}
+                                        </div>
+                                    </SheetTrigger>
+                                    <SheetContent side="right" className="w-[300px] sm:w-[350px]">
+                                        <SheetHeader>
+                                            <SheetTitle className="text-lg">User Profile</SheetTitle>
+                                            <SheetDescription className="text-sm text-gray-500">
+                                                แก้ไขข้อมูลผู้ใช้งาน หรือดูข้อมูลของคุณได้ที่นี่
+                                            </SheetDescription>
+                                        </SheetHeader>
+                                        <div className="mt-4">
+                                            <Usercard />
+                                        </div>
+                                    </SheetContent>
+                                </Sheet>
                             <span className="text-sm text-purple-700 font-medium truncate">
                                 {userData?.name?.split('@')[0]}
                             </span>

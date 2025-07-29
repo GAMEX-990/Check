@@ -239,7 +239,9 @@ export default function LoginPage() {
             >
               สร้างบัญชีใหม่
             </Button>
-            <Button variant='link' className=" text-sm font-medium text-purple-600 hover:text-purple-800 cursor-pointer">
+            <Button variant='link' 
+             onClick={() => router.push('/forgot-password')}
+             className=" text-sm font-medium text-purple-600 hover:text-purple-800 cursor-pointer">
               ลืมรหัสผ่าน?
             </Button>
           </div>

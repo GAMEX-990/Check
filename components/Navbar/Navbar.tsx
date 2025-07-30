@@ -161,12 +161,9 @@ const Navbar = () => {
                                             )}
                                         </div>
                                     </SheetTrigger>
-                                    <SheetContent side="right" className="w-[300px] sm:w-[350px]">
+                                    <SheetContent side="right" className="w-[300px] sm:w-[350px] items-center">
                                         <SheetHeader>
                                             <SheetTitle className="text-lg">User Profile</SheetTitle>
-                                            <SheetDescription className="text-sm text-gray-500">
-                                                แก้ไขข้อมูลผู้ใช้งาน หรือดูข้อมูลของคุณได้ที่นี่
-                                            </SheetDescription>
                                         </SheetHeader>
                                         <div className="mt-4">
                                             <Usercard />

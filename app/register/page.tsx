@@ -1,5 +1,4 @@
 'use client'
-
 import { auth, db, provider } from '@/lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -9,8 +8,6 @@ import React, { useState } from 'react'
 import Image from "next/image";
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { saveAndCleanupDeviceId } from '@/utils/getFingerprint';
-
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -34,7 +31,6 @@ export default function RegisterPage() {
       // Attempt sign in with popup
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      await saveAndCleanupDeviceId();;
       // Check if user profile exists in Firestore
       const userRef = doc(db, "users", user.uid);
       let userSnap;

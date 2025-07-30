@@ -148,40 +148,31 @@ const Usercard = () => {
 
   return (
     <div className="flex justify-center">
-      <div className="w-80 md:w-85 border-2 border-purple-50 rounded-2xl shadow-lg">
-        <div className="flex justify-end m-4">
-          <button onClick={handleLogout} className="text-purple-600">
-            <LogIn />
-          </button>
+      <div className="flex flex-col items-center space-y-8">
+        <div className="relative">
+          <Image
+            className="rounded-full object-cover"
+            width={100}
+            height={100}
+            src={data.photoURL || '/default-profile.png'}
+            alt="Profile"
+          />
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 1 }}>
+            <div
+              className="absolute bottom-2 right-2 bg-purple-600 hover:bg-purple-700 cursor-pointer text-white rounded-full p-1"
+              onClick={() => setShowModal(true)}
+              title="แก้ไขข้อมูล"
+            >
+              <Pencil size={18} />
+            </div>
+          </motion.div>
         </div>
 
-        <div className="flex flex-col items-center space-y-8">
-          <div className="relative">
-            <Image
-              className="border-4 border-purple-700 rounded-full object-cover"
-              width={128}
-              height={128}
-              src={data.photoURL || '/default-profile.png'}
-              alt="Profile"
-            />
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 1 }}>
-              <div
-                className="absolute bottom-2 right-2 bg-purple-600 hover:bg-purple-700 cursor-pointer text-white rounded-full p-1"
-                onClick={() => setShowModal(true)}
-                title="แก้ไขข้อมูล"
-              >
-                <Pencil size={18} />
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="flex flex-col text-center items-center space-y-8 m-4">
-            <div className="space-y-1 flex flex-col items-center">
-              <p className="text-purple-700 font-bold">{data.name}</p>
-              <div className="border-1 border-purple-700 w-50" />
-            </div>
-            <p className="text-purple-700 font-bold">{data.email}</p>
-            <p className="text-purple-700 font-bold">{data.studentId}</p>
+        <div className="flex flex-col text-center items-center space-y-8 m-4">
+          <div className="flex flex-col items-center space-y-8">
+            <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.name}</p>
+            <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.email}</p>
+            <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.studentId}</p>
           </div>
         </div>
       </div>
@@ -208,7 +199,7 @@ const Usercard = () => {
               </button>
 
               <h2 className="text-lg font-bold text-purple-700 mb-4">กรอกรหัสนักศึกษา</h2>
-              
+
               {/* Student ID Input with validation */}
               <div className="relative mb-4">
                 <Input
@@ -216,11 +207,10 @@ const Usercard = () => {
                   placeholder="xxxxxxxxxxx-x"
                   value={studentId}
                   onChange={(e) => setStudentId(e.target.value)}
-                  className={`w-full border px-3 py-2 pr-10 rounded-2xl ${
-                    studentIdStatus === 'taken' ? 'border-red-300 focus:ring-red-500' :
-                    studentIdStatus === 'available' ? 'border-green-300 focus:ring-green-500' :
-                    'border-gray-300'
-                  }`}
+                  className={`w-full border px-3 py-2 pr-10 rounded-2xl ${studentIdStatus === 'taken' ? 'border-red-300 focus:ring-red-500' :
+                      studentIdStatus === 'available' ? 'border-green-300 focus:ring-green-500' :
+                        'border-gray-300'
+                    }`}
                   disabled={loading}
                 />
 

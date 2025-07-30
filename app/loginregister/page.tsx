@@ -1,5 +1,4 @@
 "use client";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth, db } from "@/lib/firebase";
@@ -13,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { useAuthRedirect } from "@/hook/useAuthRedirect";
 import Loader from "@/components/Loader/Loader";
 import { toast } from "sonner";
-import { saveAndCleanupDeviceId } from "@/utils/getFingerprint";
 
 export default function LoginRegisterPage() {
   const [fullname, setFullname] = useState("");
@@ -178,7 +176,6 @@ export default function LoginRegisterPage() {
       // ลิงค์ credential กับ user ปัจจุบัน
       const result = await linkWithCredential(user, credential);
       const linkedUser = result.user;
-      await saveAndCleanupDeviceId();;
 
       // อัพเดท profile
       await updateProfile(linkedUser, {

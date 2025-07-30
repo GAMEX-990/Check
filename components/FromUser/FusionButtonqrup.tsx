@@ -2,7 +2,6 @@
 import { db } from "@/lib/firebase";
 import { CreateQRCodeAndUploadProps } from "@/types/Fusionqrup";
 import { handleExportXLSX } from "@/utils/exportXLSXHandler";
-import { uploadStudentsFromFile } from "@/utils/parseCSVFile";
 import { doc, getDoc } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { Download, FileUp, Loader, QrCode, X, Trash2 } from "lucide-react";
@@ -10,6 +9,7 @@ import React, { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 import DeleteClassModal from "../UserInterface/DeleteClassModal";
+import { uploadStudentsFromFile } from "@/utils/parseCSVFile";
 
 const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
   classId,
@@ -112,6 +112,23 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
     };
   }, []);
 
+  // ฟังก์ชันตรวจสอบไฟล์
+  const validateFile = (file: File): boolean => {
+    // ตรวจสอบประเภทไฟล์
+    const allowedTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+      'application/vnd.ms-excel', // .xls
+      'text/csv' // .csv
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("กรุณาเลือกไฟล์ Excel (.xlsx, .xls) หรือ CSV เท่านั้น");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     classId: string
@@ -119,11 +136,46 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const result = await uploadStudentsFromFile(file, classId);
-    if (result.success) {
-      toast.success("อัปโหลดข้อมูลนักเรียนสำเร็จ!");
-    } else {
-      toast.error("เกิดข้อผิดพลาดในการอัปโหลด");
+    // Validate file first
+    if (!validateFile(file)) {
+      // รีเซ็ต file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // แสดง loading toast
+    const loadingToast = toast.loading("กำลังอัปโหลดข้อมูลนักเรียน...");
+
+    try {
+      const result = await uploadStudentsFromFile(file, classId);
+      
+      // ปิด loading toast
+      toast.dismiss(loadingToast);
+      
+      if (result.success) {
+        // แสดงข้อความสำเร็จพร้อมจำนวนที่อัปโหลด
+        toast.success(result.message || `อัปโหลดข้อมูลนักเรียนสำเร็จ ${result.uploaded} รายการ!`);
+        
+        // แสดง errors ถ้ามี
+        if (result.errors && result.errors.length > 0) {
+          toast.warning(`มีข้อผิดพลาด ${result.errors.length} รายการ`, {
+            description: "กรุณาตรวจสอบข้อมูลในไฟล์"
+          });
+        }
+      } else {
+        toast.error(result.message || "เกิดข้อผิดพลาดในการอัปโหลด");
+      }
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      toast.error("เกิดข้อผิดพลาดในการอัปโหลดไฟล์");
+      console.error("Upload error:", error);
+    }
+
+    // รีเซ็ต file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 

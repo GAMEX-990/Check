@@ -7,10 +7,11 @@ import { auth, db, provider } from '@/lib/firebase';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import Image from "next/image";
 import { Input } from '@/components/ui/input';
-import { Label } from '@radix-ui/react-label'; import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useAuthRedirect } from '@/hook/useAuthRedirect';
 import Loader from '@/components/Loader/Loader';
+import { Label } from '@/components/ui/label';
 
 
 export default function LoginPage() {

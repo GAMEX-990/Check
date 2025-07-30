@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { getUserData, UserData } from '@/utils/getcurrentuser';
 import Image from 'next/image';
 import AddClassPopup from '../FromUser/ButtonCreate';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet';
 import Usercard from '../UserInterface/Usercard';
 
 const Navbar = () => {
@@ -95,11 +95,8 @@ const Navbar = () => {
                                         </div>
                                     </SheetTrigger>
                                     <SheetContent side="right" className="w-[300px] sm:w-[350px]">
-                                        <SheetHeader>
-                                            <SheetTitle className="text-lg">User Profile</SheetTitle>
-                                            <SheetDescription className="text-sm text-gray-500">
-                                                แก้ไขข้อมูลผู้ใช้งาน หรือดูข้อมูลของคุณได้ที่นี่
-                                            </SheetDescription>
+                                        <SheetHeader className='bg-purple-200'>
+                                            <SheetTitle className="text-lg text-center">Profile</SheetTitle>
                                         </SheetHeader>
                                         <div className="mt-4">
                                             <Usercard />

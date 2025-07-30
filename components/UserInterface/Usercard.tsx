@@ -10,12 +10,15 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Input } from '../ui/input';
 import { handleUpdateStudentIdHandler } from '@/utils/updateStudentIdHandler';
+import { Label } from '../ui/label';
 
 interface UserData {
   name: string;
   email: string;
   studentId: string;
   photoURL: string;
+  role: string;
+  institution: string;
 }
 
 const Usercard = () => {
@@ -26,7 +29,7 @@ const Usercard = () => {
   const router = useRouter();
 
   // Student ID validation states
-  const [isCheckingStudentId, setIsCheckingStudentId] = useState(false);
+  const [, setIsCheckingStudentId] = useState(false);
   const [studentIdStatus, setStudentIdStatus] = useState<'checking' | 'available' | 'taken' | 'idle'>('idle');
   const [studentIdError, setStudentIdError] = useState("");
 
@@ -164,10 +167,27 @@ const Usercard = () => {
         </div>
 
         <div className="flex flex-col text-center items-center space-y-8 m-4">
-          <div className="flex flex-col items-center space-y-8">
+          <div className="flex flex-col items-stretch space-y-8">
+            <Label className="text-sm font-medium text-gray-700 mb-2">
+              ชื่อ-สกุล
+            </Label>
             <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.name}</p>
+            <Label className="text-sm font-medium text-gray-700 mb-2">
+              อีเมล
+            </Label>
             <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.email}</p>
+            <Label className="text-sm font-medium text-gray-700 mb-2">
+              รหัสนักศึกษา
+            </Label>
             <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.studentId}</p>
+            <Label className="text-sm font-medium text-gray-700 mb-2">
+              ชื่อสถาบัน
+            </Label>
+            <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.institution}</p>
+            <Label className="text-sm font-medium text-gray-700 mb-2">
+              สถานะ
+            </Label>
+            <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.role}</p>
           </div>
         </div>
       </div>
@@ -184,86 +204,86 @@ const Usercard = () => {
               scale: { type: 'spring', bounce: 0.5 },
             }}
           >
-            <div className="bg-white rounded-xl p-6 w-full max-w-sm relative shadow-2xl">
-              <button
-                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-                onClick={() => setShowModal(false)}
-                disabled={loading}
-              >
-                <X size={20} />
-              </button>
-
-              <h2 className="text-lg font-bold text-purple-700 mb-4">กรอกรหัสนักศึกษา</h2>
-
-              {/* Student ID Input with validation */}
-              <div className="relative mb-4">
-                <Input
-                  type="text"
-                  placeholder="xxxxxxxxxxx-x"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                  className={`w-full border px-3 py-2 pr-10 rounded-2xl ${studentIdStatus === 'taken' ? 'border-red-300 focus:ring-red-500' :
-                      studentIdStatus === 'available' ? 'border-green-300 focus:ring-green-500' :
-                        'border-gray-300'
-                    }`}
+            <div className="bg-white rounded-3xl shadow-lg relative overflow-hidden md:w-100">
+              <div className="absolute -top-16 -right-16 w-35 h-35 bg-purple-500 rounded-full"></div>
+              <div>
+                <button
+                  className="absolute top-2 right-2 z-10 text-white hover:text-gray-200 transition-colors"
+                  onClick={() => setShowModal(false)}
                   disabled={loading}
-                />
+                >
+                  <X size={20} />
+                </button>
+              </div>
+                {/* ส่วนขวา - ฟอร์มสำหรับกรอกข้อมูล */}
+                <div className="m-10">
+                  <div className="p-4 rounded-2xl h-50 shadow-lg space-y-5">
+                    <div>
+                      <h2 className="text-purple-700 font-bold text-xl  text-center">
+                        รหัสนักศึกษา
+                      </h2>
+                    </div>
+                    <div className='space-y-2'>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">
+                          รหัสนักศึกษา
+                        </Label>
+                      </div>
+                      <div>
+                        <Input
+                          type="text"
+                          placeholder="xxxxxxxxxxx-x"
+                          value={studentId}
+                          onChange={(e) => setStudentId(e.target.value)}
+                          className={`w-full border px-3 py-2 pr-10 rounded-2xl ${studentIdStatus === 'taken' ? 'border-red-300 focus:ring-red-500' :
+                            studentIdStatus === 'available' ? 'border-green-300 focus:ring-green-500' :
+                              'border-gray-300'
+                            }`}
+                          disabled={loading}
+                        />
+                      </div>
+                    </div>
+                    {/* Status icon */}
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                     
+                    </div>
+                    {/* Status message */}
+                    <div className='mt-2'>
+                      {studentIdError && (
+                        <p className="mb-4 text-sm text-red-600 flex items-center">
+                          <XCircle className="h-4 w-4 mr-1" />
+                          {studentIdError}
+                        </p>
+                      )}
+                      {studentIdStatus === 'available' && (
+                        <p className="mb-4 text-sm text-green-600 flex items-center">
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          รหัสนักศึกษานี้สามารถใช้งานได้
+                        </p>
+                      )}
+                      {studentIdStatus === 'checking' && (
+                        <p className="mb-4 text-sm text-gray-500 flex items-center">
+                          <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                          กำลังตรวจสอบรหัสนักศึกษา...
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-                {/* Status icon */}
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  {isCheckingStudentId && (
-                    <Loader2Icon className="h-5 w-5 animate-spin text-gray-400" />
-                  )}
-                  {studentIdStatus === 'available' && (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  )}
-                  {studentIdStatus === 'taken' && (
-                    <XCircle className="h-5 w-5 text-red-500" />
-                  )}
+                  {/* ปุ่มเปลี่ยนรหัส */}
+                  <div className="p-5">
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 1 }}>
+                      <button
+                        onClick={handleUpdateStudentId}
+                        className="w-full bg-purple-500 text-white py-3 rounded-xl font-medium hover:bg-purple-600 transition-colors shadow-lg"
+                        disabled={loading || studentIdStatus === 'taken' || studentIdStatus === 'checking' || !studentId.trim()}
+                      >
+                        {loading ? 'กำลังอัปเดต...' : 'บันทึก'}
+                      </button>
+                    </motion.div>
+                  </div>
                 </div>
               </div>
-
-              {/* Status message */}
-              {studentIdError && (
-                <p className="mb-4 text-sm text-red-600 flex items-center">
-                  <XCircle className="h-4 w-4 mr-1" />
-                  {studentIdError}
-                </p>
-              )}
-              {studentIdStatus === 'available' && (
-                <p className="mb-4 text-sm text-green-600 flex items-center">
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  รหัสนักศึกษานี้สามารถใช้งานได้
-                </p>
-              )}
-              {studentIdStatus === 'checking' && (
-                <p className="mb-4 text-sm text-gray-500 flex items-center">
-                  <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
-                  กำลังตรวจสอบรหัสนักศึกษา...
-                </p>
-              )}
-
-              <div className="flex justify-end gap-2">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 1 }}>
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-2xl hover:bg-gray-700"
-                    disabled={loading}
-                  >
-                    ยกเลิก
-                  </button>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 1 }}>
-                  <button
-                    onClick={handleUpdateStudentId}
-                    className="px-4 py-2 bg-purple-700 text-white rounded-2xl hover:bg-purple-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={loading || studentIdStatus === 'taken' || studentIdStatus === 'checking' || !studentId.trim()}
-                  >
-                    {loading ? 'กำลังอัปเดต...' : 'บันทึก'}
-                  </button>
-                </motion.div>
-              </div>
-            </div>
           </motion.div>
         </div>
       )}

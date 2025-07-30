@@ -119,11 +119,6 @@ const Usercard = () => {
     }
   }, [showModal]);
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    router.push('/');
-  };
-
   const handleUpdateStudentId = async () => {
     // Check if student ID is taken
     if (studentIdStatus === 'taken') {

@@ -1,6 +1,6 @@
 'use client';
 
-import { LogIn, X, Pencil, CheckCircle, XCircle, Loader2Icon } from 'lucide-react';
+import { X, Pencil, CheckCircle, XCircle, Loader2Icon } from 'lucide-react';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';

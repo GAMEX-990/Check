@@ -4,7 +4,7 @@ import { X, Pencil, CheckCircle, XCircle, Loader2Icon } from 'lucide-react';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot, query, collection, where, getDocs } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import Image from 'next/image';

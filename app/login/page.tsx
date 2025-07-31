@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getFingerprint, saveAndCleanupDeviceId } from '@/utils/getFingerprint';
-import Loader from '@/components/Loader/Loader';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, Loader2Icon } from "lucide-react";
 
@@ -60,9 +59,13 @@ export default function LoginPage() {
 
       toast.success("เข้าสู่ระบบสำเร็จ!", { style: { color: '#22c55e' } });
       router.push('/dashboard');
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setError(err.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+    } catch (error) {
+      console.error('Login error:', error);
+      if (error instanceof Error) {
+        setError(error.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      } else {
+        setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      }
       await signOut(auth);
     } finally {
       setIsHandlingLogin(false);
@@ -95,18 +98,27 @@ export default function LoginPage() {
       } else {
         router.push("/loginregister");
       }
-    } catch (err: any) {
-      console.error('Google login error:', err);
-      const firebaseError = err;
+    } catch (error) {
+      console.error('Google login error:', error);
+      const firebaseError = error;
       
-      if (firebaseError.code === 'auth/cancelled-popup-request') {
-        setError("การเข้าสู่ระบบถูกยกเลิก โปรดลองอีกครั้ง");
-      } else if (firebaseError.code === 'auth/popup-blocked') {
-        setError("ป๊อปอัพถูกบล็อก โปรดอนุญาตป๊อปอัพสำหรับเว็บไซต์นี้และลองอีกครั้ง");
-      } else if (firebaseError.code === 'auth/popup-closed-by-user') {
-        setError("คุณปิดหน้าต่างเข้าสู่ระบบก่อนที่จะเสร็จสิ้น โปรดลองอีกครั้ง");
+      if (
+        typeof firebaseError === 'object' &&
+        firebaseError !== null &&
+        'code' in firebaseError
+      ) {
+        const code = (firebaseError as { code: string; message?: string }).code;
+        if (code === 'auth/cancelled-popup-request') {
+          setError("การเข้าสู่ระบบถูกยกเลิก โปรดลองอีกครั้ง");
+        } else if (code === 'auth/popup-blocked') {
+          setError("ป๊อปอัพถูกบล็อก โปรดอนุญาตป๊อปอัพสำหรับเว็บไซต์นี้และลองอีกครั้ง");
+        } else if (code === 'auth/popup-closed-by-user') {
+          setError("คุณปิดหน้าต่างเข้าสู่ระบบก่อนที่จะเสร็จสิ้น โปรดลองอีกครั้ง");
+        } else {
+          setError((firebaseError as { message?: string }).message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ โปรดลองอีกครั้งในภายหลัง");
+        }
       } else {
-        setError(firebaseError.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ โปรดลองอีกครั้งในภายหลัง");
+        setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบ โปรดลองอีกครั้งในภายหลัง");
       }
       await signOut(auth);
     } finally {

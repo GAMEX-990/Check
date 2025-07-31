@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
@@ -69,7 +69,7 @@ export default function DashboardPage() {
   };
 
   // ฟังก์ชัน sign out ที่ปลอดภัย
-  const performSecureSignOut = async () => {
+  const performSecureSignOut = useCallback(async () => {
     try {
       await signOut(auth);
       router.replace('/login');
@@ -78,7 +78,7 @@ export default function DashboardPage() {
       // บังคับ redirect แม้ว่า signOut จะล้มเหลว
       window.location.href = '/login';
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     // ถ้ายังโหลดข้อมูล auth อยู่
@@ -130,7 +130,7 @@ export default function DashboardPage() {
     };
 
     checkDevice();
-  }, [user, loading, router]);
+  }, [user, loading, router, performSecureSignOut]);
 
   // ตรวจสอบซ้ำทุก 30 วินาที เพื่อตรวจสอบ session expiry
   useEffect(() => {
@@ -153,7 +153,7 @@ export default function DashboardPage() {
     }, 30000); // ตรวจสอบทุก 30 วินาที
 
     return () => clearInterval(intervalCheck);
-  }, [user, allowed]);
+  }, [user, allowed, performSecureSignOut]);
 
   // แสดง loading screen
   if (loading || allowed === null) {

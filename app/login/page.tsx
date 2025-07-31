@@ -9,37 +9,47 @@ import Image from "next/image";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { getFingerprint, saveAndCleanupDeviceId } from '@/utils/getFingerprint';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, Loader2Icon } from "lucide-react";
+import { getFingerprint } from '@/utils/getFingerprint';
 
-async function checkDeviceBeforeLogin(email: string) {
+export async function checkDeviceBeforeLogin(email: string) {
   const deviceId = await getFingerprint();
+
+  // ถ้าไม่ได้ deviceId → อนุญาตผ่าน
+  if (!deviceId) {
+    console.warn("ไม่ได้รับ deviceId จาก getFingerprint → อนุญาตให้ผ่าน");
+    return;
+  }
+
   const deviceDocRef = doc(db, 'deviceIds', deviceId);
   const deviceSnap = await getDoc(deviceDocRef);
 
-  if (deviceSnap.exists()) {
-    const storedEmail = deviceSnap.data().email;
-    
-    // ถ้ามี email บันทึกไว้แล้ว และไม่ตรงกับ email ที่จะ login
-    if (storedEmail && storedEmail !== email) {
-      throw new Error('อุปกรณ์นี้ถูกใช้งานกับบัญชีอื่นแล้ว ไม่สามารถใช้งานร่วมกันได้');
-    }
+  // ถ้า deviceId ยังไม่เคยเก็บ → อนุญาตผ่าน
+  if (!deviceSnap.exists()) {
+    console.log("ยังไม่เคยเก็บ deviceId นี้ → อนุญาตให้ผ่าน");
+    return;
   }
-  
-  // บันทึก device fingerprint พร้อม email
-  await saveAndCleanupDeviceId(email);
+
+  const storedEmail = deviceSnap.data()?.email;
+
+  // ถ้า email ผูก deviceId ไม่ตรง → ห้ามเข้า
+  if (storedEmail !== email) {
+    throw new Error(`อุปกรณ์นี้เคยผูกกับบัญชีอื่น (${storedEmail}) ไม่สามารถเข้าใช้งานได้`);
+  }
+
+  // email ตรง → อนุญาตเข้าใช้งาน
+  console.log("deviceId และ email ตรงกัน → อนุญาตให้เข้าใช้งาน");
 }
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [email, setEmail] = useState("");
   const [isHandlingLogin, setIsHandlingLogin] = useState(false);
   const [isLoggingInGoogle, setIsLoggingInGoogle] = useState(false);
 
-  // Manual login
   const handleManualLogin = async () => {
     setIsHandlingLogin(true);
     setError("");
@@ -51,28 +61,18 @@ export default function LoginPage() {
     }
 
     try {
-      // ตรวจสอบ deviceId ก่อนอนุญาตให้ login
-      await checkDeviceBeforeLogin(email);
-
-      // ถ้าไม่มี error ถึง sign in จริง
+      await checkDeviceBeforeLogin(email); // เช็ค device ก่อน login
       await signInWithEmailAndPassword(auth, email, password);
-
       toast.success("เข้าสู่ระบบสำเร็จ!", { style: { color: '#22c55e' } });
       router.push('/dashboard');
-    } catch (error) {
-      console.error('Login error:', error);
-      if (error instanceof Error) {
-        setError(error.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
-      } else {
-        setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
-      }
+    } catch (err: any) {
+      setError(err.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
       await signOut(auth);
     } finally {
       setIsHandlingLogin(false);
     }
   };
 
-  // Google login
   const handleGoogleLogin = async () => {
     if (isLoggingInGoogle) return;
     setIsLoggingInGoogle(true);
@@ -85,10 +85,8 @@ export default function LoginPage() {
 
       if (!user.email) throw new Error('ไม่พบอีเมลผู้ใช้');
 
-      // ตรวจสอบ deviceId ก่อนอนุญาตให้ login
-      await checkDeviceBeforeLogin(user.email);
+      await checkDeviceBeforeLogin(user.email); // เช็ค device ก่อน login
 
-      // ตรวจสอบผู้ใช้ใน Firestore ว่ามีข้อมูลหรือยัง
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
 
@@ -98,27 +96,16 @@ export default function LoginPage() {
       } else {
         router.push("/loginregister");
       }
-    } catch (error) {
-      console.error('Google login error:', error);
-      const firebaseError = error;
-      
-      if (
-        typeof firebaseError === 'object' &&
-        firebaseError !== null &&
-        'code' in firebaseError
-      ) {
-        const code = (firebaseError as { code: string; message?: string }).code;
-        if (code === 'auth/cancelled-popup-request') {
-          setError("การเข้าสู่ระบบถูกยกเลิก โปรดลองอีกครั้ง");
-        } else if (code === 'auth/popup-blocked') {
-          setError("ป๊อปอัพถูกบล็อก โปรดอนุญาตป๊อปอัพสำหรับเว็บไซต์นี้และลองอีกครั้ง");
-        } else if (code === 'auth/popup-closed-by-user') {
-          setError("คุณปิดหน้าต่างเข้าสู่ระบบก่อนที่จะเสร็จสิ้น โปรดลองอีกครั้ง");
-        } else {
-          setError((firebaseError as { message?: string }).message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ โปรดลองอีกครั้งในภายหลัง");
-        }
+    } catch (err: any) {
+      const firebaseError = err;
+      if (firebaseError.code === 'auth/cancelled-popup-request') {
+        setError("การเข้าสู่ระบบถูกยกเลิก โปรดลองอีกครั้ง");
+      } else if (firebaseError.code === 'auth/popup-blocked') {
+        setError("ป๊อปอัพถูกบล็อก โปรดอนุญาตป๊อปอัพสำหรับเว็บไซต์นี้และลองอีกครั้ง");
+      } else if (firebaseError.code === 'auth/popup-closed-by-user') {
+        setError("คุณปิดหน้าต่างเข้าสู่ระบบก่อนที่จะเสร็จสิ้น โปรดลองอีกครั้ง");
       } else {
-        setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบ โปรดลองอีกครั้งในภายหลัง");
+        setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: " + (firebaseError.message || "โปรดลองอีกครั้งในภายหลัง"));
       }
       await signOut(auth);
     } finally {
@@ -128,13 +115,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 flex items-center justify-center p-4">
-      {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
       </div>
 
-      {/* Main login card */}
       <div className="relative w-full max-w-md">
         <button
           onClick={() => router.push('/')}

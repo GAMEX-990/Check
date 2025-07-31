@@ -11,6 +11,8 @@ export interface UserAttendance {
 }
 
 export interface UserData {
+  photoURL: string;
+  email: string;
   uid: string;
   name: string;
   studentId: string;

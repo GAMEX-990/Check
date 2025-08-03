@@ -1,19 +1,28 @@
-import { doc, getDoc, updateDoc, arrayUnion, Timestamp, collection, query, where, getDocs } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  Timestamp,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { HandleQRDetectedParams, StudentData, ClassData } from "types/qrScannerTypes";
+import type {
+  HandleQRDetectedParams,
+  StudentData,
+  ClassData,
+} from "types/qrScannerTypes";
 import { toast } from "sonner";
+import { saveAndCleanupDeviceId } from "./getFingerprint"; // ✅ เรียกใช้
 
-/**
- * ฟังก์ชันสำหรับสร้าง date key ในรูปแบบ YYYY-MM-DD
- */
 const getTodayDateKey = (): string => {
   const today = new Date();
-  return today.toISOString().split('T')[0]; // YYYY-MM-DD
+  return today.toISOString().split("T")[0];
 };
 
-/**
- * ฟังก์ชันสำหรับจัดการการสแกน QR Code (แก้ไขให้เช็คชื่อได้วันละครั้งต่อคลาส)
- */
 export const handleQRDetected = async ({
   result,
   videoRef,
@@ -35,10 +44,10 @@ export const handleQRDetected = async ({
     setScanning(false);
 
     const url = new URL(result.data);
-    const classId = url.pathname.split('/').pop();
+    const classId = url.pathname.split("/").pop();
 
     if (!classId || !user) {
-      toast.error('ไม่สามารถเช็คชื่อได้ กรุณาลองใหม่');
+      toast.error("ไม่สามารถเช็คชื่อได้ กรุณาลองใหม่");
       return;
     }
 
@@ -49,7 +58,9 @@ export const handleQRDetected = async ({
     const studentId = userData?.studentId || "";
 
     if (!studentId) {
-      toast.error('ไม่พบรหัสนักศึกษาของคุณ\nกรุณาติดต่อผู้ดูแลระบบหรืออาจาร์ยังไม่ได้อัพไฟล์เช็คชื่อ');
+      toast.error(
+        "ไม่พบรหัสนักศึกษาของคุณ\nกรุณาติดต่อผู้ดูแลระบบหรืออาจาร์ยังไม่ได้อัพไฟล์เช็คชื่อ"
+      );
       return;
     }
 
@@ -73,22 +84,27 @@ export const handleQRDetected = async ({
 
     if (studentsSnapshot.empty) {
       const allStudentsSnapshot = await getDocs(studentsCollectionRef);
-      const matchedStudent = allStudentsSnapshot.docs.find(doc => {
+      const matchedStudent = allStudentsSnapshot.docs.find((doc) => {
         const data = doc.data() as StudentData;
-        return String(data.studentId).trim() === String(studentId).trim() ||
-          String(data.studentId).replace(/\s+/g, '') === String(studentId).replace(/\s+/g, '');
+        return (
+          String(data.studentId).trim() === String(studentId).trim() ||
+          String(data.studentId).replace(/\s+/g, "") ===
+            String(studentId).replace(/\s+/g, "")
+        );
       });
 
       if (matchedStudent) {
-        studentsSnapshot = { docs: [matchedStudent], empty: false } as any;
+        studentsSnapshot = {
+          docs: [matchedStudent],
+          empty: false,
+        } as any;
       }
     }
 
     if (studentsSnapshot.empty) {
-      const allStudents = await getDocs(studentsCollectionRef);
-      const studentIds = allStudents.docs.map(doc => (doc.data() as StudentData).studentId);
-
-      toast.error(`คุณไม่อยู่ในรายชื่อของคลาสนี้\nรหัสของคุณ: ${studentId}\nกรุณาติดต่อวัยรุ่น Check-IN`);
+      toast.error(
+        `คุณไม่อยู่ในรายชื่อของคลาสนี้\nรหัสของคุณ: ${studentId}\nกรุณาติดต่อวัยรุ่น Check-IN`
+      );
       return;
     }
 
@@ -99,16 +115,14 @@ export const handleQRDetected = async ({
       const classData = classDoc.data() as ClassData;
       const todayDateKey = getTodayDateKey();
 
-      // ตรวจสอบการเช็คชื่อวันนี้
       const dailyCheckedInMembers = classData.dailyCheckedInMembers || {};
       const todayCheckedInMembers = dailyCheckedInMembers[todayDateKey] || [];
 
       if (todayCheckedInMembers.includes(user.uid)) {
-        toast.error('คุณได้เช็คชื่อวันนี้ไปแล้ว!');
+        toast.error("คุณได้เช็คชื่อวันนี้ไปแล้ว!");
         return;
       }
 
-      // สร้าง record การเช็คชื่อใหม่
       const checkInRecord = {
         uid: user.uid,
         studentId: studentId,
@@ -119,47 +133,64 @@ export const handleQRDetected = async ({
         date: todayDateKey,
       };
 
-      // อัพเดทข้อมูลในฐานข้อมูล
       await updateDoc(classRef, {
-        // เก็บ record แยกตามวันที่
         [`dailyCheckedInRecord.${todayDateKey}.${user.uid}`]: checkInRecord,
-
-        // เก็บรายการ uid ที่เช็คชื่อแต่ละวัน
         [`dailyCheckedInMembers.${todayDateKey}`]: arrayUnion(user.uid),
-
-        // นับจำนวนคนที่เช็คชื่อวันนี้
-        [`dailyCheckedInCount.${todayDateKey}`]: (todayCheckedInMembers.length || 0) + 1,
-
-        // เก็บ timestamp ล่าสุดที่มีคนเช็คชื่อ
+        [`dailyCheckedInCount.${todayDateKey}`]:
+          (todayCheckedInMembers.length || 0) + 1,
         lastCheckedIn: Timestamp.now(),
-
-        // รักษา backward compatibility (ถ้าต้องการ)
         [`checkedInRecord.${user.uid}`]: checkInRecord,
         checkedInMembers: arrayUnion(user.uid),
         checkedInCount: (classData.checkedInMembers?.length || 0) + 1,
       });
 
+      // ✅ เรียกเก็บ deviceId หลังจากเช็คชื่อสำเร็จเท่านั้น
+      const deviceId = await saveAndCleanupDeviceId(user.email || "");
+      console.log("📌 บันทึก Device ID:", deviceId);
+
       if (!hasScanned) {
         await updateScanStatus(true);
       }
 
-      toast.success(`เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}\nวันที่: ${todayDateKey}\nสถานะ: ${studentData.status || 'active'}`);
+      toast.success(
+        `เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}\nวันที่: ${todayDateKey}\nสถานะ: ${
+          studentData.status || "active"
+        }`
+      );
       onScanSuccess?.();
     } else {
-      toast.error('ไม่พบข้อมูลคลาสนี้');
+      toast.error("ไม่พบข้อมูลคลาสนี้");
     }
   } catch (error) {
-    toast.error(`เกิดข้อผิดพลาดในการเช็คชื่อ: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    toast.error(
+      `เกิดข้อผิดพลาดในการเช็คชื่อ: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   } finally {
     setLoading(false);
   }
 };
 
-/**
- * ฟังก์ชันสำหรับหยุดการทำงานของกล้อง
- */
 export const stopCamera = (stream: MediaStream) => {
   stream.getTracks().forEach((track) => {
     track.stop();
   });
+};
+export const startCamera = async (
+  videoRef: React.RefObject<HTMLVideoElement>
+) => {
+  if (!videoRef.current) return;
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+      audio: false,
+    });
+    videoRef.current.srcObject = stream;
+    await videoRef.current.play();
+  } catch (error) {
+    console.error("Error accessing camera:", error);
+    toast.error("ไม่สามารถเข้าถึงกล้องได้");
+  }
 };

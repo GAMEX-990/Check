@@ -18,8 +18,9 @@ export const getFingerprint = async (): Promise<string> => {
   return result.visitorId;
 };
 
-// ฟังก์ชันหลัก: บันทึก deviceId และลบที่หมดอายุ
+// ฟังก์ชันหลัก: บันทึก deviceId และลบที่หมดอายุ พร้อมบันทึก email
 export const saveAndCleanupDeviceId = async (
+  email: string,
   checkInStartTime?: Timestamp
 ): Promise<string> => {
   const deviceId = await getFingerprint();
@@ -36,13 +37,14 @@ export const saveAndCleanupDeviceId = async (
 
   const expireAt = Timestamp.fromMillis(now.toMillis() + ttlMillis);
 
-  // บันทึก deviceId พร้อมวันหมดอายุ
+  // บันทึก deviceId พร้อมวันหมดอายุ และ email
   const docRef = doc(db, 'deviceIds', deviceId);
   await setDoc(
     docRef,
     {
       createdAt: now,
       expireAt: expireAt,
+      email: email,  // บันทึก email ด้วย
     },
     { merge: true }
   );

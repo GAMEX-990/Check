@@ -123,7 +123,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
                 whileTap={{ scale: 1 }}
               >
                 <button
-                  className="flex space-x-2 w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+                  className="flex space-x-2 w-auto h-auto shadow-lg inset-shadow-sm text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
                   onClick={() => setScanning(true)}
                   disabled={!user}
                 >
@@ -137,7 +137,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
                 whileTap={{ scale: 1 }}
               >
                 <button
-                  className="flex space-x-2 w-auto h-auto border-1 border-purple-600 text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+                  className="flex space-x-2 w-auto h-auto shadow-lg inset-shadow-sm text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
                   onClick={() => setShowPopup(true)}
                   disabled={!user}
                 >

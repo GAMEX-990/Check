@@ -12,10 +12,10 @@ import type { ClassSectionProps } from "@/types/classTypes";
 import SmoothTabSwitcher from "../ui/SmoothTabSwitcher";
 
 // **เพิ่ม onClassChange prop**
-const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSectionProps & { 
-  onClassChange?: (newClassData: ClassData) => void 
+const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSectionProps & {
+  onClassChange?: (newClassData: ClassData) => void
 }) => {
-  const [page, setPage] = useState<ClassPageType>("myclass");
+  const [page, setPage] = useState<ClassPageType>("class");
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
 
   const handleSelectClass = (classData: ClassData) => {
@@ -56,7 +56,7 @@ const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSecti
           onClassChange={handleClassChangeFromView} // **ส่ง function ไปยัง ViewClassDetailPage**
         />
       ) : (
-        <div className="md:w-250 w-85 border-2 border-purple-50 rounded-2xl shadow-lg p-4 relative overflow-hidden">
+        <div className="md:h-165 md:w-290 w-85 border-2 border-purple-50 rounded-2xl shadow-lg p-4 relative overflow-hidden">
           {/* Smooth Tab Switcher */}
           <div className="flex justify-center mb-4">
             <SmoothTabSwitcher
@@ -79,7 +79,7 @@ const ClassSection = ({ onPageChange, onClassSelect, onClassChange }: ClassSecti
                   stiffness: 300,
                   damping: 30,
                 }}
-                className="h-80"
+                className="max-h-full max-w-full"
               >
                 {page === "myclass" ? (
                   <MyClassPage

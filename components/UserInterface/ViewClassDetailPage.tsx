@@ -173,7 +173,7 @@ export const ViewClassDetailPage = ({
 
   return (
     <div>
-      <div className="w-100 md:w-150 h-auto border-2 border-purple-50 rounded-2xl shadow-lg">
+      <div className="w-100 md:w-200 h-auto border-2 border-purple-50 rounded-2xl shadow-lg">
         <div className="flex justify-between p-4">
           <div className="relative">
             {/* หัวเลือกคลาส */}
@@ -207,7 +207,7 @@ export const ViewClassDetailPage = ({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full left-0 mt-2 w-64 bg-white border border-purple-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto "
+                  className="absolute top-full left-0 mt-2 max-w-fit bg-white border border-purple-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto "
                 >
                   <div className="py-2">
                     <div className="px-3 py-1 text-xs font-medium text-purple-500 uppercase tracking-wide">
@@ -244,7 +244,7 @@ export const ViewClassDetailPage = ({
           </div>
           {/* -------------------------------------------------------------------------------------------------------------------------------------- */}
 
-          <div className="justify-center flex gap-x-2 text-purple-700">
+          <div className="text-purple-700">
             {/* แสดงปุ่ม My Classes เฉพาะเมื่ออยู่หน้า Classes */}
             {classType === 'joined' && (
               <button
@@ -255,7 +255,6 @@ export const ViewClassDetailPage = ({
                 <span>My Classes</span>
               </button>
             )}
-
             {/* แสดงปุ่ม Classes เฉพาะเมื่ออยู่หน้า My Classes */}
             {classType === 'owned' && (
               <button
@@ -269,7 +268,7 @@ export const ViewClassDetailPage = ({
           </div>
 
           {/* ไอค้อน QR อัพโหลด บันทึก ถังขยะ ปุ่มกลับ */}
-          <div className="flex items-center justify-center">
+          <div className="flex justify-end items-center md:w-40 w-37">
             {currectPang === "view" && selectedClass && (
               <div className="flex text-purple-600 ">
                 <CreateQRCodeAndUpload

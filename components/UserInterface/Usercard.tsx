@@ -1,6 +1,5 @@
 'use client';
-
-import { X, Pencil, CheckCircle, XCircle, Loader2Icon } from 'lucide-react';
+import { X, CheckCircle, XCircle, Loader2Icon, CircleUser, GraduationCap, School, Mail, BookUser } from 'lucide-react';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
@@ -27,6 +26,7 @@ const Usercard = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<UserData | null>(null);
   const router = useRouter();
+
 
   // Student ID validation states
   const [, setIsCheckingStudentId] = useState(false);
@@ -143,51 +143,55 @@ const Usercard = () => {
   };
 
   if (!data) return null;
+  const enhancedPhotoURL = data.photoURL?.replace(/=s\d+-c$/, '=s256-c');
+
 
   return (
     <div className="flex justify-center">
       <div className="flex flex-col items-center space-y-8">
-        <div className="relative">
+        <div className="absolute z-10">
           <Image
-            className="rounded-full object-cover"
-            width={100}
-            height={100}
-            src={data.photoURL || '/default-profile.png'}
+            className="border-2 border-white rounded-full object-cover z-10 shadow-2xl"
+            width={120}
+            height={120}
+            src={enhancedPhotoURL || '/default-profile.png'}
             alt="Profile"
+            quality={100}
           />
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 1 }}>
-            <div
-              className="absolute bottom-2 right-2 bg-purple-600 hover:bg-purple-700 cursor-pointer text-white rounded-full p-1"
-              onClick={() => setShowModal(true)}
-              title="แก้ไขข้อมูล"
-            >
-              <Pencil size={18} />
-            </div>
-          </motion.div>
-        </div>
 
-        <div className="flex flex-col text-center items-center space-y-8 m-4">
-          <div className="flex flex-col items-stretch space-y-8">
-            <Label className="text-sm font-medium text-gray-700 mb-2">
-              ชื่อ-สกุล
-            </Label>
-            <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.name}</p>
-            <Label className="text-sm font-medium text-gray-700 mb-2">
-              อีเมล
-            </Label>
-            <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.email}</p>
-            <Label className="text-sm font-medium text-gray-700 mb-2">
-              รหัสนักศึกษา
-            </Label>
-            <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.studentId}</p>
-            <Label className="text-sm font-medium text-gray-700 mb-2">
-              ชื่อสถาบัน
-            </Label>
-            <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.institution}</p>
-            <Label className="text-sm font-medium text-gray-700 mb-2">
-              สถานะ
-            </Label>
-            <p className="text-purple-700 font-bold rounded-xl p-1 px-2 border border-purple-200 shadow-lg">{data.role}</p>
+        </div>
+        <div className="flex bg-white md:w-87 md:h-238 w-75 h-195 rounded-t-4xl z-0 mt-15 shadow-xl/40 inset-shadow-sm">
+          <div className="flex flex-col space-y-6 pt-20 pl-6">
+            <div className='flex items-center justify-center'>
+              <CircleUser color='purple' />
+              <p className="p-1 px-2 font-bold">{data.name}</p>
+            </div>
+            <div className='border-2 border-neutral-600'></div>
+            <div className='flex items-center'>
+              <Mail color='purple' />
+              <p className="p-1 px-2">{data.email}</p>
+            </div>
+            <div className='flex items-center'>
+              <div className='flex items-center'>
+                <BookUser color='purple' />
+                <p className="p-1 px-2">{data.studentId}</p>
+              </div>
+              <div
+                className="cursor-pointer flex border border-fuchsia-600 rounded-md p-0.5 hover:bg-fuchsia-700 transform transition-colors duration-200"
+                onClick={() => setShowModal(true)}
+                title="แก้ไขข้อมูล"
+              >
+                แก้ไขข้อมูล
+              </div>
+            </div>
+            <div className='flex items-center'>
+              <School color='purple' />
+              <p className="p-1 px-2">{data.institution}</p>
+            </div>
+            <div className='flex items-center'>
+              <GraduationCap color='purple' />
+              <p className="p-1 px-2">{data.role}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -215,75 +219,75 @@ const Usercard = () => {
                   <X size={20} />
                 </button>
               </div>
-                {/* ส่วนขวา - ฟอร์มสำหรับกรอกข้อมูล */}
-                <div className="m-10">
-                  <div className="p-4 rounded-2xl h-50 shadow-lg space-y-5">
+              {/* ส่วนขวา - ฟอร์มสำหรับกรอกข้อมูล */}
+              <div className="m-10">
+                <div className="p-4 rounded-2xl h-50 shadow-lg space-y-5">
+                  <div>
+                    <h2 className="text-purple-700 font-bold text-xl  text-center">
+                      รหัสนักศึกษา
+                    </h2>
+                  </div>
+                  <div className='space-y-2'>
                     <div>
-                      <h2 className="text-purple-700 font-bold text-xl  text-center">
+                      <Label className="text-sm font-medium text-gray-700">
                         รหัสนักศึกษา
-                      </h2>
+                      </Label>
                     </div>
-                    <div className='space-y-2'>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">
-                          รหัสนักศึกษา
-                        </Label>
-                      </div>
-                      <div>
-                        <Input
-                          type="text"
-                          placeholder="xxxxxxxxxxx-x"
-                          value={studentId}
-                          onChange={(e) => setStudentId(e.target.value)}
-                          className={`w-full border px-3 py-2 pr-10 rounded-2xl ${studentIdStatus === 'taken' ? 'border-red-300 focus:ring-red-500' :
-                            studentIdStatus === 'available' ? 'border-green-300 focus:ring-green-500' :
-                              'border-gray-300'
-                            }`}
-                          disabled={loading}
-                        />
-                      </div>
-                    </div>
-                    {/* Status icon */}
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                     
-                    </div>
-                    {/* Status message */}
-                    <div className='mt-2'>
-                      {studentIdError && (
-                        <p className="mb-4 text-sm text-red-600 flex items-center">
-                          <XCircle className="h-4 w-4 mr-1" />
-                          {studentIdError}
-                        </p>
-                      )}
-                      {studentIdStatus === 'available' && (
-                        <p className="mb-4 text-sm text-green-600 flex items-center">
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          รหัสนักศึกษานี้สามารถใช้งานได้
-                        </p>
-                      )}
-                      {studentIdStatus === 'checking' && (
-                        <p className="mb-4 text-sm text-gray-500 flex items-center">
-                          <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
-                          กำลังตรวจสอบรหัสนักศึกษา...
-                        </p>
-                      )}
+                    <div>
+                      <Input
+                        type="text"
+                        placeholder="xxxxxxxxxxx-x"
+                        value={studentId}
+                        onChange={(e) => setStudentId(e.target.value)}
+                        className={`w-full border px-3 py-2 pr-10 rounded-2xl ${studentIdStatus === 'taken' ? 'border-red-300 focus:ring-red-500' :
+                          studentIdStatus === 'available' ? 'border-green-300 focus:ring-green-500' :
+                            'border-gray-300'
+                          }`}
+                        disabled={loading}
+                      />
                     </div>
                   </div>
+                  {/* Status icon */}
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
 
-                  {/* ปุ่มเปลี่ยนรหัส */}
-                  <div className="p-5">
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 1 }}>
-                      <button
-                        onClick={handleUpdateStudentId}
-                        className="w-full bg-purple-500 text-white py-3 rounded-xl font-medium hover:bg-purple-600 transition-colors shadow-lg"
-                        disabled={loading || studentIdStatus === 'taken' || studentIdStatus === 'checking' || !studentId.trim()}
-                      >
-                        {loading ? 'กำลังอัปเดต...' : 'บันทึก'}
-                      </button>
-                    </motion.div>
+                  </div>
+                  {/* Status message */}
+                  <div className='mt-2'>
+                    {studentIdError && (
+                      <p className="mb-4 text-sm text-red-600 flex items-center">
+                        <XCircle className="h-4 w-4 mr-1" />
+                        {studentIdError}
+                      </p>
+                    )}
+                    {studentIdStatus === 'available' && (
+                      <p className="mb-4 text-sm text-green-600 flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        รหัสนักศึกษานี้สามารถใช้งานได้
+                      </p>
+                    )}
+                    {studentIdStatus === 'checking' && (
+                      <p className="mb-4 text-sm text-gray-500 flex items-center">
+                        <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                        กำลังตรวจสอบรหัสนักศึกษา...
+                      </p>
+                    )}
                   </div>
                 </div>
+
+                {/* ปุ่มเปลี่ยนรหัส */}
+                <div className="p-5">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 1 }}>
+                    <button
+                      onClick={handleUpdateStudentId}
+                      className="w-full bg-purple-500 text-white py-3 rounded-xl font-medium hover:bg-purple-600 transition-colors shadow-lg"
+                      disabled={loading || studentIdStatus === 'taken' || studentIdStatus === 'checking' || !studentId.trim()}
+                    >
+                      {loading ? 'กำลังอัปเดต...' : 'บันทึก'}
+                    </button>
+                  </motion.div>
+                </div>
               </div>
+            </div>
           </motion.div>
         </div>
       )}

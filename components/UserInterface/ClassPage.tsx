@@ -81,7 +81,7 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
   return (
     <div>
 
-      <div className="overflow-scroll h-90 w-auto">
+      <div className="overflow-scroll md:h-140 h-90 w-auto">
         <div className="flex flex-col gap-y-4 p-8 md:items-center">
           {classesLoading ? (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center ">
@@ -101,7 +101,7 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
                     whileTap={{ scale: 1.05 }}
                   >
                     <div
-                      className="flex justify-between md:w-100 items-center bg-purple-50 hover:bg-purple-100 p-4 rounded-4xl shadow-lg cursor-pointer"
+                      className="flex justify-between md:w-100 items-center bg-purple-50 hover:bg-purple-100 p-4 rounded-4xl shadow-lg inset-shadow-sm cursor-pointer"
                       onClick={() => {
                         setIsEntering(true);
                         setTimeout(() => {
@@ -109,7 +109,7 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
                         }, 2000);
                       }}
                     >
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 items-center">
                         <div className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center rounded-full shadow-lg">
                           {cls.name.charAt(0)}
                         </div>
@@ -124,6 +124,7 @@ const ClassPage = ({ onSelectClass }: ClassPageProps) => {
                           </div>
                           <div>
                             <p className="truncate w-full max-w-[80px] text-base md:max-w-full text-purple-500">{cls.owner_email}</p>
+                            <p className="truncate w-full max-w-[80px] text-base md:max-w-full text-purple-500">{cls.checkedInCount} คน</p>
                           </div>
                         </div>
                       </div>

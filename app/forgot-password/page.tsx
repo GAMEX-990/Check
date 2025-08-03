@@ -108,7 +108,7 @@ export default function ForgotPasswordPage() {
                   <Mail className="w-8 h-8 text-white" />
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">ลืมรหัสผ่าน?</h1>
-                <p className="text-gray-600">ไม่ต้องกังวล เราจะส่งลิงก์รีเซ็ตรหัสผ่านให้คุณ</p>
+                <p className="text-gray-600">ไม่ต้องกังวลเราจะส่งลิงรีเซ็ตรหัสผ่านให้คุณ</p>
               </div>
 
               {/* Error message */}

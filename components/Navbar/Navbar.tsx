@@ -94,8 +94,8 @@ const Navbar = () => {
                                             )}
                                         </div>
                                     </SheetTrigger>
-                                    <SheetContent side="right" className="w-[300px] sm:w-[350px]">
-                                        <SheetHeader className='bg-purple-200'>
+                                    <SheetContent side="right" className="bg-white inset-shadow-xs">
+                                        <SheetHeader className='bg-white'>
                                             <SheetTitle className="text-lg text-center">Profile</SheetTitle>
                                         </SheetHeader>
                                         <div className="mt-4">

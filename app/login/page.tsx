@@ -37,7 +37,7 @@ export default function LoginPage() {
     try {
       await checkDeviceBeforeLogin(email); // เช็ค device ก่อน login
       await signInWithEmailAndPassword(auth, email, password);
-      toast.success("เข้าสู่ระบบสำเร็จ!", { style: { color: '#22c55e' } });
+      toast.success("เข้าสู่ระบบสำเร็จ", { style: { color: '#22c55e' } });
       router.push('/dashboard');
     } catch (error) {
       if (error instanceof Error) {

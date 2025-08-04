@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Logo from './Logo'
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase'
@@ -18,6 +18,24 @@ const Navbar = () => {
     const [user, setUser] = useState<User | null>(null);
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                mobileMenuOpen &&
+                mobileMenuRef.current &&
+                !mobileMenuRef.current.contains(event.target as Node)
+            ) {
+                setMobileMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [mobileMenuOpen]);
 
 
     useEffect(() => {
@@ -136,7 +154,8 @@ const Navbar = () => {
 
             {/* Mobile menu */}
             <motion.div
-                className={`md:hidden overflow-hidden ${scrolled ? 'bg-white' : 'bg-white/95 backdrop-blur-sm'}`}
+                ref={mobileMenuRef}
+                className={`md:hidden overflow-hidden`}
                 initial={{ height: 0 }}
                 animate={{ height: mobileMenuOpen ? 'auto' : 0 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
@@ -145,28 +164,28 @@ const Navbar = () => {
                     {user && (
                         <div className="flex items-center space-x-2 px-2 py-2 bg-purple-50 rounded-lg mb-3">
                             <Sheet>
-                                    <SheetTrigger asChild>
-                                        <div className="cursor-pointer bg-purple-100 p-1 rounded-full">
-                                            {userData?.photoURL && (
-                                                <Image
-                                                    width={40}
-                                                    height={40}
-                                                    src={userData.photoURL}
-                                                    alt="Profile"
-                                                    className="w-8 h-8 rounded-full border-4 border-purple-700 object-cover"
-                                                />
-                                            )}
-                                        </div>
-                                    </SheetTrigger>
-                                    <SheetContent side="right" className="w-[300px] sm:w-[350px] items-center">
-                                        <SheetHeader>
-                                            <SheetTitle className="text-lg">User Profile</SheetTitle>
-                                        </SheetHeader>
-                                        <div className="mt-4">
-                                            <Usercard />
-                                        </div>
-                                    </SheetContent>
-                                </Sheet>
+                                <SheetTrigger asChild>
+                                    <div className="cursor-pointer bg-purple-100 p-1 rounded-full">
+                                        {userData?.photoURL && (
+                                            <Image
+                                                width={40}
+                                                height={40}
+                                                src={userData.photoURL}
+                                                alt="Profile"
+                                                className="w-8 h-8 rounded-full border-4 border-purple-700 object-cover"
+                                            />
+                                        )}
+                                    </div>
+                                </SheetTrigger>
+                                <SheetContent side="right" className="w-[300px] sm:w-[350px] items-center">
+                                    <SheetHeader>
+                                        <SheetTitle className="text-lg">User Profile</SheetTitle>
+                                    </SheetHeader>
+                                    <div className="mt-4">
+                                        <Usercard />
+                                    </div>
+                                </SheetContent>
+                            </Sheet>
                             <span className="text-sm text-purple-700 font-medium truncate">
                                 {userData?.name?.split('@')[0]}
                             </span>
@@ -184,7 +203,7 @@ const Navbar = () => {
                             <span className="font-medium">{link.name}</span>
                         </Link>
                     ))}
-
+                    {user && <div><AddClassPopup /></div>}
                     <div className="pt-2 border-t border-gray-100 mt-2">
                         {user ? (
                             <div className="px-2 py-2">

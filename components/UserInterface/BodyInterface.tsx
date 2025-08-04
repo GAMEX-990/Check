@@ -85,20 +85,6 @@ const BodyInterface = () => {
                 <p>Learn More</p>
               </motion.button>
             </div>
-
-            <div className="flex items-center space-x-4 pt-6">
-              <div className="flex -space-x-2">
-                {[...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-8 h-8 rounded-full border-2 border-white bg-purple-${500 - (i * 100)} flex items-center justify-center text-xs text-white font-bold shadow-sm`}
-                  >
-                    {String.fromCharCode(65 + i)}
-                  </div>
-                ))}
-              </div>
-              <p className="text-gray-500 text-sm">Join <span className="font-semibold">1,000+</span> students using Check-in daily</p>
-            </div>
           </motion.div>
 
           {/* Right Image/Illustration Section */}

@@ -11,7 +11,6 @@ import { getFingerprint } from '@/utils/getFingerprint';
 import { ClassData } from '@/types/classDetailTypes';
 import AttendanceSummaryModal from '@/components/UserInterface/AttenSummary';
 import ClassSection from '@/components/UserInterface/ClassSection';
-import AddClassPopup from '@/components/FromUser/ButtonCreate';
 import Loader from '@/components/Loader/Loader';
 
 export default function DashboardPage() {
@@ -159,14 +158,6 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="flex justify-center">
-        <div className="flex flex-col gap-y-4 xl:flex-row">
-          <div className="md:hidden flex items-center justify-center">
-            {currectPang !== 'view' && (
-              <div>
-                <AddClassPopup />
-              </div>
-            )}
-          </div>
           <div className="flex flex-col gap-y-4 md:h-140 h-90">
             <div className="flex items-center justify-center">
               <ClassSection
@@ -185,6 +176,5 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

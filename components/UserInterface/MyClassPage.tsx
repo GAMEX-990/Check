@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { db } from "@/lib/firebase";
 import {
   collection,
@@ -13,15 +13,21 @@ import Loader from "../Loader/Loader";
 import { ClassData } from "@/types/classDetailTypes";
 import { House, QrCode, X } from "lucide-react";
 import QRCode from "react-qr-code";
+import { stopCamera } from "@/utils/camera";
+import { handleQRDetected as handleQRUtility } from "@/utils/qrScanner";
+import { useCameraScanner } from "@/utils/useQRScanner";
+import { toast } from "sonner";
+import ScanQRButton from "../ui/QRScanner";
 
 interface MyClassPageProps {
   page: ClassPageType;
   onSelectClass: (classData: ClassData) => void;
   onPageChange: (page: ClassPageType) => void;
+  onScanSuccess?: () => void; // เพิ่ม prop เหมือน AddClassPopup
 }
 
-const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
-  const { user, loading } = useHasScanned();
+const MyClassPage = ({ onSelectClass, onScanSuccess }: MyClassPageProps) => {
+  const { user, hasScanned, loading, updateScanStatus } = useHasScanned();
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [isEntering, setIsEntering] = useState(false);
   const [delayDone, setdelayDone] = useState(false);
@@ -31,6 +37,12 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
+
+   // เพิ่ม states และ refs เหมือน AddClassPopup
+   const [scanning, setScanning] = useState(false);
+   const [, setLoadingQR] = useState(false);
+   const canvasRef = useRef<HTMLCanvasElement>(null);
+   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -135,6 +147,39 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
     setSelectedClass(null);
   };
 
+    // ฟังก์ชันสำหรับจัดการเมื่อสแกน QR Code สำเร็จ - เหมือน AddClassPopup
+    const handleQRDetected = async (result: { data: string }) => {
+      if (!user) {
+        toast.error('กรุณาเข้าสู่ระบบก่อนใช้งาน');
+        return;
+      }
+  
+      await handleQRUtility({
+        result,
+        videoRef,
+        user,
+        setScanning,
+        setLoading: setLoadingQR,
+        hasScanned,
+        updateScanStatus,
+        onScanSuccess,
+        stopCamera,
+      });
+    };
+  
+    // ใช้ useCameraScanner เหมือน AddClassPopup
+    useCameraScanner({
+      scanning,
+      videoRef,
+      canvasRef,
+      onQRDetected: handleQRDetected,
+    });
+  
+    // ฟังก์ชันสำหรับเริ่มการสแกน
+    const handleScanStart = () => {
+      setScanning(true);
+    };
+
   if (loading || !delayDone) {
     return (
       <div>
@@ -236,6 +281,52 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
           </div>
         )}
       </AnimatePresence>
+       {/* ใช้ ScanQRButton */}
+       <div className="absolute right-3 bottom-4 md:hidden">
+        <ScanQRButton
+          onClick={handleScanStart}
+          disabled={!user}
+          className="w-full justify-center"
+        />
+      </div>
+      {/* หน้าจอสแกน QR Code - เหมือน AddClassPopup */}
+      {scanning && (
+        <div className="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
+          <div className="relative">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              style={{ width: '100%', maxWidth: '640px' }}
+            />
+            <canvas
+              ref={canvasRef}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%'
+              }}
+            />
+          </div>
+
+          {/* ปุ่มปิดการสแกน */}
+          <button
+            className="absolute top-2 right-1 text-purple-500 hover:text-purple-700"
+            onClick={() => {
+              setScanning(false);
+              if (videoRef.current?.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stopCamera(stream);
+                videoRef.current.srcObject = null;
+              }
+            }}
+          >
+            <X />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

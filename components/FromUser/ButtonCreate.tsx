@@ -98,7 +98,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
               onClick={() => setScanning(true)}
               disabled={!user}
             >
-              <ScanQrCode style={{color: "var(--color-purple-600)"}}
+              <ScanQrCode style={{ color: "var(--color-purple-600)" }}
               /> Scan QR
             </button>
           </div>
@@ -108,44 +108,28 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
               onClick={() => setShowPopup(true)}
               disabled={!user}
             >
-              <HousePlus style={{color: "var(--color-purple-600)"}}/> Add a class
+              <HousePlus style={{ color: "var(--color-purple-600)" }} /> Add a class
             </button>
           </div>
         </div>
       </div>
       {/* ------------------------------------------------------------------------------------------------------------ */}
       <div className="block md:hidden">
-        <div className="w-85 md:w-auto border-2 border-purple-50 rounded-2xl shadow-lg">
-          <div className="flex flex-row p-5 space-x-2 items-center justify-center md:flex-col">
+        <div className="flex px-2">
             <div>
               <motion.div
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 1 }}
               >
                 <button
-                  className="flex space-x-2 w-auto h-auto shadow-lg inset-shadow-sm text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
-                  onClick={() => setScanning(true)}
-                  disabled={!user}
-                >
-                  <ScanQrCode /> Scan QR
-                </button>
-              </motion.div>
-            </div>
-            <div>
-              <motion.div
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 1 }}
-              >
-                <button
-                  className="flex space-x-2 w-auto h-auto shadow-lg inset-shadow-sm text-purple-600 p-2 rounded-2xl hover:bg-purple-100 cursor-pointer"
+                  className="flex gap-x-1 text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200"
                   onClick={() => setShowPopup(true)}
                   disabled={!user}
                 >
-                  <HousePlus /> Add a class
+                  <HousePlus style={{ color: "var(--color-purple-600)" }} /> Add a class
                 </button>
               </motion.div>
             </div>
-          </div>
         </div>
       </div>
       {showPopup && (

@@ -210,7 +210,7 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
 
           {/* ปุ่มปิดการสแกน */}
           <button
-            className="border rounded-2xl inset-shadow-sm p-2 mt-4 shadow-lg text-purple-500 hover:text-purple-700"
+            className="absolute top-20 right-0 mr-4 bg-white border rounded-2xl inset-shadow-sm p-2 mt-4 shadow-lg text-purple-500 hover:text-purple-700"
             onClick={() => {
               setScanning(false);
               if (videoRef.current?.srcObject) {

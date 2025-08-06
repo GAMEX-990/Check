@@ -155,7 +155,7 @@ const Navbar = () => {
             {/* Mobile menu */}
             <motion.div
                 ref={mobileMenuRef}
-                className={`md:hidden overflow-hidden`}
+                className="md:hidden overflow-hidden"
                 initial={{ height: 0 }}
                 animate={{ height: mobileMenuOpen ? 'auto' : 0 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}

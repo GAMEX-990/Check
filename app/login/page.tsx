@@ -11,9 +11,16 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { saveAndCleanupDeviceId } from '@/utils/getFingerprint';
 import { checkDeviceBeforeLogin } from '@/utils/checkDeviceBeforeLogin';
-import Loader from '@/components/Loader/Loader';
+// Remove unused Loader import
+// import Loader from '@/components/Loader/Loader';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, Loader2Icon, Clock } from "lucide-react";
+
+// Define proper interfaces for type safety
+interface LoginError extends Error {
+  code?: string;
+  message: string;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -88,12 +95,14 @@ export default function LoginPage() {
 
       toast.success("เข้าสู่ระบบสำเร็จ!", { style: { color: '#22c55e' } });
       router.push('/dashboard');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err);
       
+      const error = err as LoginError;
+      
       // ตรวจสอบว่า error มีข้อมูลเวลาถอยหลังมั้ย
-      if (err.message && err.message.includes('|')) {
-        const [errorMessage, timeMs] = err.message.split('|');
+      if (error.message && error.message.includes('|')) {
+        const [errorMessage, timeMs] = error.message.split('|');
         const timeInMs = parseInt(timeMs);
         
         if (timeInMs > 0) {
@@ -103,7 +112,7 @@ export default function LoginPage() {
           setError(errorMessage);
         }
       } else {
-        setError(err.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+        setError(error.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
       }
       
       await signOut(auth);
@@ -143,12 +152,14 @@ export default function LoginPage() {
       } else {
         router.push("/loginregister");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Google login error:', err);
       
+      const error = err as LoginError;
+      
       // ตรวจสอบว่า error มีข้อมูลเวลาถอยหลังมั้ย
-      if (err.message && err.message.includes('|')) {
-        const [errorMessage, timeMs] = err.message.split('|');
+      if (error.message && error.message.includes('|')) {
+        const [errorMessage, timeMs] = error.message.split('|');
         const timeInMs = parseInt(timeMs);
         
         if (timeInMs > 0) {
@@ -158,15 +169,14 @@ export default function LoginPage() {
           setError(errorMessage);
         }
       } else {
-        const firebaseError = err;
-        if (firebaseError.code === 'auth/cancelled-popup-request') {
+        if (error.code === 'auth/cancelled-popup-request') {
           setError("การเข้าสู่ระบบถูกยกเลิก โปรดลองอีกครั้ง");
-        } else if (firebaseError.code === 'auth/popup-blocked') {
+        } else if (error.code === 'auth/popup-blocked') {
           setError("ป๊อปอัพถูกบล็อก โปรดอนุญาตป๊อปอัพสำหรับเว็บไซต์นี้และลองอีกครั้ง");
-        } else if (firebaseError.code === 'auth/popup-closed-by-user') {
+        } else if (error.code === 'auth/popup-closed-by-user') {
           setError("คุณปิดหน้าต่างเข้าสู่ระบบก่อนที่จะเสร็จสิ้น โปรดลองอีกครั้ง");
         } else {
-          setError(firebaseError.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ โปรดลองอีกครั้งในภายหลัง");
+          setError(error.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ โปรดลองอีกครั้งในภายหลัง");
         }
       }
       

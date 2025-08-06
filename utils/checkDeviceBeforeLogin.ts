@@ -6,28 +6,54 @@ import { doc, getDoc } from "firebase/firestore";
 export async function checkDeviceBeforeLogin(email: string) {
   const deviceId = await getFingerprint();
 
-  // ถ้าไม่ได้ deviceId → อนุญาตผ่าน
+  // ✅ ถ้าไม่ได้ fingerprint (null/undefined) → ให้ผ่าน
   if (!deviceId) {
-    console.warn("ไม่ได้รับ deviceId จาก getFingerprint → อนุญาตให้ผ่าน");
+    console.warn("ไม่สามารถสร้าง deviceId ได้ → อนุญาตให้เข้า");
     return;
   }
 
-  const deviceDocRef = doc(db, 'deviceIds', deviceId);
-  const deviceSnap = await getDoc(deviceDocRef);
+  const deviceRef = doc(db, "deviceIds", deviceId);
+  const snap = await getDoc(deviceRef);
 
-  // ถ้า deviceId ยังไม่เคยเก็บ → อนุญาตผ่าน
-  if (!deviceSnap.exists()) {
-    console.log("ยังไม่เคยเก็บ deviceId นี้ → อนุญาตให้ผ่าน");
+  // ✅ ถ้า deviceId ยังไม่เคยถูกใช้ → ให้เข้า
+  if (!snap.exists()) {
+    console.log("deviceId ยังไม่เคยใช้ → อนุญาตให้เข้า");
     return;
   }
 
-  const storedEmail = deviceSnap.data()?.email;
+  const data = snap.data();
+  const storedEmail = data?.email;
 
-  // ถ้า email ผูก deviceId ไม่ตรง → ห้ามเข้า
+  // ❌ ถ้า email ไม่ตรง → ไม่ให้เข้า
   if (storedEmail !== email) {
-    throw new Error(`อุปกรณ์นี้เคยผูกกับบัญชีอื่น (${storedEmail}) ไม่สามารถเข้าใช้งานได้`);
+    // คำนวณเวลาที่เหลือ
+    const expireAt = data?.expireAt;
+    let remainingTimeMs = 0;
+    
+    if (expireAt && expireAt.toMillis) {
+      remainingTimeMs = expireAt.toMillis() - Date.now();
+    }
+
+    // ถ้าหมดอายุแล้ว ให้ผ่าน
+    if (remainingTimeMs <= 0) {
+      console.log("deviceId หมดอายุแล้ว → อนุญาตให้เข้า");
+      return;
+    }
+
+    // แปลงเวลาที่เหลือเป็น hours และ minutes
+    const remainingHours = Math.floor(remainingTimeMs / (1000 * 60 * 60));
+    const remainingMinutes = Math.floor((remainingTimeMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    let timeText = "";
+    if (remainingHours > 0) {
+      timeText = `${remainingHours} ชั่วโมง ${remainingMinutes} นาที`;
+    } else {
+      timeText = `${remainingMinutes} นาที`;
+    }
+
+    throw new Error(`อุปกรณ์นี้เคยถูกผูกกับบัญชีอื่น (${storedEmail}) คุณสามารถกลับมาใช้งานได้ในอีก ${timeText}|${remainingTimeMs}`);
   }
 
-  // email ตรง → อนุญาตเข้าใช้งาน
-  console.log("deviceId และ email ตรงกัน → อนุญาตให้เข้าใช้งาน");
+  // ✅ ตรงกัน → อนุญาตให้เข้า
+  console.log("deviceId และ email ตรงกัน → อนุญาตให้เข้า");
 }

@@ -241,7 +241,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
 
           {/* ปุ่มปิดการสแกน */}
           <button
-            className="absolute top-2 right-1 text-purple-500 hover:text-purple-700" // จัดตำแหน่งและสี
+            className="absolute border rounded-2xl inset-shadow-sm p-2 top-2 right-1 text-purple-500 hover:text-purple-700" // จัดตำแหน่งและสี
             onClick={() => { // ฟังก์ชันเมื่อคลิกปิด
               setScanning(false); // ปิดสถานะการสแกน
 

@@ -29,19 +29,20 @@ export const exportMonthlyAttendanceToXLSX = (
     let lateCount = 0;
 
     const row: (string | number)[] = [index++, studentId, name];
+dateList.forEach(date => {
+  const data = attendance[date];
+  let isLate = false;
 
-    dateList.forEach(date => {
-      const data = attendance[date];
-     if (data?.present) {
-  attended++;
-  const isLate = !!data.late;
-  if (isLate) lateCount++;
-  row.push(isLate ? '!' : '✓');
-} else {
-  row.push('X');
-}
+  if (data?.present) {
+    attended++;
+    isLate = data.late;
+    if (isLate) lateCount++;
+    row.push(isLate ? '!' : '✓');
+  } else {
+    row.push('X');
+  }
+});
 
-    });
 
     const absent = dateList.length - attended;
     row.push(`${attended}/${dateList.length}`, attended, absent, lateCount); // <-- fixed back‑ticks

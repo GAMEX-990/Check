@@ -20,7 +20,6 @@ const ClassCard = ({
 
     const {
         totalOnTime,
-        totalAbsent,
         totalLate,
       } = useClassSummary(cls.id, false);
 
@@ -48,7 +47,7 @@ const ClassCard = ({
                 {cls.owner_email}
               </p>
               <p className="truncate w-full max-w-[80px] text-base md:max-w-full text-purple-500">
-                มาเรียน {totalOnTime + totalAbsent + totalLate} วัน
+                มาเรียน {totalOnTime + totalLate} วัน
               </p>
             </div>
           </div>

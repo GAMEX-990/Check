@@ -68,7 +68,7 @@ const Navbar = () => {
 
     return (
         <motion.nav
-            className={`sticky top-0 z-40 w-full ${scrolled ? 'bg-white shadow-md' : 'bg-transparent'} transition-all duration-300`}
+            className={`sticky top-0 z-0 w-full ${scrolled ? 'bg-white shadow-md' : 'bg-transparent'} transition-all duration-300`}
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}

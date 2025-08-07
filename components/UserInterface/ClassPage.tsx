@@ -192,6 +192,9 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
       </div>
 
       {/* หน้าจอสแกน QR Code - สไตล์มือถือแบบเต็มจอ */}
+      // แค่แก้ส่วนของ video element ให้เต็มจอ
+
+      {/* หน้าจอสแกน QR Code - แก้แค่ส่วนกล้อง */}
       {scanning && (
         <div className="fixed inset-0 bg-white flex flex-col z-[9999]">
           {/* Header */}
@@ -201,35 +204,29 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
                 className="text-black text-2xl font-light"
                 onClick={handleCloseScan}
               >
-                <X/>
+                <X />
               </button>
             </div>
             <div>
               <h1 className="text-black">Scan QR</h1>
             </div>
           </div>
-          {/* กล้องและกรอบสแกน */}
-          <div className="relative flex items-center justify-center">
+
+          {/* กล้องและกรอบสแกน - แก้ตรงนี้ */}
+          <div className="flex-1 relative">
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              style={{ width: '100%', maxWidth: '640px' }}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="w-full h-full object-cover"
             />
             <canvas
               ref={canvasRef}
               className="absolute inset-0 w-full h-full"
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%'
-              }}
             />
+
             {/* กรอบสแกน QR */}
-            <div className="relative z-10">
+            <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-64 h-64 relative">
                 {/* กรอบมุม */}
                 <div className="absolute top-0 left-0 w-8 h-8 border-l-4 border-t-4 border-white rounded-tl-lg"></div>
@@ -239,6 +236,7 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
               </div>
             </div>
           </div>
+
           <div className="flex justify-around h-50 border-t bg-white">
           </div>
         </div>

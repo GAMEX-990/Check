@@ -32,13 +32,15 @@ export const exportMonthlyAttendanceToXLSX = (
 
     dateList.forEach(date => {
       const data = attendance[date];
-      if (data?.present) {
-        attended++;
-        if (data.late) lateCount++;
-        row.push(data.late ? '!' : '✓');
-      } else {
-        row.push('X');
-      }
+     if (data?.present) {
+  attended++;
+  const isLate = !!data.late;
+  if (isLate) lateCount++;
+  row.push(isLate ? '!' : '✓');
+} else {
+  row.push('X');
+}
+
     });
 
     const absent = dateList.length - attended;

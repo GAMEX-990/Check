@@ -9,12 +9,10 @@ import Image from "next/image";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { saveAndCleanupDeviceId } from '@/utils/getFingerprint';
 import { checkDeviceBeforeLogin } from '@/utils/checkDeviceBeforeLogin';
-// Remove unused Loader import
-// import Loader from '@/components/Loader/Loader';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, Loader2Icon, Clock } from "lucide-react";
+
 
 // Define proper interfaces for type safety
 interface LoginError extends Error {
@@ -90,8 +88,8 @@ export default function LoginPage() {
       // ถ้าไม่มี error ถึง sign in จริง
       await signInWithEmailAndPassword(auth, email, password);
 
-      // บันทึก device fingerprint
-      await saveAndCleanupDeviceId(email);
+      // ✅ บันทึก device fingerprint หลังจาก login สำเร็จ
+
 
       toast.success("เข้าสู่ระบบสำเร็จ!", { style: { color: '#22c55e' } });
       router.push('/dashboard');
@@ -136,7 +134,7 @@ export default function LoginPage() {
 
       if (!user.email) throw new Error('ไม่พบอีเมลผู้ใช้');
 
-      // ตรวจสอบ deviceId ก่อนอนุญาตให้ login
+      // ✅ ตรวจสอบ deviceId ก่อนอนุญาตให้ login
       await checkDeviceBeforeLogin(user.email);
 
       // ตรวจสอบผู้ใช้ใน Firestore ว่ามีข้อมูลหรือยัง
@@ -144,7 +142,7 @@ export default function LoginPage() {
       const userSnap = await getDoc(userRef);
 
       // บันทึก device fingerprint
-      await saveAndCleanupDeviceId(user.email);
+
 
       if (userSnap.exists()) {
         toast.success("เข้าสู่ระบบสำเร็จ!!", { style: { color: '#22c55e' } });
@@ -311,3 +309,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+

@@ -78,6 +78,15 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
     onQRDetected: handleQRDetected,
   });
 
+  const handleCloseScan = () => {
+    setScanning(false);
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stopCamera(stream);
+      videoRef.current.srcObject = null;
+    }
+  };
+
   // ฟังก์ชันสำหรับปิด popup สร้างคลาส
   const closePopup = () => {
     setShowPopup(false); // ปิด popup
@@ -116,20 +125,20 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
       {/* ------------------------------------------------------------------------------------------------------------ */}
       <div className="block md:hidden">
         <div className="flex px-2">
-            <div>
-              <motion.div
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 1 }}
+          <div>
+            <motion.div
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 1 }}
+            >
+              <button
+                className="flex gap-x-1 text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200"
+                onClick={() => setShowPopup(true)}
+                disabled={!user}
               >
-                <button
-                  className="flex gap-x-1 text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200"
-                  onClick={() => setShowPopup(true)}
-                  disabled={!user}
-                >
-                  <HousePlus style={{ color: "var(--color-purple-600)" }} /> Add a class
-                </button>
-              </motion.div>
-            </div>
+                <HousePlus style={{ color: "var(--color-purple-600)" }} /> Add a class
+              </button>
+            </motion.div>
+          </div>
         </div>
       </div>
       {showPopup && (
@@ -242,16 +251,7 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
           {/* ปุ่มปิดการสแกน */}
           <button
             className="absolute border rounded-2xl inset-shadow-sm p-2 top-2 right-1 text-purple-500 hover:text-purple-700" // จัดตำแหน่งและสี
-            onClick={() => { // ฟังก์ชันเมื่อคลิกปิด
-              setScanning(false); // ปิดสถานะการสแกน
-
-              // ถ้ามี video stream อยู่ให้หยุดการทำงาน
-              if (videoRef.current?.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream; // แปลงเป็น MediaStream
-                stopCamera(stream); // หยุดกล้อง
-                videoRef.current.srcObject = null; // ล้าง video source
-              }
-            }}
+            onClick={handleCloseScan}
           >
             <X />
           </button>

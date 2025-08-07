@@ -152,7 +152,7 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
 
   return (
     <div>
-      <div className="overflow-scroll md:h-140 h-90 w-auto">
+      <div className="overflow-scroll md:h-140 h-150 w-auto">
         <div className="flex flex-col gap-y-4 p-8 md:items-center">
           {classesLoading ? (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center ">
@@ -190,35 +190,49 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
           className="w-full justify-center"
         />
       </div>
-      {/* หน้าจอสแกน QR Code - เหมือน AddClassPopup */}
+
+      {/* หน้าจอสแกน QR Code - สไตล์มือถือแบบเต็มจอ */}
       {scanning && (
-        <div className="fixed inset-0 bg-amber-600 flex flex-col items-center justify-center  z-[9999]">
-          <div className="relative">
+        <div className="fixed inset-0 bg-white flex flex-col z-[9999]">
+          {/* Header */}
+          <div className="flex justify-between items-center p-8">
+            <div>
+              <button
+                className="text-black text-2xl font-light"
+                onClick={handleCloseScan}
+              >
+                <X/>
+              </button>
+            </div>
+            <div>
+              <h1 className="text-black">Scan QR</h1>
+            </div>
+          </div>
+          {/* กล้องและกรอบสแกน */}
+          <div className="flex-1 relative flex items-center justify-center">
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              style={{ width: '100%', maxWidth: '640px' }}
+              className="absolute inset-0 w-full h-full object-cover"
             />
             <canvas
               ref={canvasRef}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%'
-              }}
+              className="absolute inset-0 w-full h-full"
             />
+            {/* กรอบสแกน QR */}
+            <div className="relative z-10">
+              <div className="w-64 h-64 relative">
+                {/* กรอบมุม */}
+                <div className="absolute top-0 left-0 w-8 h-8 border-l-4 border-t-4 border-white rounded-tl-lg"></div>
+                <div className="absolute top-0 right-0 w-8 h-8 border-r-4 border-t-4 border-white rounded-tr-lg"></div>
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-l-4 border-b-4 border-white rounded-bl-lg"></div>
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-r-4 border-b-4 border-white rounded-br-lg"></div>
+              </div>
+            </div>
           </div>
-
-          {/* ปุ่มปิดการสแกน */}
-          <button
-            className="absolute top-3 right-0 mr-4 bg-white border rounded-2xl inset-shadow-sm p-2 mt-4 shadow-lg text-purple-500 hover:text-purple-700"
-            onClick={handleCloseScan}
-          >
-            <X />
-          </button>
+          <div className="flex justify-around h-50 border-t bg-white">
+          </div>
         </div>
       )}
     </div>

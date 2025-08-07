@@ -11,8 +11,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ClassPageType } from "@/types/classTypes";
 import Loader from "../Loader/Loader";
 import { ClassData } from "@/types/classDetailTypes";
-import { House, QrCode, X } from "lucide-react";
+import { House, X } from "lucide-react";
 import QRCode from "react-qr-code";
+import ClassCard from "./MyClassCard";
+
 interface MyClassPageProps {
   page: ClassPageType;
   onSelectClass: (classData: ClassData) => void;
@@ -34,7 +36,7 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setdelayDone(true);
-    }, 2000); // 600ms ดีเลย์
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -50,7 +52,7 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
       (querySnapshot) => {
         const classList: ClassData[] = querySnapshot.docs.map((doc) => ({
           id: doc.id,
-          ...(doc.data() as Omit<ClassData, "id">), // 👈 แคสต์เฉพาะส่วนของ data ที่ไม่ใช่ id
+          ...(doc.data() as Omit<ClassData, "id">),
         }));
         setClasses(classList);
       },
@@ -121,7 +123,7 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
   }, [showQRModal]);
 
   const handleCreateQR = (e: React.MouseEvent, classData: ClassData) => {
-    e.stopPropagation(); // ป้องกันไม่ให้เรียก onSelectClass
+    e.stopPropagation();
     const qrLink = `https://your-app-url/class/${classData.id}`;
     setQrCode(qrLink);
     setSelectedClass(classData);
@@ -134,6 +136,12 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
     setSelectedClass(null);
   };
 
+  const handleSelectClass = (classData: ClassData) => {
+    setIsEntering(true);
+    setTimeout(() => {
+      onSelectClass(classData);
+    }, 2000);
+  };
 
   if (loading || !delayDone) {
     return (
@@ -156,36 +164,18 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
               </div>
             ) : classes.length > 0 ? (
               classes.map((cls) => (
-                <motion.div
+                <ClassCard
                   key={cls.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 1.05 }}
-                >
-                  <div
-                    key={cls.id}
-                    className="flex justify-between md:w-100 items-center bg-purple-50 hover:bg-purple-100 p-4 rounded-4xl shadow-lg inset-shadow-sm cursor-pointer"
-                    onClick={() => {
-                      setIsEntering(true);
-                      setTimeout(() => {
-                        onSelectClass(cls);
-                      }, 2000);
-                    }}
-                  >
-                    <div className="flex flex-col gap-y-1">
-                      <span className="text-lg font-semibold text-purple-800">{cls.name}</span>
-                      <span className="text-base text-purple-500">{cls.checkedInCount} คน</span>
-                    </div>
-                    <div
-                      className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center items-center rounded-full shadow-lg hover:bg-purple-600 transition-colors"
-                      onClick={(e) => handleCreateQR(e, cls)}
-                    >
-                      <QrCode size={24} />
-                    </div>
-                  </div>
-                </motion.div>
+                  cls={cls}
+                  onSelectClass={handleSelectClass}
+                  onCreateQR={handleCreateQR}
+                />
               ))
             ) : (
-              <p></p>
+              <div className="text-center py-10">
+                <p className="text-gray-500 text-lg">ยังไม่มีคลาส</p>
+                <p className="text-gray-400 text-sm mt-2">เริ่มสร้างคลาสแรกของคุณ</p>
+              </div>
             )}
           </div>
         </div>
@@ -216,8 +206,9 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
                   <X />
                 </button>
                 <div className="flex flex-col items-center justify-center md:mt-10 p-15 gap-y-6">
-                  <div className="flex items-center space-x-2 text-3xl text-purple-700 font-bold inset-shadow-sm shadow-2xl  rounded-2xl p-1.5">
-                    <House size={30} /><h3>{selectedClass.name}</h3>
+                  <div className="flex items-center space-x-2 text-3xl text-purple-700 font-bold inset-shadow-sm shadow-2xl rounded-2xl p-1.5">
+                    <House size={30} />
+                    <h3>{selectedClass.name}</h3>
                   </div>
                   <div>
                     <QRCode

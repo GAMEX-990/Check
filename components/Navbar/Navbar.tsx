@@ -68,7 +68,7 @@ const Navbar = () => {
 
     return (
         <motion.nav
-            className={`sticky top-0 z-10 w-full ${scrolled ? 'bg-white shadow-md' : 'bg-transparent'} transition-all duration-300`}
+            className={`sticky top-0 z-40 w-full ${scrolled ? 'bg-white shadow-md' : 'bg-transparent'} transition-all duration-300`}
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
@@ -99,7 +99,7 @@ const Navbar = () => {
                         <div className="flex items-center space-x-2">
                             <div className="flex items-center space-x-2 bg-purple-50 px-3 py-1 rounded-full">
                                 <Sheet>
-                                    <SheetTrigger asChild>
+                                    <SheetTrigger>
                                         <div className="cursor-pointer bg-purple-100 p-1 rounded-full">
                                             {userData?.photoURL && (
                                                 <Image
@@ -112,11 +112,11 @@ const Navbar = () => {
                                             )}
                                         </div>
                                     </SheetTrigger>
-                                    <SheetContent side="right" className="bg-white inset-shadow-xs">
-                                        <SheetHeader className='bg-white'>
+                                    <SheetContent>
+                                        <SheetHeader>
                                             <SheetTitle className="text-lg text-center">Profile</SheetTitle>
                                         </SheetHeader>
-                                        <div className="mt-4">
+                                        <div>
                                             <Usercard />
                                         </div>
                                     </SheetContent>
@@ -142,7 +142,6 @@ const Navbar = () => {
                 {/* Mobile menu button */}
                 <div className="md:hidden">
                     <button
-
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         className="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100"
                         aria-label="Toggle mobile menu"
@@ -155,16 +154,16 @@ const Navbar = () => {
             {/* Mobile menu */}
             <motion.div
                 ref={mobileMenuRef}
-                className="md:hidden overflow-hidden"
+                className="md:hidden overflow-hidden z-50"
                 initial={{ height: 0 }}
                 animate={{ height: mobileMenuOpen ? 'auto' : 0 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
-                <div className="px-4 py-3 space-y-3 border-t border-gray-100">
+                <div className="px-4 py-3 space-y-3 border-t border-gray-100 bg-white">
                     {user && (
                         <div className="flex items-center space-x-2 px-2 py-2 bg-purple-50 rounded-lg mb-3">
                             <Sheet>
-                                <SheetTrigger asChild>
+                                <SheetTrigger>
                                     <div className="cursor-pointer bg-purple-100 p-1 rounded-full">
                                         {userData?.photoURL && (
                                             <Image
@@ -177,11 +176,11 @@ const Navbar = () => {
                                         )}
                                     </div>
                                 </SheetTrigger>
-                                <SheetContent side="right" className="w-[300px] sm:w-[350px] items-center">
+                                <SheetContent>
                                     <SheetHeader>
                                         <SheetTitle className="text-lg">User Profile</SheetTitle>
                                     </SheetHeader>
-                                    <div className="mt-4">
+                                    <div>
                                         <Usercard />
                                     </div>
                                 </SheetContent>

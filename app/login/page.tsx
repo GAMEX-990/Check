@@ -95,14 +95,14 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (err: unknown) {
       console.error('Login error:', err);
-      
+
       const error = err as LoginError;
-      
+
       // ตรวจสอบว่า error มีข้อมูลเวลาถอยหลังมั้ย
       if (error.message && error.message.includes('|')) {
         const [errorMessage, timeMs] = error.message.split('|');
         const timeInMs = parseInt(timeMs);
-        
+
         if (timeInMs > 0) {
           setRemainingTime(timeInMs);
           setCountdownError(errorMessage);
@@ -112,7 +112,7 @@ export default function LoginPage() {
       } else {
         setError(error.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
       }
-      
+
       await signOut(auth);
     } finally {
       setIsHandlingLogin(false);
@@ -152,14 +152,14 @@ export default function LoginPage() {
       }
     } catch (err: unknown) {
       console.error('Google login error:', err);
-      
+
       const error = err as LoginError;
-      
+
       // ตรวจสอบว่า error มีข้อมูลเวลาถอยหลังมั้ย
       if (error.message && error.message.includes('|')) {
         const [errorMessage, timeMs] = error.message.split('|');
         const timeInMs = parseInt(timeMs);
-        
+
         if (timeInMs > 0) {
           setRemainingTime(timeInMs);
           setCountdownError(errorMessage);
@@ -177,7 +177,7 @@ export default function LoginPage() {
           setError(error.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ โปรดลองอีกครั้งในภายหลัง");
         }
       }
-      
+
       await signOut(auth);
     } finally {
       setIsLoggingInGoogle(false);
@@ -231,9 +231,8 @@ export default function LoginPage() {
           <Button
             onClick={handleGoogleLogin}
             disabled={isLoggingInGoogle || remainingTime !== null}
-            className={`cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-6 ${
-              isLoggingInGoogle || remainingTime !== null ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md'
-            }`}
+            className={`cursor-pointer w-full flex items-center justify-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 mb-6 ${isLoggingInGoogle || remainingTime !== null ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md'
+              }`}
           >
             <Image src="/assets/images/Google.png" alt="Google" width={20} height={20} className="mr-3" />
             {isLoggingInGoogle && <Loader2Icon className="animate-spin mr-2" />}
@@ -250,43 +249,45 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-6">
-            <div>
+            <div className='space-y-2'>
               <Label htmlFor="email">อีเมล</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="กรอกอีเมลของคุณ" 
-                value={email} 
+              <Input
+                id="email"
+                type="email"
+                placeholder="กรอกอีเมลของคุณ"
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={remainingTime !== null}
+                className='rounded-2xl'
               />
             </div>
 
-            <div>
+            <div className='space-y-2'>
               <Label htmlFor="password">รหัสผ่าน</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                placeholder="กรอกรหัสผ่านของคุณ" 
-                value={password} 
+              <Input
+                id="password"
+                type="password"
+                placeholder="กรอกรหัสผ่านของคุณ"
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={remainingTime !== null}
+                className='rounded-2xl'
               />
             </div>
           </div>
 
           <div className="flex items-center justify-between mt-6 mb-8">
-            <Button 
-              variant='link' 
-              onClick={() => router.push('/register')} 
+            <Button
+              variant='link'
+              onClick={() => router.push('/register')}
               className="text-sm text-purple-600 hover:text-purple-800"
               disabled={remainingTime !== null}
             >
               สร้างบัญชีใหม่
             </Button>
-            <Button 
-              variant='link' 
-              onClick={() => router.push('/forgot-password')} 
+            <Button
+              variant='link'
+              onClick={() => router.push('/forgot-password')}
               className="text-sm text-purple-600 hover:text-purple-800"
               disabled={remainingTime !== null}
             >
@@ -297,9 +298,8 @@ export default function LoginPage() {
           <Button
             onClick={handleManualLogin}
             disabled={isHandlingLogin || remainingTime !== null}
-            className={`cursor-pointer w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 transition duration-200 rounded-4xl ${
-              remainingTime !== null ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className={`cursor-pointer w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 transition duration-200 rounded-4xl ${remainingTime !== null ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
           >
             {isHandlingLogin && <Loader2Icon className="animate-spin mr-2" />}
             {remainingTime ? 'รอจนกว่าจะหมดเวลา...' : isHandlingLogin ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}

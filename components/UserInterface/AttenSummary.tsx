@@ -442,7 +442,10 @@ const ViewModeToggle = ({
 }) => (
   <div className="flex gap-2">
     <button
-      onClick={() => setViewMode('summary')}
+      onClick={() => {
+        setViewMode('summary');
+        setSelectedDate(null); // รีเซ็ตวันที่เมื่อเปลี่ยนเป็น summary mode
+      }}
       className={`flex items-center p-2 rounded-lg text-sm transition-all ${
         viewMode === 'summary' 
           ? 'bg-purple-600 text-white shadow-lg' 

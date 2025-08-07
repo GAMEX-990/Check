@@ -7,9 +7,8 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
-import { Check, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useHasScanned } from "@/utils/hasScanned";
-import { motion } from "framer-motion";
 import { ClassPageType } from "@/types/classTypes";
 import Loader from "../Loader/Loader";
 import { ClassData } from "@/types/classDetailTypes";
@@ -18,6 +17,7 @@ import { handleQRDetected as handleQRUtility } from "@/utils/qrScanner";
 import { useCameraScanner } from "@/utils/useQRScanner";
 import { toast } from "sonner";
 import ScanQRButton from "../ui/QRScanner";
+import ClassCard from "./ClassCard";
 
 interface ClassPageProps {
   page: ClassPageType;
@@ -46,6 +46,26 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // เพิ่ม useEffect สำหรับซ่อน/แสดง navbar
+  useEffect(() => {
+    const navbar = document.querySelector('nav');
+    if (navbar) {
+      if (scanning) {
+        navbar.style.display = 'none';
+      } else {
+        navbar.style.display = 'block';
+      }
+    }
+
+    // Cleanup function เมื่อ component unmount
+    return () => {
+      const navbar = document.querySelector('nav');
+      if (navbar) {
+        navbar.style.display = 'block';
+      }
+    };
+  }, [scanning]);
 
   useEffect(() => {
     if (!user?.uid || loading) return;
@@ -111,6 +131,15 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
     setScanning(true);
   };
 
+  const handleCloseScan = () => {
+    setScanning(false);
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stopCamera(stream);
+      videoRef.current.srcObject = null;
+    }
+  };
+
   if (loading || !delayDone) {
     return (
       <div>
@@ -135,44 +164,19 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
             </div>
           ) : (
             <>
-              {joinedClasses.map((cls) => (
-                <div key={cls.id}>
-                  <motion.div
-                    key={cls.id}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 1.05 }}
-                  >
-                    <div
-                      className="flex justify-between md:w-100 items-center bg-purple-50 hover:bg-purple-100 p-4 rounded-4xl shadow-lg inset-shadow-sm cursor-pointer"
-                      onClick={() => {
-                        setIsEntering(true);
-                        setTimeout(() => {
-                          onSelectClass(cls);
-                        }, 2000);
-                      }}
-                    >
-                      <div className="flex gap-3 items-center">
-                        <div className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center rounded-full shadow-lg">
-                          {cls.name.charAt(0)}
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="flex gap-x-1">
-                            <p className="text-md font-bold text-purple-800">{cls.name}</p>
-                            <div>
-                              {user?.uid && cls.checkedInMembers?.includes(user.uid) && (
-                                <p className="text-green-600"><Check /></p>
-                              )}
-                            </div>
-                          </div>
-                          <div>
-                            <p className="truncate w-full max-w-[80px] text-base md:max-w-full text-purple-500">{cls.owner_email}</p>
-                            <p className="truncate w-full max-w-[80px] text-base md:max-w-full text-purple-500">{cls.checkedInCount} คน</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
+              {user && joinedClasses.map((cls) => (
+                <ClassCard
+                  key={cls.id}
+                  cls={cls}
+                  user={user}
+                  isEntering={isEntering}
+                  onClick={() => {
+                    setIsEntering(true);
+                    setTimeout(() => {
+                      onSelectClass(cls);
+                    }, 2000);
+                  }}
+                />
               ))}
             </>
           )}
@@ -188,7 +192,7 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
       </div>
       {/* หน้าจอสแกน QR Code - เหมือน AddClassPopup */}
       {scanning && (
-        <div className="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
+        <div className="fixed inset-0 bg-amber-600 flex flex-col items-center justify-center  z-[9999]">
           <div className="relative">
             <video
               ref={videoRef}
@@ -210,15 +214,8 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
 
           {/* ปุ่มปิดการสแกน */}
           <button
-            className="absolute top-20 right-0 mr-4 bg-white border rounded-2xl inset-shadow-sm p-2 mt-4 shadow-lg text-purple-500 hover:text-purple-700"
-            onClick={() => {
-              setScanning(false);
-              if (videoRef.current?.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                stopCamera(stream);
-                videoRef.current.srcObject = null;
-              }
-            }}
+            className="absolute top-3 right-0 mr-4 bg-white border rounded-2xl inset-shadow-sm p-2 mt-4 shadow-lg text-purple-500 hover:text-purple-700"
+            onClick={handleCloseScan}
           >
             <X />
           </button>

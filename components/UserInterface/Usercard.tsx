@@ -147,11 +147,11 @@ const Usercard = () => {
 
 
   return (
-    <div className="flex justify-center">
-      <div className="flex flex-col items-center space-y-8">
+    <div>
+      <div className="flex flex-col items-center">
         <div className="absolute z-10">
           <Image
-            className="border-2 border-white rounded-full object-cover z-10 shadow-2xl"
+            className="border-2 border-white rounded-full object-cover shadow-2xl"
             width={120}
             height={120}
             src={enhancedPhotoURL || '/default-profile.png'}
@@ -161,7 +161,16 @@ const Usercard = () => {
 
         </div>
         <div className="flex bg-white md:w-87 md:h-238 w-75 h-195 rounded-t-4xl z-0 mt-15 shadow-xl/40 inset-shadow-sm">
-          <div className="flex flex-col space-y-6 pt-20 pl-6">
+          <div className="flex flex-col space-y-6 pt-20 md:pl-6 pl-2">
+            <div className='flex justify-center'>
+              <div
+                className="cursor-pointer flex justify-center border inset-shadow-sm shadow-lg rounded-2xl py-1 px-2 hover:bg-neutral-200 transform transition-colors duration-200"
+                onClick={() => setShowModal(true)}
+                title="แก้ไขข้อมูล"
+              >
+                แก้ไขข้อมูล
+              </div>
+            </div>
             <div className='flex items-center justify-center'>
               <CircleUser color='purple' />
               <p className="p-1 px-2 font-bold">{data.name}</p>
@@ -175,13 +184,6 @@ const Usercard = () => {
               <div className='flex items-center'>
                 <BookUser color='purple' />
                 <p className="p-1 px-2">{data.studentId}</p>
-              </div>
-              <div
-                className="cursor-pointer flex border border-fuchsia-600 rounded-md p-0.5 hover:bg-fuchsia-700 transform transition-colors duration-200"
-                onClick={() => setShowModal(true)}
-                title="แก้ไขข้อมูล"
-              >
-                แก้ไขข้อมูล
               </div>
             </div>
             <div className='flex items-center'>

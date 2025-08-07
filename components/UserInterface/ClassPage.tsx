@@ -209,16 +209,24 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
             </div>
           </div>
           {/* กล้องและกรอบสแกน */}
-          <div className="flex-1 relative flex items-center justify-center">
+          <div className="relative flex items-center justify-center">
             <video
               ref={videoRef}
               autoPlay
               playsInline
+              style={{ width: '100%', maxWidth: '640px' }}
               className="absolute inset-0 w-full h-full object-cover"
             />
             <canvas
               ref={canvasRef}
               className="absolute inset-0 w-full h-full"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%'
+              }}
             />
             {/* กรอบสแกน QR */}
             <div className="relative z-10">

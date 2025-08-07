@@ -1,11 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { ChevronLeft, Loader2Icon, Mail } from "lucide-react";
+import { ChevronLeft, Loader2Icon, Mail, Clock } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { auth } from '@/lib/firebase';
 import Image from "next/image";
 import { Input } from '@/components/ui/input';
 import { Label } from '@radix-ui/react-label';
@@ -18,33 +17,24 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [error, setError] = useState("");
-  const [countdown, setCountdown] = useState(0);
+  const [countdown, setCountdown] = useState(0); // เพิ่ม state สำหรับนับถอยหลัง
 
-  // Countdown timer effect
+  // useEffect สำหรับจับเวลานับถอยหลัง
   useEffect(() => {
     let interval: NodeJS.Timeout;
+    
     if (countdown > 0) {
       interval = setInterval(() => {
-        setCountdown((prev) => prev - 1);
+        setCountdown(prev => prev - 1);
       }, 1000);
     }
-    return () => clearInterval(interval);
-  }, [countdown]);
 
-  // Check if email exists in database
-  const checkEmailExists = async (email: string): Promise<boolean> => {
-    try {
-      // Check in users collection
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('email', '==', email));
-      const querySnapshot = await getDocs(q);
-      
-      return !querySnapshot.empty;
-    } catch (error) {
-      console.error('Error checking email:', error);
-      return false;
-    }
-  };
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [countdown]);
 
   const handleResetPassword = async () => {
     if (!email) {
@@ -63,17 +53,9 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      // Check if email exists in database first
-      const emailExists = await checkEmailExists(email);
-      if (!emailExists) {
-        setError("ไม่พบอีเมลนี้ในระบบ กรุณาตรวจสอบอีเมลหรือสมัครสมาชิกใหม่");
-        setIsLoading(false);
-        return;
-      }
-
       await sendPasswordResetEmail(auth, email);
       setIsEmailSent(true);
-      setCountdown(30); // Set 30-second countdown
+      setCountdown(30); // เริ่มนับถอยหลัง 30 วินาที
       toast.success("ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลแล้ว", {
         style: {
           color: '#22c55e',
@@ -97,11 +79,37 @@ export default function ForgotPasswordPage() {
   };
 
   const handleResendEmail = async () => {
-    if (countdown > 0) {
-      toast.error(`กรุณารอ ${countdown} วินาที ก่อนส่งอีเมลอีกครั้ง`);
-      return;
+    if (countdown > 0) return; // ป้องกันการส่งซ้ำก่อนครบเวลา
+    
+    setIsLoading(true);
+    setError("");
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setCountdown(30); // เริ่มนับถอยหลังใหม่
+      toast.success("ส่งอีเมลอีกครั้งเรียบร้อยแล้ว", {
+        style: {
+          color: '#22c55e',
+        }
+      });
+    } catch (err: unknown) {
+      const firebaseError = err as { code?: string; message?: string };
+      
+      if (firebaseError.code === 'auth/too-many-requests') {
+        setError("มีการร้องขอมากเกินไป กรุณาลองอีกครั้งในภายหลัง");
+      } else {
+        setError("เกิดข้อผิดพลาดในการส่งอีเมล กรุณาลองอีกครั้ง");
+      }
+    } finally {
+      setIsLoading(false);
     }
-    await handleResetPassword();
+  };
+
+  // ฟังก์ชันแปลงวินาทีเป็นรูปแบบ mm:ss
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -184,7 +192,7 @@ export default function ForgotPasswordPage() {
                 className="cursor-pointer w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 transition duration-200 rounded-xl mt-8"
               >
                 {isLoading && <Loader2Icon className="animate-spin mr-2" />}
-                {isLoading ? 'กำลังตรวจสอบและส่ง...' : 'ส่งลิงก์รีเซ็ตรหัสผ่าน'}
+                {isLoading ? 'กำลังส่ง...' : 'ส่งลิงก์รีเซ็ตรหัสผ่าน'}
               </Button>
             </>
           ) : (
@@ -199,6 +207,13 @@ export default function ForgotPasswordPage() {
                   เราได้ส่งลิงก์สำหรับรีเซ็ตรหัสผ่านไปยัง<br />
                   <span className="font-medium text-purple-600">{email}</span>
                 </p>
+
+                {/* Error message for resend */}
+                {error && (
+                  <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
 
                 <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 text-left">
                   <div className="text-sm text-blue-700">
@@ -220,7 +235,8 @@ export default function ForgotPasswordPage() {
                     className="w-full border-purple-200 text-purple-700 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading && <Loader2Icon className="animate-spin mr-2" />}
-                    {countdown > 0 ? `ส่งอีเมลอีกครั้งได้ใน ${countdown} วินาที` : 'ส่งอีเมลอีกครั้ง'}
+                    {countdown > 0 && <Clock className="mr-2 h-4 w-4" />}
+                    {countdown > 0 ? `ส่งอีเมลอีกครั้งได้ใน ${formatTime(countdown)}` : 'ส่งอีเมลอีกครั้ง'}
                   </Button>
 
                   <Button

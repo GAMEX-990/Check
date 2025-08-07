@@ -208,7 +208,6 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
             </div>
           </div>
 
-          {/* กล้องและกรอบสแกน - แก้ตรงนี้ */}
           <div className="flex-1 relative">
             <video
               ref={videoRef}

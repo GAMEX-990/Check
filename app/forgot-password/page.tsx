@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ChevronLeft, Loader2Icon, Mail } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import Image from "next/image";
 import { Input } from '@/components/ui/input';
 import { Label } from '@radix-ui/react-label';
@@ -17,6 +18,33 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [error, setError] = useState("");
+  const [countdown, setCountdown] = useState(0);
+
+  // Countdown timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [countdown]);
+
+  // Check if email exists in database
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      // Check in users collection
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', email));
+      const querySnapshot = await getDocs(q);
+      
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
+  };
 
   const handleResetPassword = async () => {
     if (!email) {
@@ -35,8 +63,17 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
+      // Check if email exists in database first
+      const emailExists = await checkEmailExists(email);
+      if (!emailExists) {
+        setError("ไม่พบอีเมลนี้ในระบบ กรุณาตรวจสอบอีเมลหรือสมัครสมาชิกใหม่");
+        setIsLoading(false);
+        return;
+      }
+
       await sendPasswordResetEmail(auth, email);
       setIsEmailSent(true);
+      setCountdown(30); // Set 30-second countdown
       toast.success("ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลแล้ว", {
         style: {
           color: '#22c55e',
@@ -60,6 +97,10 @@ export default function ForgotPasswordPage() {
   };
 
   const handleResendEmail = async () => {
+    if (countdown > 0) {
+      toast.error(`กรุณารอ ${countdown} วินาที ก่อนส่งอีเมลอีกครั้ง`);
+      return;
+    }
     await handleResetPassword();
   };
 
@@ -108,7 +149,7 @@ export default function ForgotPasswordPage() {
                   <Mail className="w-8 h-8 text-white" />
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">ลืมรหัสผ่าน?</h1>
-                <p className="text-gray-600">ไม่ต้องกังวลเราจะส่งลิงรีเซ็ตรหัสผ่านให้คุณ</p>
+                <p className="text-gray-600">ไม่ต้องกังวล เราจะส่งลิงก์รีเซ็ตรหัสผ่านให้คุณ</p>
               </div>
 
               {/* Error message */}
@@ -143,7 +184,7 @@ export default function ForgotPasswordPage() {
                 className="cursor-pointer w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 transition duration-200 rounded-xl mt-8"
               >
                 {isLoading && <Loader2Icon className="animate-spin mr-2" />}
-                {isLoading ? 'กำลังส่ง...' : 'ส่งลิงก์รีเซ็ตรหัสผ่าน'}
+                {isLoading ? 'กำลังตรวจสอบและส่ง...' : 'ส่งลิงก์รีเซ็ตรหัสผ่าน'}
               </Button>
             </>
           ) : (
@@ -174,12 +215,12 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-4">
                   <Button
                     onClick={handleResendEmail}
-                    disabled={isLoading}
+                    disabled={isLoading || countdown > 0}
                     variant="outline"
-                    className="w-full border-purple-200 text-purple-700 hover:bg-purple-50"
+                    className="w-full border-purple-200 text-purple-700 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading && <Loader2Icon className="animate-spin mr-2" />}
-                    ส่งอีเมลอีกครั้ง
+                    {countdown > 0 ? `ส่งอีเมลอีกครั้งได้ใน ${countdown} วินาที` : 'ส่งอีเมลอีกครั้ง'}
                   </Button>
 
                   <Button

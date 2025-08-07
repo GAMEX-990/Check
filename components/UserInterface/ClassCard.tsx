@@ -20,7 +20,6 @@ const ClassCard = ({
 
     const {
         totalOnTime,
-        totalAbsent,
         totalLate,
       } = useClassSummary(cls.id, false);
 

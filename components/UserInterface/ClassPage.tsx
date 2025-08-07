@@ -190,10 +190,6 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
           className="w-full justify-center"
         />
       </div>
-
-      {/* หน้าจอสแกน QR Code - สไตล์มือถือแบบเต็มจอ */}
-      // แค่แก้ส่วนของ video element ให้เต็มจอ
-
       {/* หน้าจอสแกน QR Code - แก้แค่ส่วนกล้อง */}
       {scanning && (
         <div className="fixed inset-0 bg-white flex flex-col z-[9999]">

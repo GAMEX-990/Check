@@ -160,11 +160,11 @@ const Usercard = () => {
           />
 
         </div>
-        <div className="flex bg-white md:w-87 md:h-238 w-75 h-195 rounded-t-4xl z-0 mt-15 shadow-xl/40 inset-shadow-sm">
-          <div className="flex flex-col space-y-6 pt-20 md:pl-6 pl-2">
+        <div className="flex justify-center bg-white md:w-87 md:h-238 w-75 h-195 rounded-t-4xl z-0 mt-15 shadow-xl/40 inset-shadow-sm">
+          <div className="space-y-4 mt-20">
             <div className='flex justify-center'>
               <div
-                className="cursor-pointer flex justify-center border inset-shadow-sm shadow-lg rounded-2xl py-1 px-2 hover:bg-neutral-200 transform transition-colors duration-200"
+                className="cursor-pointer border inset-shadow-sm shadow-lg rounded-2xl py-1 px-2 hover:bg-neutral-200 transform transition-colors duration-200"
                 onClick={() => setShowModal(true)}
                 title="แก้ไขข้อมูล"
               >

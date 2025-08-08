@@ -8,4 +8,5 @@ export interface CreateQRCodeAndUploadProps {
     classData: ClassData;
     onDeleteSuccess?: () => void; // ← Add this line
     onBack?: () => void;
+    isFirstCard?: boolean;
 }

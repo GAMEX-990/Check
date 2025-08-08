@@ -17,7 +17,7 @@ export const ViewClassDetailPage = ({
   classData,
   onBack,
   onDeleteSuccess,
-  onClassChange
+  onClassChange,
 }: ViewClassDetailPageProps & {
   onClassChange?: (newClassData: ClassData) => void;
 }) => {
@@ -39,6 +39,7 @@ export const ViewClassDetailPage = ({
   const [joinedClasses, setJoinedClasses] = useState<ClassData[]>([]);
   const [showClassDropdown, setShowClassDropdown] = useState(false);
   const [classType, setClassType] = useState<'owned' | 'joined'>('owned'); // เพิ่ม state สำหรับ toggle
+
 
   useEffect(() => {
     setSelectedClass(classData);

@@ -21,7 +21,7 @@ const TourGuide: React.FC<TourGuideProps> = ({
     if (!element) return { top: 0, left: 0 };
 
     const rect = element.getBoundingClientRect();
-    const tooltipWidth = 320;
+    const tooltipWidth = 400;
     const tooltipHeight = 200;
     const padding = 16;
 
@@ -198,7 +198,7 @@ const TourGuide: React.FC<TourGuideProps> = ({
         </div>
 
         {/* Content */}
-        <p className="text-gray-600 leading-relaxed mb-6">
+        <p className="text-gray-600 flex text-center py-2">
           {currentStepData.content}
         </p>
 
@@ -206,16 +206,15 @@ const TourGuide: React.FC<TourGuideProps> = ({
         <div className="mb-6">
           <div className="flex justify-between text-sm text-gray-500 mb-2">
             <span>ขั้นตอน {currentStep + 1} จาก {steps.length}</span>
-            <span>{Math.round(((currentStep + 1) / steps.length) * 100)}%</span>
+           
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+              className="bg-purple-500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
             />
           </div>
         </div>
-
         {/* Controls */}
         <div className="flex justify-between items-center">
           <button
@@ -225,48 +224,12 @@ const TourGuide: React.FC<TourGuideProps> = ({
           >
             ← ก่อนหน้า
           </button>
-
-          <div className="flex space-x-1">
-            {steps.map((_, index) => (
-              <button
-                key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentStep 
-                    ? 'bg-blue-500' 
-                    : index < currentStep 
-                    ? 'bg-blue-300' 
-                    : 'bg-gray-300'
-                }`}
-                onClick={() => {
-                  // อนุญาตให้กดไปขั้นตอนก่อนหน้าที่ผ่านมาแล้ว
-                  if (index <= currentStep) {
-                    // ใช้ logic เดียวกับ prev/next
-                    const diff = index - currentStep;
-                    if (diff < 0) {
-                      for (let i = 0; i < Math.abs(diff); i++) {
-                        onPrev();
-                      }
-                    }
-                  }
-                }}
-                aria-label={`ไปขั้นตอนที่ ${index + 1}`}
-              />
-            ))}
-          </div>
-
           <button
             onClick={onNext}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors shadow-sm"
+            className="px-4 py-2 text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors shadow-sm"
           >
             {currentStep === steps.length - 1 ? '✓ เสร็จสิ้น' : 'ถัดไป →'}
           </button>
-        </div>
-
-        {/* Keyboard shortcuts hint */}
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <p className="text-xs text-gray-400 text-center">
-            ใช้ ← → หรือ Space/Enter เพื่อนำทาง | Esc เพื่อปิด
-          </p>
         </div>
       </div>
     </>

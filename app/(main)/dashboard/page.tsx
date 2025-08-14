@@ -16,7 +16,7 @@ import Loader from '@/components/Loader/Loader';
 export default function DashboardPage() {
   const [currectPang, setCurrectPang] = useState<'myclass' | 'class' | 'view'>('myclass');
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth); // ลบ error ออก
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const router = useRouter();
 
@@ -25,8 +25,8 @@ export default function DashboardPage() {
     try {
       await signOut(auth);
       router.replace('/login');
-    } catch (error) {
-      console.error("Sign out failed:", error);
+    } catch {
+      // ใช้ underscore แทน error เพื่อบอกว่าไม่ได้ใช้งาน
       window.location.href = '/login';
     }
   }, [router]);
@@ -36,7 +36,6 @@ export default function DashboardPage() {
     try {
       const currentFingerprint = await getFingerprint();
       if (!currentFingerprint) {
-        console.log("ไม่พบ fingerprint, อนุญาตให้ผ่าน");
         return true;  // ไม่มี fingerprint ก็ผ่าน
       }
 
@@ -44,8 +43,6 @@ export default function DashboardPage() {
       const deviceSnap = await getDoc(deviceDocRef);
 
       if (!deviceSnap.exists()) {
-        // ไม่มีข้อมูล fingerprint นี้ใน DB → อนุญาตให้ผ่าน
-        console.log("ไม่พบข้อมูล fingerprint ในฐานข้อมูล, อนุญาตให้ผ่าน");
         return true;
       }
 
@@ -54,18 +51,16 @@ export default function DashboardPage() {
       const expireAt = data.expireAt;
 
       if (expireAt && expireAt.toMillis() < Date.now()) {
-        console.warn("session หมดอายุ");
         return false;
       }
 
       if (storedEmail !== userEmail) {
-        console.warn("อุปกรณ์นี้ผูกกับ email อื่น");
         return false;
       }
 
       return true;
-    } catch (error) {
-      console.error(error);
+    } catch {
+      // ใช้ underscore แทน error เพื่อบอกว่าไม่ได้ใช้งาน
       return false;
     }
   }, []);
@@ -81,7 +76,6 @@ export default function DashboardPage() {
     }
 
     if (!user.email) {
-      console.error("User has no email.");
       setAllowed(false);
       performSecureSignOut();
       return;
@@ -97,8 +91,8 @@ export default function DashboardPage() {
           performSecureSignOut();
         }, 2000);
       }
-    }).catch((err) => {
-      console.error("Error during device verification:", err);
+    }).catch(() => {
+      // ใช้ underscore แทน err เพื่อบอกว่าไม่ได้ใช้งาน
       toast.error('เกิดข้อผิดพลาดในการตรวจสอบอุปกรณ์');
       setAllowed(false);
       performSecureSignOut();
@@ -142,16 +136,6 @@ export default function DashboardPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-center p-6 bg-white rounded-lg shadow-lg">
-          <h2 className="text-xl font-bold text-red-600 mb-2">เกิดข้อผิดพลาด</h2>
-          <p className="text-gray-600">Error: {error.message}</p>
-        </div>
-      </div>
-    );
-  }
 
   const isClassOwner = selectedClass && user ? selectedClass.owner_email === user.email : false;
 

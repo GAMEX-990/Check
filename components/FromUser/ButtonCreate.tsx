@@ -142,9 +142,9 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
         </div>
       </div>
       {showPopup && (
-        <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-20">
+        <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)]">
           <motion.div
-            className="fixed inset-0 flex items-center justify-center z-10"
+            className="fixed inset-0 flex items-center justify-center"
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{

@@ -4,7 +4,7 @@ export interface TourStep {
     target: string;         // CSS selector ของ element ที่ต้องการไฮไลท์
     title: string;         // หัวข้อของขั้นตอน
     content: string;       // เนื้อหาอธิบาย
-    position?: 'top' | 'bottom' | 'left' | 'right'; // ตำแหน่งของ tooltip
+    position?: 'top' | 'bottom' | 'left' | 'right' | 'center'; // ตำแหน่งของ tooltip
   }
   
   export interface TourGuideProps {

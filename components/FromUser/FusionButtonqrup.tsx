@@ -4,20 +4,20 @@ import { CreateQRCodeAndUploadProps } from "@/types/Fusionqrup";
 import { handleExportXLSX } from "@/utils/exportXLSXHandler";
 import { doc, getDoc } from "firebase/firestore";
 import { motion } from "framer-motion";
-import { Download, FileUp, Loader, QrCode, X, Trash2, HelpCircle } from "lucide-react";
+import { Download, FileUp, Loader, QrCode, X, Trash2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 import DeleteClassModal from "../UserInterface/DeleteClassModal";
 import { uploadStudentsFromFile } from "@/utils/parseCSVFile";
-import { TourGuide, TourStep, useTourGuide } from "../TourGuide";
+import ButtonGuidViewClass from "../TourGuide/ButtonGuidViewClass";
+import ButtonGuidViewClassQRSolo from "../TourGuide/ButtonGuidViewClassQRSolo";
 
 const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
   classId,
   user,
   classData,
   onDeleteSuccess,
-  isFirstCard = false,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [qrCode, setQrCode] = useState<string | null>(null);
@@ -27,48 +27,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // ปรับปรุง tourSteps ให้โฟกัสที่ CreateQRCodeAndUpload
-  const tourSteps: TourStep[] = [
-    {
-      target: '.class-actions-container',
-      title: 'เครื่องมือจัดการคลาส',
-      content: 'สำหรับจัดการคลาส QR Code,UP CSV,ดาวน์โหลด,ลบคลาส',
-      position: 'left'
-    },
-    {
-      target: '.qr-code-button',
-      title: 'สร้าง QR Code',
-      content: 'สร้าง QR Code สำหรับให้นักเรียนสแกนเข้าคลาส',
-      position: 'bottom'
-    },
-    {
-      target: '.upload-file-button',
-      title: 'อัปโหลดไฟล์นักเรียน',
-      content: 'อัปโหลดไฟล์ Excel หรือ CSV ที่มีรายชื่อนักเรียน',
-      position: 'bottom'
-    },
-    {
-      target: '.download-data-button',
-      title: 'ดาวน์โหลดข้อมูล',
-      content: 'ดาวน์โหลดข้อมูลการเข้าเรียนไฟล์ Excel',
-      position: 'bottom'
-    },
-    {
-      target: '.delete-class-button',
-      title: 'ลบคลาส',
-      content: 'ลบคลาสนี้',
-      position: 'bottom'
-    }
-  ];
 
-  const {
-    isActive: isTourActive,
-    currentStep,
-    startTour,
-    stopTour,
-    nextStep,
-    prevStep
-  } = useTourGuide(tourSteps);
 
   useEffect(() => {
     const checkOwnerStatus = async () => {
@@ -212,10 +171,10 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
       } else {
         toast.error(result.message || "เกิดข้อผิดพลาดในการอัปโหลด");
       }
-    } catch (error) {
+    } catch {
+      // ใช้ underscore แทน error เพื่อบอกว่าไม่ได้ใช้งาน
       toast.dismiss(loadingToast);
       toast.error("เกิดข้อผิดพลาดในการอัปโหลดไฟล์");
-      console.error("Upload error:", error);
     }
 
     // รีเซ็ต file input
@@ -265,16 +224,19 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
 
   return (
     <div>
-      <div className="flex gap-x-2">
-        <div className="qr-code-button">
-          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
-            <button onClick={handleCreateQR} className={`cursor-pointer ${isFirstCard ? 'my-class-title' : ''}`}>
-              <QrCode />
-            </button>
-          </motion.div>
-        </div>
+      <div className="flex md:gap-x-2 gap-x-1">
+        {!isLoadingOwner && !isOwner && (
+          <div className="flex md:gap-x-2 gap-x-1">
+            <ButtonGuidViewClassQRSolo />
+            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
+              <button onClick={handleCreateQR} className="cursor-pointer qr-code-button">
+                <QrCode />
+              </button>
+            </motion.div>
+          </div>
+        )}
         {!isLoadingOwner && isOwner && (
-          <div className="flex gap-x-2">
+          <div className="flex md:gap-x-2 gap-x-1">
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
@@ -282,35 +244,34 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
               style={{ display: "none" }}
               onChange={(e) => handleFileUpload(e, classId)}
             />
-            <div className="hidden md:block">
+            <ButtonGuidViewClass />
+            <div>
               <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
-                <button
-                  onClick={startTour}
-                >
-                  <HelpCircle />
+                <button onClick={handleCreateQR} className="cursor-pointer qr-code-button">
+                  <QrCode />
                 </button>
               </motion.div>
             </div>
-            <div className="upload-file-button">
+            <div>
               <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
-                <button onClick={onUploadButtonClick} className="cursor-pointer">
+                <button onClick={onUploadButtonClick} className="upload-file-button cursor-pointer">
                   <FileUp />
                 </button>
               </motion.div>
             </div>
-            <div className="download-data-button">
+            <div>
               <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
-                <button onClick={handleExportClick} className="cursor-pointer">
+                <button onClick={handleExportClick} className="cursor-pointer download-data-button">
                   <Download />
                 </button>
               </motion.div>
             </div>
             {/* ปุ่มลบที่ย้ายมาจากไฟล์เดิม */}
-            <div className="delete-class-button">
+            <div>
               <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
                 <button
                   onClick={handleDeleteClick}
-                  className="cursor-pointer text-red-500 hover:text-red-700"
+                  className="delete-class-button cursor-pointer text-red-500 hover:text-red-700"
                   title="ลบคลาส"
                 >
                   <Trash2 size={24} />
@@ -381,14 +342,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
         user={user}
         onDeleteSuccess={handleDeleteSuccess}
       />
-      <TourGuide
-        steps={tourSteps}
-        isActive={isTourActive}
-        currentStep={currentStep}
-        onNext={nextStep}
-        onPrev={prevStep}
-        onClose={stopTour}
-      />
+
     </div>
   );
 };

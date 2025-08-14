@@ -155,31 +155,30 @@ const MyClassPage = ({ onSelectClass }: MyClassPageProps) => {
 
   return (
     <div>
-      <div>
-        <div className="overflow-scroll md:h-140 h-150 w-auto">
-          <div className="flex flex-col gap-y-4 p-8 md:items-center">
-            {isEntering ? (
-              <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                <Loader />
-              </div>
-            ) : classes.length > 0 ? (
-              classes.map((cls) => (
-                <ClassCard
-                  key={cls.id}
-                  cls={cls}
-                  onSelectClass={handleSelectClass}
-                  onCreateQR={handleCreateQR}
-                />
-              ))
-            ) : (
-              <div className="text-center py-10">
-                <p className="text-gray-500 text-lg">ยังไม่มีคลาส</p>
-                <p className="text-gray-400 text-sm mt-2">เริ่มสร้างคลาสแรกของคุณ</p>
-              </div>
-            )}
-          </div>
+      <div className="overflow-scroll md:h-140 h-150 w-auto">
+        <div className="flex flex-col gap-y-4 p-8 md:items-center">
+          {isEntering ? (
+            <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+              <Loader />
+            </div>
+          ) : classes.length > 0 ? (
+            classes.map((cls) => (
+              <ClassCard
+                key={cls.id}
+                cls={cls}
+                onSelectClass={handleSelectClass}
+                onCreateQR={handleCreateQR}
+              />
+            ))
+          ) : (
+            <div className="text-center py-10">
+              <p className="text-gray-500 text-lg">ยังไม่มีคลาส</p>
+              <p className="text-gray-400 text-sm mt-2">เริ่มสร้างคลาสแรกของคุณ</p>
+            </div>
+          )}
         </div>
       </div>
+
 
       {/* QR Code Modal */}
       <AnimatePresence>

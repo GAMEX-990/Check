@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
-import { ArrowLeft, ChevronDown, Users, BookOpen } from "lucide-react";
+import { ArrowLeft, ChevronDown, Users, BookOpen, MoreVertical } from "lucide-react";
 import {
   ViewClassDetailPageProps,
   CheckedInUser,
@@ -8,10 +9,14 @@ import {
   ClassData
 } from "@/types/classDetailTypes";
 import { AnimatePresence, motion } from "framer-motion";
-import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, where, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import CreateQRCodeAndUpload from "../FromUser/FusionButtonqrup";
+import MobileActionMenu from "../ui/MobileActionMenu";
+import { AlertDialogMobile } from "../TourGuide/Howtousemobile";
+import ImageLightbox from "../TourGuide/HowtoFile";
+
 
 export const ViewClassDetailPage = ({
   classData,
@@ -40,6 +45,10 @@ export const ViewClassDetailPage = ({
   const [showClassDropdown, setShowClassDropdown] = useState(false);
   const [classType, setClassType] = useState<'owned' | 'joined'>('owned'); // เพิ่ม state สำหรับ toggle
 
+  // เพิ่ม state สำหรับ action dropdown ในมือถือ
+  const [showActionDropdown, setShowActionDropdown] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [, setIsLoadingOwner] = useState(true);
 
   useEffect(() => {
     setSelectedClass(classData);
@@ -50,6 +59,27 @@ export const ViewClassDetailPage = ({
       setClassType('joined');
     }
   }, [classData, currentUser?.email]);
+
+  // ตรวจสอบสถานะเจ้าของ
+  useEffect(() => {
+    if (!currentUser || !selectedClass?.id) {
+      setIsOwner(false);
+      setIsLoadingOwner(false);
+      return;
+    }
+
+    const checkOwner = async () => {
+      try {
+        const classSnap = await getDoc(doc(db, "classes", selectedClass.id!));
+        const data = classSnap.data();
+        setIsOwner(data?.owner_email === currentUser.email || data?.created_by === currentUser.uid);
+      } finally {
+        setIsLoadingOwner(false);
+      }
+    };
+
+    checkOwner();
+  }, [currentUser, selectedClass?.id]);
 
   // Fetch My Classes (คลาสที่เป็นเจ้าของ)
   useEffect(() => {
@@ -174,11 +204,11 @@ export const ViewClassDetailPage = ({
 
   return (
     <div>
-      <div className="w-100 md:w-200 h-auto border-2 border-purple-50 rounded-2xl shadow-lg">
+      <div className="w-100 md:w-200 border-2 border-purple-50 rounded-2xl shadow-lg">
         <div className="flex justify-between p-4">
-          <div className="relative">
+          <div>
             {/* หัวเลือกคลาส */}
-            <div className="flex items-center gap-2">
+            <div className="flex">
               <h1
                 className="truncate w-full max-w-[80px] text-base font-semibold md:max-w-full"
                 title={currentClassData.name}
@@ -245,7 +275,7 @@ export const ViewClassDetailPage = ({
           </div>
           {/* -------------------------------------------------------------------------------------------------------------------------------------- */}
 
-          <div className="text-purple-700">
+          <div className="text-purple-700 ">
             {/* แสดงปุ่ม My Classes เฉพาะเมื่ออยู่หน้า Classes */}
             {classType === 'joined' && (
               <button
@@ -269,29 +299,95 @@ export const ViewClassDetailPage = ({
           </div>
 
           {/* ไอค้อน QR อัพโหลด บันทึก ถังขยะ ปุ่มกลับ */}
-          <div className="flex justify-end items-center md:w-40 w-37">
+          <div className="flex justify-end items-center gap-x-2">
             {currectPang === "view" && selectedClass && (
-              <div className="flex text-purple-600 ">
-                <CreateQRCodeAndUpload
-                  classId={selectedClass?.id ?? ""}
-                  user={user ?? null}
-                  classData={{
-                    id: currentClassData.id ?? "",
-                    name: currentClassData.name ?? "",
-                    memberCount: currentClassData.checkedInCount
-                  }}
-                  onDeleteSuccess={() => {
-                    onDeleteSuccess?.();
-                    onBack();
-                  }}
-                />
+              <div>
+                {/* แสดงใน Desktop */}
+                <div className="hidden md:flex text-purple-600 gap-x-2">
+                  <ImageLightbox
+                    triggerText="ตัวอย่างไฟล์"
+                    images={[
+                      "/assets/images/Ex1.png",
+                      "/assets/images/Ex2.png",
+                    ]}
+                  />
+                  <CreateQRCodeAndUpload
+                    classId={selectedClass?.id ?? ""}
+                    user={user ?? null}
+                    classData={{
+                      id: currentClassData.id ?? "",
+                      name: currentClassData.name ?? "",
+                      memberCount: currentClassData.checkedInCount
+                    }}
+                    onDeleteSuccess={() => {
+                      onDeleteSuccess?.();
+                      onBack();
+                    }}
+                  />
+                </div>
+
+                {/* แสดงใน Mobile */}
+                <div className="flex justify-center items-center relative md:hidden">
+                  <div className="text-purple-600 hover:text-purple-800 p-1 rounded-lg hover:bg-purple-50 transition-colors">
+                    <AlertDialogMobile />
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => setShowActionDropdown(!showActionDropdown)}
+                      className="text-purple-600 hover:text-purple-800 p-1 rounded-lg hover:bg-purple-50 transition-colors"
+                      title="เมนูเพิ่มเติม"
+                    >
+                      <MoreVertical size={20} />
+                    </button>
+                  </div>
+
+                  <AnimatePresence>
+                    {showActionDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-2 bg-white border border-purple-200 rounded-xl shadow-lg z-50 min-w-[200px]"
+                      >
+                        <div className="py-2">
+                          <div className="px-3 py-1 text-xs font-medium text-purple-500 uppercase tracking-wide border-b border-purple-100">
+                            การจัดการคลาส
+                          </div>
+                          <div className="px-2 py-2">
+                            <MobileActionMenu
+                              classId={selectedClass?.id ?? ""}
+                              user={user ?? null}
+                              classData={{
+                                id: currentClassData.id ?? "",
+                                name: currentClassData.name ?? "",
+                                memberCount: currentClassData.checkedInCount
+                              }}
+                              isOwner={isOwner}
+                              onDeleteSuccess={() => {
+                                setShowActionDropdown(false);
+                                onDeleteSuccess?.();
+                                onBack();
+                              }}
+                              onActionStart={() => setShowActionDropdown(false)}
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             )}
-            <div>
-              <button className="text-purple-600" onClick={onBack}>
-                <ArrowLeft size={28} />
-              </button>
-            </div>
+
+            {/* ปุ่มกลับ */}
+            <button
+              className="text-purple-600 hover:text-purple-800 p-1 rounded-lg hover:bg-purple-50 transition-colors"
+              onClick={onBack}
+              title="กลับ"
+            >
+              <ArrowLeft size={24} />
+            </button>
           </div>
         </div>
       </div>

@@ -34,6 +34,12 @@ const TourGuide: React.FC<TourGuideProps> = ({
           left: rect.left + rect.width / 2 - tooltipWidth / 2,
         };
         break;
+      case 'center':
+        calculatedPosition = {
+          top: (window.innerHeight - tooltipHeight) / 2,
+          left: (window.innerWidth - tooltipWidth) / 2
+        };
+        break;
       case 'bottom':
         calculatedPosition = {
           top: rect.bottom + padding,
@@ -89,7 +95,7 @@ const TourGuide: React.FC<TourGuideProps> = ({
     const element = document.querySelector(targetId);
     if (element) {
       element.classList.add('tour-highlight');
-      
+
       // scroll ไป element ถ้าจำเป็น
       element.scrollIntoView({
         behavior: 'smooth',
@@ -104,7 +110,7 @@ const TourGuide: React.FC<TourGuideProps> = ({
     if (isActive && steps[currentStep]) {
       const currentStepData = steps[currentStep];
       highlightElement(currentStepData.target);
-      
+
       // รอ element render เสร็จก่อนคำนวณตำแหน่ง
       setTimeout(() => {
         const position = calculateTooltipPosition(
@@ -157,18 +163,14 @@ const TourGuide: React.FC<TourGuideProps> = ({
         .tour-highlight {
           position: relative !important;
           z-index: 1001 !important;
-          box-shadow: 0 0 0 4px #3b82f6, 0 0 0 8px rgba(59, 130, 246, 0.3) !important;
+          box-shadow: 0 0 0 2px #fafafa, 0 0 0  !important;
           border-radius: 8px !important;
           transition: all 0.3s ease !important;
-        }
-        
-        .tour-overlay {
-          backdrop-filter: blur(2px);
         }
       `}</style>
 
       {/* Dark Overlay */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 tour-overlay z-[1000] transition-opacity duration-300"
         onClick={onClose}
       />
@@ -201,13 +203,8 @@ const TourGuide: React.FC<TourGuideProps> = ({
         <p className="text-gray-600 flex text-center py-2">
           {currentStepData.content}
         </p>
-
         {/* Progress */}
-        <div className="mb-6">
-          <div className="flex justify-between text-sm text-gray-500 mb-2">
-            <span>ขั้นตอน {currentStep + 1} จาก {steps.length}</span>
-           
-          </div>
+        <div className="mb-4">
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-purple-500 h-2 rounded-full transition-all duration-300"

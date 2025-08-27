@@ -1,0 +1,1 @@
+export const LATE_THRESHOLD_MINUTES = 15;

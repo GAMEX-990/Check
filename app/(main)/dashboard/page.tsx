@@ -9,9 +9,9 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { getFingerprint } from '@/utils/getFingerprint';
 import { ClassData } from '@/types/classDetailTypes';
-import AttendanceSummaryModal from '@/components/UserInterface/AttenSummary';
 import ClassSection from '@/components/UserInterface/ClassSection';
 import Loader from '@/components/Loader/Loader';
+import AttendanceSummaryModal from '@/components/AttendanceSummary/AttendanceSummaryModal';
 
 export default function DashboardPage() {
   const [currectPang, setCurrectPang] = useState<'myclass' | 'class' | 'view'>('myclass');

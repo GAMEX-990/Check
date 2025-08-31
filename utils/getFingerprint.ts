@@ -18,10 +18,6 @@ const DEVICE_ID_TTL_HOURS = 4; // 4 ชั่วโมง
 const LATE_THRESHOLD_MINUTES = 15; // สายหลัง 15 นาที
 const ABSENT_THRESHOLD_HOURS = 3; // ขาดหลัง 3 ชั่วโมง
 
-// ==============================================
-// CORE FINGERPRINT FUNCTIONS
-// ==============================================
-
 // สร้าง Fingerprint ของอุปกรณ์ (หลัก - ใช้ FingerprintJS)
 export const getFingerprint = async (): Promise<string> => {
   try {
@@ -87,9 +83,6 @@ export const getCurrentFingerprint = async (): Promise<string> => {
   return fingerprint;
 };
 
-// ==============================================
-// SESSION MANAGEMENT FUNCTIONS
-// ==============================================
 
 // ฟังก์ชันหลัก: บันทึก deviceId สำหรับ session ใหม่
 export const saveDeviceIdForSession = async (
@@ -140,6 +133,22 @@ export const checkDeviceBeforeCheckIn = async (
     };
   }
 
+  // ดึงค่า lateThresholdMinutes ต่อคลาส (fallback เป็นค่าดีฟอลต์ 15)
+  let lateThresholdMinutesFromClass = LATE_THRESHOLD_MINUTES;
+  try {
+    const classRef = doc(db, 'classes', classId);
+    const classSnap = await getDoc(classRef);
+    if (classSnap.exists()) {
+      const classData = classSnap.data() as any;
+      if (typeof classData?.lateThresholdMinutes === 'number') {
+        lateThresholdMinutesFromClass = classData.lateThresholdMinutes;
+      }
+    }
+  } catch {
+    // ถ้าดึงไม่ได้ ใช้ค่าดีฟอลต์
+    lateThresholdMinutesFromClass = LATE_THRESHOLD_MINUTES;
+  }
+
   const deviceRef = doc(db, 'deviceIds', `${deviceId}_${classId}`);
   const snap = await getDoc(deviceRef);
 
@@ -178,13 +187,13 @@ export const checkDeviceBeforeCheckIn = async (
     };
   }
 
-  // ถ้า email ตรงกัน - เช็คสถานะตามเวลา
+  // ถ้า email ตรงกัน - เช็คสถานะตามเวลา (ใช้ lateThresholdMinutes ของคลาส)
   if (sessionStartTime) {
     const sessionStart = sessionStartTime.toMillis();
     const currentTime = now.toMillis();
     const timeDiff = currentTime - sessionStart;
 
-    const lateThreshold = LATE_THRESHOLD_MINUTES * 60 * 1000;
+    const lateThreshold = lateThresholdMinutesFromClass * 60 * 1000;
     const absentThreshold = ABSENT_THRESHOLD_HOURS * 60 * 60 * 1000;
 
     if (timeDiff > absentThreshold) {
@@ -197,7 +206,7 @@ export const checkDeviceBeforeCheckIn = async (
       return {
         canCheckIn: true,
         status: 'late',
-        message: 'เข้ามาหลังจากเวลาเริ่ม 15 นาที → ถือว่าสาย'
+        message: `เข้ามาหลังจากเวลาเริ่ม ${lateThresholdMinutesFromClass} นาที → ถือว่าสาย`
       };
     } else {
       return {
@@ -215,9 +224,7 @@ export const checkDeviceBeforeCheckIn = async (
   };
 };
 
-// ==============================================
-// LOGIN DEVICE MANAGEMENT FUNCTIONS
-// ==============================================
+
 
 // Save and cleanup device ID after successful login
 // ใช้ระบบ deviceIds เดียวกันกับ session management
@@ -273,10 +280,6 @@ export const isDeviceRegistered = async (email: string, fingerprint?: string): P
     return false;
   }
 };
-
-// ==============================================
-// CLEANUP FUNCTIONS
-// ==============================================
 
 // ฟังก์ชันลบ deviceId ที่หมดอายุ
 export const cleanupExpiredDeviceIds = async (): Promise<void> => {
@@ -360,9 +363,6 @@ export const formatRemainingTime = (remainingTimeMs: number): string => {
   }
 };
 
-// ==============================================
-// SESSION WORKFLOW FUNCTIONS
-// ==============================================
 
 // ฟังก์ชันสำหรับการเริ่ม session ใหม่ (เรียกเมื่อคนแรกเข้ามา)
 export const startNewSession = async (

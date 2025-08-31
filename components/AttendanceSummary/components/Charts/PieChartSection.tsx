@@ -6,12 +6,14 @@ interface PieChartSectionProps {
   pieData: PieChartData[];
 }
 
-// ===== PIE CHART SECTION COMPONENT =====
 export const PieChartSection = ({ pieData }: PieChartSectionProps) => {
+  const total = pieData.reduce((s, x) => s + x.value, 0);
+  const pieKey = `${total}-${pieData.map(d => `${d.name}:${d.value}`).join('|')}`;
+
   return (
     <div className="p-4 bg-white rounded-lg border">
       <ResponsiveContainer width="100%" height={250}>
-        <PieChart>
+        <PieChart key={pieKey}>
           <Pie
             data={pieData}
             cx="50%"
@@ -22,7 +24,7 @@ export const PieChartSection = ({ pieData }: PieChartSectionProps) => {
             dataKey="value"
           >
             {pieData.map((entry, i) => (
-              <Cell key={i} fill={entry.color} />
+              <Cell key={`${entry.name}-${i}`} fill={entry.color} />
             ))}
           </Pie>
           <Tooltip content={<CustomPieTooltip />} />

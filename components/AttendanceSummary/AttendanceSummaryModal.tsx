@@ -17,11 +17,11 @@ import { PieChartSection } from './components/Charts/PieChartSection';
 import { BarChartSection } from './components/Charts/BarChartSection';
 
 // Import types
-import type { 
-  Props, 
-  FilterType, 
-  PieChartData, 
-  BarChartData 
+import type {
+  Props,
+  FilterType,
+  PieChartData,
+  BarChartData
 } from './types';
 
 // ===== MAIN COMPONENT =====
@@ -38,14 +38,14 @@ const AttendanceSummaryModal = ({ classData, isOwner = true }: Props) => {
   // Custom hooks
   const { allStudents, isLoading } = useStudentsData(classData.id);
   const { attendanceWithLateStatus, totalClassDays, availableDates } = useAttendanceData(
-    classData.id, 
-    allStudents, 
+    classData.id,
+    allStudents,
     currentUser?.uid,
     isOwner
   );
   const dailyAttendanceData = useDailyAttendanceData(
-    classData.id, 
-    selectedDate, 
+    classData.id,
+    selectedDate,
     allStudents,
     currentUser?.uid,
     isOwner
@@ -56,14 +56,23 @@ const AttendanceSummaryModal = ({ classData, isOwner = true }: Props) => {
     () => viewMode === 'daily' && !!selectedDate && !!dailyAttendanceData,
     [viewMode, selectedDate, dailyAttendanceData]
   );
-  
+
+  const latestDate = useMemo(
+    () => availableDates[0] ?? new Date().toISOString().slice(0, 10),
+    [availableDates]
+  );
+  const dateKeyForEdit = useMemo(
+    () => (isViewingDaily && selectedDate ? selectedDate : latestDate),
+    [isViewingDaily, selectedDate, latestDate]
+  );
+
   const summaryStats = useMemo(() => {
     const totalStudents = attendanceWithLateStatus.length;
     const studentsWithAttendance = attendanceWithLateStatus.filter((s) => s.count > 0).length;
     const totalAbsent = totalStudents - studentsWithAttendance;
     const totalOnTimeSummary = attendanceWithLateStatus.reduce((sum, s) => sum + s.onTimeCount, 0);
     const totalLateSummary = attendanceWithLateStatus.reduce((sum, s) => sum + s.lateCount, 0);
-    
+
     return { totalStudents, totalAbsent, totalOnTimeSummary, totalLateSummary };
   }, [attendanceWithLateStatus]);
 
@@ -75,7 +84,7 @@ const AttendanceSummaryModal = ({ classData, isOwner = true }: Props) => {
         totalAbsent: (dailyAttendanceData?.totalStudents || 0) - (dailyAttendanceData?.attendanceCount || 0)
       };
     }
-    
+
     return {
       totalOnTime: summaryStats.totalOnTimeSummary,
       totalLate: summaryStats.totalLateSummary,
@@ -104,10 +113,10 @@ const AttendanceSummaryModal = ({ classData, isOwner = true }: Props) => {
         }))
         .sort((a, b) => {
           const aTime = dailyAttendanceData.onTimeStudents.find(s => s.studentId === a.studentId)?.lastAttendance ||
-                        dailyAttendanceData.lateStudents.find(s => s.studentId === a.studentId)?.lastAttendance;
+            dailyAttendanceData.lateStudents.find(s => s.studentId === a.studentId)?.lastAttendance;
           const bTime = dailyAttendanceData.onTimeStudents.find(s => s.studentId === b.studentId)?.lastAttendance ||
-                        dailyAttendanceData.lateStudents.find(s => s.studentId === b.studentId)?.lastAttendance;
-          
+            dailyAttendanceData.lateStudents.find(s => s.studentId === b.studentId)?.lastAttendance;
+
           if (!aTime || !bTime) return 0;
           return new Date(aTime).getTime() - new Date(bTime).getTime();
         });
@@ -161,18 +170,18 @@ const AttendanceSummaryModal = ({ classData, isOwner = true }: Props) => {
 
   return (
     <div className="md:w-200 w-100 h-auto border-2 border-purple-50 rounded-2xl shadow-lg p-4">
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }} 
-        animate={{ opacity: 1, y: 0 }} 
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        
+
         {/* Header with mode toggle */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-purple-800">
             {isViewingDaily ? `${selectedDate}` : 'สรุปเข้าเรียน'}
           </h2>
-          
+
           <ViewModeToggle
             viewMode={viewMode}
             setViewMode={setViewMode}
@@ -198,10 +207,13 @@ const AttendanceSummaryModal = ({ classData, isOwner = true }: Props) => {
         {/* Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Pie Chart */}
-          <PieChartSection pieData={pieData} />
+          <PieChartSection
+            key={`pie-${displayStats.totalOnTime}-${displayStats.totalLate}-${displayStats.totalAbsent}`}
+            pieData={pieData} />
 
           {/* Bar Chart */}
           <BarChartSection
+            key={`bar-${barData.map(d => `${d.studentId}:${d.onTime}-${d.late}`).join('|')}`}
             barData={barData}
             isViewingDaily={isViewingDaily}
             filterType={filterType}
@@ -215,6 +227,9 @@ const AttendanceSummaryModal = ({ classData, isOwner = true }: Props) => {
           dailyAttendanceData={dailyAttendanceData}
           attendanceWithLateStatus={attendanceWithLateStatus}
           totalClassDays={totalClassDays}
+          isOwner={isOwner}  
+          classId={classData.id}        // ✅ ส่งไป
+          dateKey={dateKeyForEdit}
         />
 
       </motion.div>

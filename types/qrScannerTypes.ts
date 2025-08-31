@@ -23,6 +23,7 @@ export interface StudentData {
 }
 
 export interface ClassData {
+  createdAt?: number;
   checkedInMembers?: string[];
   checkedInRecord?: Record<string, {
     uid: string;

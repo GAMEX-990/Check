@@ -11,16 +11,18 @@ interface BarChartSectionProps {
   onFilterChange?: (filter: FilterType) => void;
 }
 
-// ===== BAR CHART SECTION COMPONENT =====
-export const BarChartSection = ({ 
-  barData, 
-  isViewingDaily, 
-  filterType, 
-  onFilterChange 
+export const BarChartSection = ({
+  barData,
+  isViewingDaily,
+  filterType,
+  onFilterChange
 }: BarChartSectionProps) => {
+  const sumOnTime = barData.reduce((s, x) => s + (x.onTime || 0), 0);
+  const sumLate = barData.reduce((s, x) => s + (x.late || 0), 0);
+  const barKey = `${sumOnTime}-${sumLate}-${barData.length}`;
+
   return (
     <div className="p-4 bg-white rounded-lg border relative">
-      {/* Filter dropdown - แสดงเฉพาะใน summary mode */}
       {!isViewingDaily && filterType && onFilterChange && (
         <div className="absolute top-2 right-2 z-10">
           <div className="relative">
@@ -37,7 +39,7 @@ export const BarChartSection = ({
       <div className={isViewingDaily ? "pt-4" : "pt-8"}>
         {barData.length > 0 ? (
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={barData}>
+            <BarChart key={barKey} data={barData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
               <YAxis />

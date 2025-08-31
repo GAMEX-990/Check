@@ -1,63 +1,86 @@
-import { LATE_THRESHOLD_MINUTES } from './constants';
-import { convertTimestampToDate } from './dateHelpers';
+// components/AttendanceSummary/utils/dataProcessing.ts
+import { LATE_THRESHOLD_MINUTES } from "./constants";
+import { convertTimestampToDate } from "./dateHelpers";
 import type {
   DailyCheckedInRecord,
-  AttendanceRecord,
+  DailyCheckedInUser,
   ProcessedAttendanceData,
   Student,
   StudentAttendanceWithStatus,
-  DailyAttendanceData
-} from '../types';
+  DailyAttendanceData,
+} from "../types";
 
-// ===== DATA PROCESSING FUNCTIONS =====
+type Status = "present" | "late";
+
+const normalizeId = (id: unknown): string =>
+  String(id ?? "").trim().replace(/\s+/g, "");
+
+const normalizeStatus = (s: unknown): Status | undefined => {
+  if (typeof s !== "string") return undefined;
+  const v = s.toLowerCase().trim();
+  if (v.includes("late")) return "late";
+  if (v.includes("present")) return "present";
+  return undefined;
+};
+
+type AttendanceRecordWithStatus = DailyCheckedInUser;
+
 export const processAttendanceData = (
-  dailyCheckedInRecord: DailyCheckedInRecord, 
-  currentUserId?: string, 
-  isOwner: boolean = true
+  dailyCheckedInRecord: DailyCheckedInRecord,
+  currentUserId?: string,
+  isOwner: boolean = true,
+  lateThresholdMinutesFromClass?: number
 ) => {
   const studentAttendanceMap = new Map<string, ProcessedAttendanceData>();
 
   Object.keys(dailyCheckedInRecord).forEach((dateKey) => {
-    const dayRecord = dailyCheckedInRecord[dateKey];
+    const dayRecord: Record<string, AttendanceRecordWithStatus> =
+      dailyCheckedInRecord[dateKey];
+
     const timestamps = Object.values(dayRecord)
-      .map((record) => convertTimestampToDate(record.timestamp))
+      .map((r) => convertTimestampToDate(r.timestamp))
       .filter(Boolean) as Date[];
 
     if (timestamps.length === 0) return;
 
-    const earliestTime = new Date(Math.min(...timestamps.map((t) => t.getTime())));
-    const lateCutoff = new Date(earliestTime.getTime() + LATE_THRESHOLD_MINUTES * 60 * 1000);
+    const earliest = new Date(Math.min(...timestamps.map((t) => t.getTime())));
+    const threshold =
+      typeof lateThresholdMinutesFromClass === "number"
+        ? lateThresholdMinutesFromClass
+        : LATE_THRESHOLD_MINUTES;
+    const lateCutoff = new Date(earliest.getTime() + threshold * 60 * 1000);
 
     Object.values(dayRecord).forEach((record) => {
-      // ถ้าไม่ใช่เจ้าของคลาส ให้แสดงเฉพาะข้อมูลของตัวเอง
-      if (!isOwner && record.uid !== currentUserId) {
-        return; // ข้ามไปถ้าไม่ใช่ข้อมูลของตัวเอง
-      }
+      if (!isOwner && record.uid !== currentUserId) return;
 
-      const checkInTime = convertTimestampToDate(record.timestamp);
-      if (!checkInTime) return;
+      const t = convertTimestampToDate(record.timestamp);
+      if (!t) return;
 
-      const studentId = record.studentId;
-      const isLate = checkInTime.getTime() > lateCutoff.getTime();
+      const statusNorm = normalizeStatus(record.status);
+      const isLateByRecord = record?.isLate === true || statusNorm === "late";
+      const isLateByTime = t.getTime() > lateCutoff.getTime();
+      const isLate =
+        typeof record?.isLate !== "undefined" ||
+        typeof record?.status === "string"
+          ? isLateByRecord
+          : isLateByTime;
 
-      if (!studentAttendanceMap.has(studentId)) {
-        studentAttendanceMap.set(studentId, {
+      const key = normalizeId(record.studentId);
+      const agg =
+        studentAttendanceMap.get(key) ?? {
           onTime: 0,
           late: 0,
           total: 0,
-          lastTimestamp: null,
+          lastTimestamp: null as Date | null,
           email: record.email || "",
-        });
-      }
+        };
 
-      const studentData = studentAttendanceMap.get(studentId)!;
-      if (isLate) studentData.late++;
-      else studentData.onTime++;
-      studentData.total++;
+      if (isLate) agg.late++;
+      else agg.onTime++;
+      agg.total++;
+      if (!agg.lastTimestamp || t > agg.lastTimestamp) agg.lastTimestamp = t;
 
-      if (!studentData.lastTimestamp || checkInTime > studentData.lastTimestamp) {
-        studentData.lastTimestamp = checkInTime;
-      }
+      studentAttendanceMap.set(key, agg);
     });
   });
 
@@ -65,34 +88,45 @@ export const processAttendanceData = (
 };
 
 export const mergeStudentsWithAttendance = (
-  allStudents: Student[], 
+  allStudents: Student[],   // ⬅️ ต้องเป็น array
   attendanceMap: Map<string, ProcessedAttendanceData>
 ): StudentAttendanceWithStatus[] => {
   return allStudents.map((student) => {
-    const att = attendanceMap.get(student.studentId);
+    const key = normalizeId(student.studentId);
+    const att = attendanceMap.get(key);
+
+    // derive สถานะจากสรุปของคน ๆ นั้น (optional)
+    const statusValue: Status | undefined =
+      att ? (att.late > 0 ? "late" : "present") : undefined;
+
     return {
       uid: student.id,
       name: student.name,
       studentId: student.studentId,
-      email: att?.email || "",
-      count: att?.total || 0,
-      lateCount: att?.late || 0,
-      onTimeCount: att?.onTime || 0,
-      lastAttendance: att?.lastTimestamp ? att.lastTimestamp.toISOString() : null,
-      status: student.status,
+      email: att?.email ?? "",
+      count: att?.total ?? 0,
+      lateCount: att?.late ?? 0,
+      onTimeCount: att?.onTime ?? 0,
+      lastAttendance: att?.lastTimestamp
+        ? att.lastTimestamp.toISOString()
+        : null,
+      status: statusValue, // ⬅️ ตรง type แล้ว
     };
   });
 };
 
+
+
 export const processDailyAttendance = (
-  dayRecord: Record<string, AttendanceRecord>, 
-  selectedDate: string, 
+  dayRecord: Record<string, AttendanceRecordWithStatus>,
+  selectedDate: string,
   totalStudents: number,
   currentUserId?: string,
-  isOwner: boolean = true
+  isOwner: boolean = true,
+  lateThresholdMinutesFromClass?: number
 ): DailyAttendanceData => {
   const timestamps = Object.values(dayRecord)
-    .map((record) => convertTimestampToDate(record.timestamp))
+    .map((r) => convertTimestampToDate(r.timestamp))
     .filter(Boolean) as Date[];
 
   if (timestamps.length === 0) {
@@ -101,57 +135,65 @@ export const processDailyAttendance = (
       onTimeStudents: [],
       lateStudents: [],
       totalStudents,
-      attendanceCount: 0
+      attendanceCount: 0,
     };
   }
 
-  const earliestTime = new Date(Math.min(...timestamps.map((t) => t.getTime())));
-  const lateCutoff = new Date(earliestTime.getTime() + LATE_THRESHOLD_MINUTES * 60 * 1000);
+  const earliest = new Date(Math.min(...timestamps.map((t) => t.getTime())));
+  const threshold =
+    typeof lateThresholdMinutesFromClass === "number"
+      ? lateThresholdMinutesFromClass
+      : LATE_THRESHOLD_MINUTES;
+  const lateCutoff = new Date(earliest.getTime() + threshold * 60 * 1000);
 
   const onTimeStudents: StudentAttendanceWithStatus[] = [];
   const lateStudents: StudentAttendanceWithStatus[] = [];
 
   Object.values(dayRecord).forEach((record) => {
-    // ถ้าไม่ใช่เจ้าของคลาส ให้แสดงเฉพาะข้อมูลของตัวเอง
-    if (!isOwner && record.uid !== currentUserId) {
-      return;
-    }
+    if (!isOwner && record.uid !== currentUserId) return;
 
-    const checkInTime = convertTimestampToDate(record.timestamp);
-    if (!checkInTime) return;
+    const t = convertTimestampToDate(record.timestamp);
+    if (!t) return;
 
-    const isLate = checkInTime.getTime() > lateCutoff.getTime();
-    const student: StudentAttendanceWithStatus = {
-      uid: record.uid || '',
+    const statusNorm = normalizeStatus(record.status);
+    const isLateByRecord = record?.isLate === true || statusNorm === "late";
+    const isLateByTime = t.getTime() > lateCutoff.getTime();
+    const isLate =
+      typeof record?.isLate !== "undefined" ||
+      typeof record?.status === "string"
+        ? isLateByRecord
+        : isLateByTime;
+
+    const s: StudentAttendanceWithStatus = {
+      uid: record.uid || "",
       name: record.name,
       studentId: record.studentId,
-      email: record.email || '',
+      email: record.email || "",
       count: 1,
       lateCount: isLate ? 1 : 0,
       onTimeCount: isLate ? 0 : 1,
-      lastAttendance: checkInTime.toISOString(),
-      status: 'active'
+      lastAttendance: t.toISOString(),
+      status: isLate ? "late" : "present",
     };
 
-    if (isLate) {
-      lateStudents.push(student);
-    } else {
-      onTimeStudents.push(student);
-    }
+    (isLate ? lateStudents : onTimeStudents).push(s);
   });
 
-  // Sort by check-in time
-  const sortByTime = (a: StudentAttendanceWithStatus, b: StudentAttendanceWithStatus) =>
-    new Date(a.lastAttendance!).getTime() - new Date(b.lastAttendance!).getTime();
+  const byTime = (
+    a: StudentAttendanceWithStatus,
+    b: StudentAttendanceWithStatus
+  ) =>
+    new Date(a.lastAttendance!).getTime() -
+    new Date(b.lastAttendance!).getTime();
 
-  onTimeStudents.sort(sortByTime);
-  lateStudents.sort(sortByTime);
+  onTimeStudents.sort(byTime);
+  lateStudents.sort(byTime);
 
   return {
     date: selectedDate,
     onTimeStudents,
     lateStudents,
-    totalStudents: isOwner ? totalStudents : 1, // ถ้าไม่ใช่เจ้าของ totalStudents = 1
-    attendanceCount: onTimeStudents.length + lateStudents.length
+    totalStudents: isOwner ? totalStudents : 1,
+    attendanceCount: onTimeStudents.length + lateStudents.length,
   };
 };

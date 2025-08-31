@@ -3,6 +3,7 @@ import { ClassData } from "./DeleteClassTypes";
 
 // กหนด props สำหรับ component
 export interface CreateQRCodeAndUploadProps {
+    cls: ClassData;
     classId: string; // ID ของคลาสเรียน
     user: User | null; 
     classData: ClassData;

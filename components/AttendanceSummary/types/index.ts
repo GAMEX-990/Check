@@ -1,7 +1,8 @@
 import type { 
     BarChartData, 
     BarTooltipProps, 
-    DailyCheckedInRecord, 
+    DailyCheckedInRecord,
+    DailyCheckedInUser,
     FilterType, 
     FirestoreTimestamp, 
     PieChartData, 
@@ -53,6 +54,9 @@ import type {
     dailyAttendanceData: DailyAttendanceData | null;
     attendanceWithLateStatus: StudentAttendanceWithStatus[];
     totalClassDays: number;
+    isOwner: boolean;
+    classId: string;
+    dateKey: string;
   }
   
   export interface ViewModeToggleProps {
@@ -70,6 +74,9 @@ import type {
   export interface SummaryStudentListProps {
     attendanceWithLateStatus: StudentAttendanceWithStatus[];
     totalClassDays: number;
+    classId: string;      // ✅ เพิ่ม
+    dateKey: string; 
+    isOwner: boolean; 
   }
   
   // Re-export original types
@@ -77,6 +84,7 @@ import type {
     BarChartData,
     BarTooltipProps,
     DailyCheckedInRecord,
+    DailyCheckedInUser,
     FilterType,
     FirestoreTimestamp,
     PieChartData,

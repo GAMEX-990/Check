@@ -2,22 +2,28 @@
 import { db } from "@/lib/firebase";
 import { CreateQRCodeAndUploadProps } from "@/types/Fusionqrup";
 import { handleExportXLSX } from "@/utils/exportXLSXHandler";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { Download, FileUp, Loader, QrCode, X, Trash2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 import DeleteClassModal from "../UserInterface/DeleteClassModal";
+import { ClassData } from "@/types/classDetailTypes";
 import { uploadStudentsFromFile } from "@/utils/parseCSVFile";
-import ButtonGuidViewClass from "../TourGuide/ButtonGuidViewClass";
-import ButtonGuidViewClassQRSolo from "../TourGuide/ButtonGuidViewClassQRSolo";
+import { AlertDialogMobile } from "../TourGuide/Howtousemobile";
+import LateThresholdDropdown from "../ui/LateThresholdDropdown";
+
+interface ClassDataWithLate extends ClassData {
+  lateThresholdMinutes?: number;
+}
 
 const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
   classId,
   user,
   classData,
   onDeleteSuccess,
+  cls,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [qrCode, setQrCode] = useState<string | null>(null);
@@ -26,8 +32,42 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
   const [isLoadingOwner, setIsLoadingOwner] = useState(true);
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const initialThreshold = 15; // Define initial threshold
+  const [lateThreshold, setLateThreshold] = useState<number>(initialThreshold);
 
+  // เปลี่ยนจาก useMemo เป็น useEffect เพื่อให้อัพเดทตามการเปลี่ยนแปลงของ cls
+  useEffect(() => {
+    if (!cls) return;
 
+    const data = cls as ClassDataWithLate;
+    const newThreshold = typeof data.lateThresholdMinutes === 'number' ? data.lateThresholdMinutes : 15;
+    setLateThreshold(newThreshold);
+  }, [cls]); // เปลี่ยนเป็น cls.lateThresholdMinutes เพื่อให้ sync กัน
+
+  // เพิ่ม useEffect เพื่อ listen การเปลี่ยนแปลงจาก Firebase
+  useEffect(() => {
+    if (!classId) return;
+
+    const classRef = doc(db, "classes", classId);
+
+    // Listen การเปลี่ยนแปลงแบบ real-time
+    const unsubscribe = onSnapshot(classRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data() as ClassDataWithLate;
+        if (typeof data.lateThresholdMinutes === 'number') {
+          setLateThreshold(data.lateThresholdMinutes);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [classId]);
+
+  const handleChangeThreshold = async (val: number) => {
+    setLateThreshold(val);
+    const classRef = doc(db, "classes", classId);
+    await updateDoc(classRef, { lateThresholdMinutes: val });
+  };
 
   useEffect(() => {
     const checkOwnerStatus = async () => {
@@ -227,7 +267,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
       <div className="flex md:gap-x-2 gap-x-1">
         {!isLoadingOwner && !isOwner && (
           <div className="flex md:gap-x-2 gap-x-1">
-            <ButtonGuidViewClassQRSolo />
+            <AlertDialogMobile />
             <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
               <button onClick={handleCreateQR} className="cursor-pointer qr-code-button">
                 <QrCode />
@@ -236,7 +276,7 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
           </div>
         )}
         {!isLoadingOwner && isOwner && (
-          <div className="flex md:gap-x-2 gap-x-1">
+          <div className="flex md:gap-x-2 gap-x-1 items-center">
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
@@ -244,7 +284,9 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
               style={{ display: "none" }}
               onChange={(e) => handleFileUpload(e, classId)}
             />
-            <ButtonGuidViewClass />
+            <div>
+              <AlertDialogMobile />
+            </div>
             <div>
               <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
                 <button onClick={handleCreateQR} className="cursor-pointer qr-code-button">
@@ -265,6 +307,12 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
                   <Download />
                 </button>
               </motion.div>
+            </div>
+            <div>
+              <LateThresholdDropdown
+                value={lateThreshold}
+                onChange={handleChangeThreshold}
+              />
             </div>
             {/* ปุ่มลบที่ย้ายมาจากไฟล์เดิม */}
             <div>
@@ -331,9 +379,9 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
         isOpen={showDeleteModal}
         onClose={handleCloseDeleteModal}
         classData={classData ? {
-          id: classData.id,
-          name: classData.name,
-          memberCount: classData.memberCount
+          id: classData.id || classId, // fallback ไปใช้ classId ถ้าไม่มี id
+          name: classData.name || "Unknown Class",
+          memberCount: classData.memberCount || 0
         } : {
           id: classId,
           name: "Unknown Class",

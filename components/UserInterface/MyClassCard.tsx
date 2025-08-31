@@ -2,6 +2,10 @@ import { motion } from "framer-motion";
 import { QrCode } from "lucide-react";
 import { ClassData } from "@/types/classDetailTypes";
 import { useClassSummary } from "@/hook/useClassSummary";
+import React, { useState, useMemo } from "react";
+import LateThresholdDropdown from "@/components/ui/LateThresholdDropdown";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface MyClassCardProps {
     cls: ClassData;
@@ -9,11 +13,29 @@ interface MyClassCardProps {
     onCreateQR: (e: React.MouseEvent, classData: ClassData) => void;
 }
 
+// ขยาย type ชั่วคราวเพื่อเพิ่ม field lateThresholdMinutes แบบ optional
+interface ClassDataWithLate extends ClassData {
+    lateThresholdMinutes?: number;
+}
+
 const MyClassCard = ({ cls, onSelectClass, onCreateQR }: MyClassCardProps) => {
     // ใช้ useClassSummary สำหรับแต่ละคลาส
     const {
         totalStudents,
     } = useClassSummary(cls.id, true);
+
+    const initialThreshold = useMemo(() => {
+        const data = cls as ClassDataWithLate;
+        return typeof data.lateThresholdMinutes === 'number' ? data.lateThresholdMinutes : 15;
+    }, [cls]);
+
+    const [lateThreshold, setLateThreshold] = useState<number>(initialThreshold);
+
+    const handleChangeThreshold = async (val: number) => {
+        setLateThreshold(val);
+        const classRef = doc(db, "classes", cls.id);
+        await updateDoc(classRef, { lateThresholdMinutes: val });
+    };
 
     return (
         <motion.div
@@ -30,7 +52,14 @@ const MyClassCard = ({ cls, onSelectClass, onCreateQR }: MyClassCardProps) => {
                     <p className="text-sm text-purple-600">
                         จำนวนนักเรียน {totalStudents} คน
                     </p>
+                    <div>
+                        <LateThresholdDropdown
+                            value={lateThreshold}
+                            onChange={handleChangeThreshold}
+                        />
+                    </div>
                 </div>
+                <div className="flex">
                     <div
                         className="bg-purple-500 text-white text-4xl font-bold w-12 h-12 flex justify-center items-center rounded-full shadow-lg hover:bg-purple-600 transition-colors"
                         onClick={(e) => onCreateQR(e, cls)}
@@ -38,6 +67,7 @@ const MyClassCard = ({ cls, onSelectClass, onCreateQR }: MyClassCardProps) => {
                         <QrCode size={24} />
                     </div>
                 </div>
+            </div>
         </motion.div>
     );
 };

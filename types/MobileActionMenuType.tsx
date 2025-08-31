@@ -1,6 +1,7 @@
 import { ClassData } from "./DeleteClassTypes";
 
 export interface MobileActionMenuProps {
+    cls: ClassData;
     classId: string;
     user: any;
     classData: ClassData;

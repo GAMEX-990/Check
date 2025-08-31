@@ -162,7 +162,7 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center ">
               <Loader />
             </div>
-          ) : (
+          ) : joinedClasses.length > 0 ? (
             <>
               {user && joinedClasses.map((cls) => (
                 <ClassCard
@@ -179,6 +179,13 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
                 />
               ))}
             </>
+          ) : (
+            <div className="text-center py-10">
+              <p className="text-gray-500 text-lg">ยังไม่มีคลาส</p>
+              <p className="text-gray-400 text-sm mt-2">
+                สแกน QR เพื่อเข้าร่วมคลาสแรกของคุณ
+              </p>
+            </div>
           )}
         </div>
       </div>

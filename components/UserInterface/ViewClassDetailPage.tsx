@@ -12,11 +12,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { doc, onSnapshot, collection, query, where, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import CreateQRCodeAndUpload from "../FromUser/FusionButtonqrup";
 import MobileActionMenu from "../ui/MobileActionMenu";
 import { AlertDialogMobile } from "../TourGuide/Howtousemobile";
-import ImageLightbox from "../TourGuide/HowtoFile";
-
+import CreateQRCodeAndUpload from "../FromUser/FusionButtonqrup";
 
 export const ViewClassDetailPage = ({
   classData,
@@ -304,13 +302,6 @@ export const ViewClassDetailPage = ({
               <div>
                 {/* แสดงใน Desktop */}
                 <div className="hidden md:flex text-purple-600 gap-x-2">
-                  <ImageLightbox
-                    triggerText="ตัวอย่างไฟล์"
-                    images={[
-                      "/assets/images/Ex1.png",
-                      "/assets/images/Ex2.png",
-                    ]}
-                  />
                   <CreateQRCodeAndUpload
                     classId={selectedClass?.id ?? ""}
                     user={user ?? null}
@@ -319,6 +310,7 @@ export const ViewClassDetailPage = ({
                       name: currentClassData.name ?? "",
                       memberCount: currentClassData.checkedInCount
                     }}
+                    cls={currentClassData as ClassData}
                     onDeleteSuccess={() => {
                       onDeleteSuccess?.();
                       onBack();
@@ -363,6 +355,7 @@ export const ViewClassDetailPage = ({
                                 name: currentClassData.name ?? "",
                                 memberCount: currentClassData.checkedInCount
                               }}
+                              cls={currentClassData as ClassData}
                               isOwner={isOwner}
                               onDeleteSuccess={() => {
                                 setShowActionDropdown(false);

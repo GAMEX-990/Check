@@ -123,13 +123,35 @@ export const handleQRDetected = async ({
         return;
       }
 
+      // อ่าน lateThresholdMinutes ต่อคลาส (fallback 15 นาที)
+      const lateThresholdMinutes =
+        typeof (classData as any).lateThresholdMinutes === "number"
+          ? (classData as any).lateThresholdMinutes
+          : 15;
+
+      // หาเวลาเริ่ม session (เช็คอินแรกของวันนั้น) ถ้าไม่มี แปลว่าคนแรก => ใช้ตอนนี้
+      const dailyRecord = (classData as any).dailyCheckedInRecord?.[todayDateKey] || {};
+      let sessionStartTime: Date | null = null;
+      Object.values(dailyRecord).forEach((rec: any) => {
+        if (rec && rec.timestamp && typeof rec.timestamp.toDate === "function") {
+          const t = rec.timestamp.toDate();
+          if (!sessionStartTime || t < sessionStartTime) sessionStartTime = t;
+        }
+      });
+      if (!sessionStartTime) sessionStartTime = new Date();
+
+      // เวลาสแกนปัจจุบัน และคำนวณ "สาย"
+      const now = new Date();
+      const isLate = now.getTime() - sessionStartTime.getTime() > lateThresholdMinutes * 60 * 1000;
+
       const checkInRecord = {
         uid: user.uid,
         studentId: studentId,
         timestamp: Timestamp.now(),
         name: studentData.name || user.displayName || user.email || "",
         email: user.email || "",
-        status: studentData.status || "active",
+        status: isLate ? "late" : "present",
+        isLate,
         date: todayDateKey,
       };
 
@@ -153,9 +175,7 @@ export const handleQRDetected = async ({
       }
 
       toast.success(
-        `เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}\nวันที่: ${todayDateKey}\nสถานะ: ${
-          studentData.status || "active"
-        }`
+        `เช็คชื่อสำเร็จ!\nชื่อ: ${studentData.name}\nรหัสนักศึกษา: ${studentId}\nวันที่: ${todayDateKey}\nสถานะ: ${isLate ? "สาย" : "มาตรงเวลา"}`
       );
       onScanSuccess?.();
     } else {

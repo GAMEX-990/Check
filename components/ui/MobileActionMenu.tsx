@@ -7,13 +7,19 @@ import { toast } from "sonner";
 import DeleteClassModal from "../UserInterface/DeleteClassModal";
 import { handleExportXLSX } from "@/utils/exportXLSXHandler";
 import { uploadStudentsFromFile } from "@/utils/parseCSVFile";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { MobileActionMenuProps } from "@/types/MobileActionMenuType";
 import { AlertDialogMobile } from "../TourGuide/Howtousemobile";
+import LateThresholdDropdown from "./LateThresholdDropdown";
+import { ClassData } from "@/types/classDetailTypes";
 
+interface ClassDataWithLate extends ClassData {
+    lateThresholdMinutes?: number;
+}
 
 const MobileActionMenu: React.FC<MobileActionMenuProps> = ({
+    cls,
     classId,
     user,
     classData,
@@ -27,6 +33,42 @@ const MobileActionMenu: React.FC<MobileActionMenuProps> = ({
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isLoadingOwner, setIsLoadingOwner] = useState(true);
     const [isOwner, setIsOwner] = useState(false);
+    const initialThreshold = 15; // Define initial threshold
+    const [lateThreshold, setLateThreshold] = useState<number>(initialThreshold);
+
+    // เปลี่ยนจาก useMemo เป็น useEffect เพื่อให้อัพเดทตามการเปลี่ยนแปลงของ cls
+    useEffect(() => {
+        if (!cls) return;
+
+        const data = cls as ClassDataWithLate;
+        const newThreshold = typeof data.lateThresholdMinutes === 'number' ? data.lateThresholdMinutes : 15;
+        setLateThreshold(newThreshold);
+    }, [cls]); // เปลี่ยนเป็น cls.lateThresholdMinutes เพื่อให้ sync กัน
+
+    // เพิ่ม useEffect เพื่อ listen การเปลี่ยนแปลงจาก Firebase
+    useEffect(() => {
+        if (!classId) return;
+
+        const classRef = doc(db, "classes", classId);
+
+        // Listen การเปลี่ยนแปลงแบบ real-time
+        const unsubscribe = onSnapshot(classRef, (doc) => {
+            if (doc.exists()) {
+                const data = doc.data() as ClassDataWithLate;
+                if (typeof data.lateThresholdMinutes === 'number') {
+                    setLateThreshold(data.lateThresholdMinutes);
+                }
+            }
+        });
+
+        return () => unsubscribe();
+    }, [classId]);
+
+    const handleChangeThreshold = async (val: number) => {
+        setLateThreshold(val);
+        const classRef = doc(db, "classes", classId);
+        await updateDoc(classRef, { lateThresholdMinutes: val });
+    };
 
     useEffect(() => {
         const checkOwnerStatus = async () => {
@@ -219,7 +261,7 @@ const MobileActionMenu: React.FC<MobileActionMenuProps> = ({
             <div className="flex md:gap-x-2 gap-x-1">
                 {!isLoadingOwner && !isOwner && (
                     <div className="flex md:gap-x-2 gap-x-1">
-                        <AlertDialogMobile/>
+                        <AlertDialogMobile />
                         <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
                             <button onClick={handleCreateQR} className="cursor-pointer qr-code-button">
                                 <QrCode />
@@ -237,8 +279,11 @@ const MobileActionMenu: React.FC<MobileActionMenuProps> = ({
                             onChange={(e) => handleFileUpload(e, classId)}
                         />
                         <div className="flex space-x-1 text-center">
-                            <AlertDialogMobile/>
-                            <span>วิธีใช้งาน</span>
+                            <LateThresholdDropdown
+                                value={lateThreshold}
+                                onChange={handleChangeThreshold}
+                            />
+                            <span>(ตั้งสาย)</span>
                         </div>
                         <div className="flex  space-x-1 text-center">
                             <button onClick={handleCreateQR} className="cursor-pointer qr-code-button">

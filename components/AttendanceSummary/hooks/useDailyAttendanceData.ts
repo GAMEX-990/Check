@@ -32,6 +32,11 @@ export const useDailyAttendanceData = (
       const dailyCheckedInRecord: DailyCheckedInRecord = classDocData.dailyCheckedInRecord || {};
       const dayRecord = dailyCheckedInRecord[selectedDate];
 
+      const classLateThreshold: number | undefined =
+        typeof classDocData?.lateThresholdMinutes === 'number'
+          ? classDocData.lateThresholdMinutes
+          : undefined;
+
       if (!dayRecord) {
         setDailyAttendanceData({
           date: selectedDate,
@@ -48,7 +53,8 @@ export const useDailyAttendanceData = (
         selectedDate, 
         allStudents.length,
         currentUserId,
-        isOwner
+        isOwner,
+        classLateThreshold
       );
       setDailyAttendanceData(processedData);
     });

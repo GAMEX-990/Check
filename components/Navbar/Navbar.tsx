@@ -13,6 +13,7 @@ import Image from 'next/image';
 import AddClassPopup from '../FromUser/ButtonCreate';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet';
 import Usercard from '../UserInterface/Usercard';
+import { AlertDialogMobileNavbar } from '../TourGuide/HowtousemobileNavbar';
 
 const Navbar = () => {
     const [userData, setUserData] = useState<UserData | null>(null);
@@ -201,7 +202,11 @@ const Navbar = () => {
                                 <span className="font-medium">{link.name}</span>
                             </Link>
                         ))}
-                        {user && <div><AddClassPopup /></div>}
+
+                        <div className="flex flex-col gap-y-5">
+                            {user && <div><AddClassPopup /></div>}
+                            {user && <div><AlertDialogMobileNavbar /></div>}
+                        </div>
                         <div className="pt-2 border-t border-gray-100 mt-2">
                             {user ? (
                                 <div className="px-2 py-2">

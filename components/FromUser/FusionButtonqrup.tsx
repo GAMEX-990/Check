@@ -266,8 +266,12 @@ const CreateQRCodeAndUpload: React.FC<CreateQRCodeAndUploadProps> = ({
     <div>
       <div className="flex md:gap-x-2 gap-x-1">
         {!isLoadingOwner && !isOwner && (
-          <div className="flex md:gap-x-2 gap-x-1">
-            <AlertDialogMobile />
+          <div className="flex md:gap-x-2 gap-x-1 items-center">
+            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
+              <div>
+                <AlertDialogMobile />
+              </div>
+            </motion.div>
             <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
               <button onClick={handleCreateQR} className="cursor-pointer qr-code-button">
                 <QrCode />

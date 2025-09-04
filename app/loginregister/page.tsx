@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc, query, collection, where, getDocs } from "firebase/firestore";
-import { ChevronLeft, Loader2Icon, CheckCircle, XCircle } from "lucide-react";
+import { ChevronLeft, Loader2Icon, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -12,6 +12,55 @@ import { Button } from "@/components/ui/button";
 import { useAuthRedirect } from "@/hook/useAuthRedirect";
 import Loader from "@/components/Loader/Loader";
 import { toast } from "sonner";
+
+// Password validation helper functions
+const hasNumber = (password: string): boolean => {
+  return /\d/.test(password);
+};
+
+const isWeakPassword = (password: string): boolean => {
+  const weakPatterns = [
+    /^123456$/,
+    /^1234567*$/,
+    /^1111+$/,
+    /^2222+$/,
+    /^3333+$/,
+    /^4444+$/,
+    /^5555+$/,
+    /^6666+$/,
+    /^7777+$/,
+    /^8888+$/,
+    /^9999+$/,
+    /^0000+$/,
+    /^(.)\1{5,}$/, // Same character repeated 6+ times
+    /^password$/i,
+    /^qwerty$/i,
+    /^abc123$/i,
+    /^654321$/,
+  ];
+  
+  return weakPatterns.some(pattern => pattern.test(password));
+};
+
+const getPasswordStrength = (password: string) => {
+  if (!password) return { level: 0, text: '', color: 'gray' };
+  
+  let score = 0;
+  const hasNum = hasNumber(password);
+  const isWeak = isWeakPassword(password);
+  
+  if (password.length >= 6) score += 1;
+  if (password.length >= 8) score += 1;
+  if (hasNum) score += 1;
+  if (!isWeak) score += 1;
+  
+  if (score === 1) return { level: 1, text: 'อ่อน', color: 'red' };
+  if (score === 2) return { level: 2, text: 'ปานกลาง', color: 'yellow' };
+  if (score === 3) return { level: 3, text: 'ดี', color: 'blue' };
+  if (score === 4) return { level: 4, text: 'แข็งแรง', color: 'green' };
+  
+  return { level: 1, text: 'อ่อน', color: 'red' };
+};
 
 export default function LoginRegisterPage() {
   const [fullname, setFullname] = useState("");
@@ -28,6 +77,9 @@ export default function LoginRegisterPage() {
   const [isCheckingStudentId, setIsCheckingStudentId] = useState(false);
   const [studentIdStatus, setStudentIdStatus] = useState<'checking' | 'available' | 'taken' | 'idle'>('idle');
   const [studentIdError, setStudentIdError] = useState("");
+
+  // Password validation states
+  const [passwordWarnings, setPasswordWarnings] = useState<string[]>([]);
 
   const { user, loading } = useAuthRedirect('guest-only');
 
@@ -76,6 +128,23 @@ export default function LoginRegisterPage() {
       setIsCheckingStudentId(false);
     }
   };
+
+  // Password validation effect
+  useEffect(() => {
+    const warnings: string[] = [];
+    
+    if (password) {
+      if (!hasNumber(password)) {
+        warnings.push('ควรมีตัวเลขอย่างน้อย 1 ตัวเลข');
+      }
+      
+      if (isWeakPassword(password)) {
+        warnings.push('ไม่แนะนำ รหัสผ่านของคุณง่ายเกินไป');
+      }
+    }
+    
+    setPasswordWarnings(warnings);
+  }, [password]);
 
   // Debounced student ID check
   useEffect(() => {
@@ -162,6 +231,13 @@ export default function LoginRegisterPage() {
       return;
     }
 
+    // Check if password has at least one number (required)
+    if (!hasNumber(password)) {
+      setError("รหัสผ่านต้องมีตัวเลขอย่างน้อย 1 ตัวเลข");
+      sethandleManualLogin(false);
+      return;
+    }
+
     const user = auth.currentUser;
     if (!user || !user.email) {
       setError("ไม่ได้เข้าสู่ระบบด้วย Google หรือไม่พบอีเมล");
@@ -197,7 +273,7 @@ export default function LoginRegisterPage() {
       });
 
       router.push("/dashboard");
-      toast.success("ยินดีตอนรับสู่ Check", {
+      toast.success("ยินดีต้อนรับสู่ Check", {
         style: {
           color: '#22c55e',
         }
@@ -223,6 +299,8 @@ export default function LoginRegisterPage() {
       sethandleManualLogin(false);
     }
   };
+
+  const passwordStrength = getPasswordStrength(password);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 flex items-center justify-center p-4">
@@ -429,23 +507,65 @@ export default function LoginRegisterPage() {
                 </div>
               </div>
 
-              {/* Password strength indicator */}
+              {/* Password strength and warnings */}
               {password && (
-                <div className="mt-3">
-                  <div className="flex items-center space-x-2">
-                    <div className={`h-2 flex-1 rounded-full ${password.length < 6 ? 'bg-red-200' :
-                      password.length < 8 ? 'bg-yellow-200' : 'bg-green-200'
+                <div className="mt-3 space-y-3">
+                  {/* Password strength indicator */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-600">ความปลอดภัย</span>
+                      <span className={`text-xs font-medium ${
+                        passwordStrength.color === 'red' ? 'text-red-600' :
+                        passwordStrength.color === 'yellow' ? 'text-yellow-600' :
+                        passwordStrength.color === 'blue' ? 'text-blue-600' :
+                        passwordStrength.color === 'green' ? 'text-green-600' :
+                        'text-gray-600'
                       }`}>
-                      <div className={`h-full rounded-full transition-all duration-300 ${password.length < 6 ? 'w-1/3 bg-red-500' :
-                        password.length < 8 ? 'w-2/3 bg-yellow-500' : 'w-full bg-green-500'
-                        }`}></div>
+                        {passwordStrength.text}
+                      </span>
                     </div>
-                    <span className={`text-xs font-medium ${password.length < 6 ? 'text-red-600' :
-                      password.length < 8 ? 'text-yellow-600' : 'text-green-600'
-                      }`}>
-                      {password.length < 6 ? 'อ่อน' :
-                        password.length < 8 ? 'ปานกลาง' : 'แข็งแรง'}
-                    </span>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-300 ${
+                          passwordStrength.color === 'red' ? 'bg-red-500' :
+                          passwordStrength.color === 'yellow' ? 'bg-yellow-500' :
+                          passwordStrength.color === 'blue' ? 'bg-blue-500' :
+                          passwordStrength.color === 'green' ? 'bg-green-500' :
+                          'bg-gray-500'
+                        }`}
+                        style={{ width: `${(passwordStrength.level / 4) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Password warnings */}
+                  {passwordWarnings.length > 0 && (
+                    <div className="space-y-2">
+                      {passwordWarnings.map((warning, index) => (
+                        <div key={index} className={`flex items-center text-sm ${
+                          warning.includes('ไม่แนะนำ') ? 'text-orange-600' : 'text-red-600'
+                        }`}>
+                          {warning.includes('ไม่แนะนำ') ? (
+                            <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
+                          ) : (
+                            <XCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                          )}
+                          <span>{warning}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Password requirements checklist */}
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <div className={`flex items-center ${password.length >= 6 ? 'text-green-600' : 'text-gray-400'}`}>
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      <span>รหัสผ่านต้องมีอย่างน้อย 6 ตัว</span>
+                    </div>
+                    <div className={`flex items-center ${hasNumber(password) ? 'text-green-600' : 'text-gray-400'}`}>
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      <span>รหัสผ่านต้องมีตัวเลขอย่างน้อย 1 ตัว</span>
+                    </div>
                   </div>
                 </div>
               )}

@@ -18,7 +18,7 @@ const ScanQRButton: React.FC<ScanQRButtonProps> = ({
             whileTap={{ scale: 0.95 }}
         >
             <button
-                className="border rounded-2xl inset-shadow-sm p-3"
+                className="border bg-neutral-50 rounded-2xl inset-shadow-sm p-3"
                 onClick={onClick}
                 disabled={disabled}
             >

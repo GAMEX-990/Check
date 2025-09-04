@@ -41,7 +41,7 @@ export const BarChartSection = ({
           <ResponsiveContainer width="100%" height={250}>
             <BarChart key={barKey} data={barData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
+              <XAxis dataKey="fullName" fontSize={12} angle={-45} textAnchor="end" height={90} />
               <YAxis />
               <Tooltip content={<CustomBarTooltip isViewingDaily={isViewingDaily} />} />
               <Bar dataKey="onTime" stackId="a" fill="#10B981" name="ตรงเวลา" />

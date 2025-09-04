@@ -37,9 +37,6 @@ const BodyInterface = () => {
     <div className="overflow-hidden">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-purple-50 via-white to-purple-100 pt-16 pb-24 overflow-hidden">
-        <div className="absolute top-20 right-20 w-64 h-64 bg-purple-200 rounded-full opacity-20 blur-3xl"></div>
-        <div className="absolute bottom-10 left-10 w-80 h-80 bg-purple-300 rounded-full opacity-20 blur-3xl"></div>
-
         <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center justify-between">
           {/* Left Content Section */}
           <motion.div

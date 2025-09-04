@@ -260,12 +260,22 @@ const MobileActionMenu: React.FC<MobileActionMenuProps> = ({
         <div>
             <div className="flex md:gap-x-2 gap-x-1">
                 {!isLoadingOwner && !isOwner && (
-                    <div className="flex md:gap-x-2 gap-x-1">
-                        <AlertDialogMobile />
+                    <div className="flex text-purple-600 flex-col gap-y-2">
                         <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
-                            <button onClick={handleCreateQR} className="cursor-pointer qr-code-button">
-                                <QrCode />
-                            </button>
+                            <div className="flex  space-x-1 text-center">
+                                <button className="cursor-pointer">
+                                    <AlertDialogMobile />
+                                </button>
+                                <span>วิธีใช้งาน</span>
+                            </div>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 1 }}>
+                            <div className="flex  space-x-1 text-center">
+                                <button onClick={handleCreateQR} className="cursor-pointer qr-code-button">
+                                    <QrCode />
+                                </button>
+                                <span>QR Code เข้าคลาส</span>
+                            </div>
                         </motion.div>
                     </div>
                 )}

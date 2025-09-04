@@ -190,7 +190,7 @@ const ClassPage = ({ onSelectClass, onScanSuccess }: ClassPageProps) => {
         </div>
       </div>
       {/* ใช้ ScanQRButton */}
-      <div className="absolute right-3 bottom-4 md:hidden">
+      <div className="absolute right-3 bottom-15 md:hidden">
         <ScanQRButton
           onClick={handleScanStart}
           disabled={!user}

@@ -19,6 +19,9 @@ export default function DashboardPage() {
   const [user, loading] = useAuthState(auth); // ลบ error ออก
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const router = useRouter();
+  const [showWelcome, setShowWelcome] = useState(false);
+  const WELCOME_KEY = "welcome_shown_v1";
+
 
   // ✅ แก้ไข: ใช้ useCallback เพื่อป้องกัน re-render
   const performSecureSignOut = useCallback(async (): Promise<void> => {
@@ -112,6 +115,27 @@ export default function DashboardPage() {
     setCurrectPang(page);
   }, []);
 
+  // === FIRST-VISIT POPUP (per browser) ===
+  const closeWelcome = useCallback(() => {
+    try {
+      localStorage.setItem(WELCOME_KEY, "1");
+    } catch { }
+    setShowWelcome(false);
+  }, []);
+
+  useEffect(() => {
+    // แสดงหลังจากอนุญาตให้เข้า (allowed === true) เพื่อไม่ชนกับหน้า Loader/ห้ามเข้า
+    if (allowed === true) {
+      try {
+        const seen = localStorage.getItem(WELCOME_KEY);
+        if (!seen) setShowWelcome(true);
+      } catch {
+        // ถ้า localStorage ใช้ไม่ได้ ก็ข้าม
+      }
+    }
+  }, [allowed]);
+
+
   if (loading || allowed === null) {
     return (
       <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
@@ -142,23 +166,56 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="flex justify-center">
-          <div className="flex flex-col gap-y-4 md:h-140 h-90">
-            <div className="flex items-center justify-center">
-              <ClassSection
-                onPageChange={handlePageChange}
-                onClassSelect={handleClassSelect}
-                onClassChange={handleClassChange}
-              />
-            </div>
-            <div className="flex max-h-fit items-center justify-center">
-              {currectPang === 'view' && selectedClass && (
-                <div>
-                  <AttendanceSummaryModal classData={selectedClass} isOwner={isClassOwner} />
-                </div>
-              )}
-            </div>
+        <div className="flex flex-col gap-y-4 md:h-140 h-90">
+          <div className="flex items-center justify-center">
+            <ClassSection
+              onPageChange={handlePageChange}
+              onClassSelect={handleClassSelect}
+              onClassChange={handleClassChange}
+            />
+          </div>
+          <div className="flex max-h-fit items-center justify-center">
+            {currectPang === 'view' && selectedClass && (
+              <div>
+                <AttendanceSummaryModal classData={selectedClass} isOwner={isClassOwner} />
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {showWelcome && (
+        <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6">
+            <h2 className="text-xl font-bold text-purple-700">ยินดีต้อนรับ 👋</h2>
+            <p className="mt-2 text-gray-600">
+              ใช้งานครั้งแรก! คุณสามารถสร้างคลาส หรือสแกน QR เพื่อเข้าร่วมคลาสได้จากหน้านี้
+            </p>
+            <div className="mt-4 space-y-2 text-sm text-gray-500 md:hidden">
+              <p>• ไปที่แท็บ “3 ขีด” เพื่อสร้างคลาส</p>
+              <p>• ไปที่แท็บ “MyClass” เพื่อดูคลาสที่คุณสร้าง</p>
+              <p>• ไปที่แท็บ “Class” เพื่อสแกน QR เข้าคลาส</p>
+            </div>
+            <div className="mt-4 space-y-2 text-sm text-gray-500 md:block hidden">
+              <p>• ไปที่แท็บ “Home” เพื่อกลับหน้าหลัก</p>
+              <p>• ไปที่แท็บ “Scan QR” เพื่อสแกน QR เข้าคลาส</p>
+              <p>• ไปที่แท็บ “Add a class” เพื่อสร้างคลาสเรียน</p>
+              <p>• ไปที่แท็บ “MyClass” เพื่อดูคลาสที่คุณสร้าง</p>
+              <p>• ไปที่แท็บ “Class” เพื่อดูคลาสที่คุณข้าร่วม</p>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={closeWelcome}
+                className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition"
+              >
+                เริ่มต้นใช้งาน
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
   );
 }

@@ -117,7 +117,8 @@ const AddClassPopup: React.FC<AddClassPopupProps> = ({ onScanSuccess }) => {
               onClick={() => setShowPopup(true)}
               disabled={!user}
             >
-              <HousePlus style={{ color: "var(--color-purple-600)" }} /> Add a class
+              <HousePlus style={{ color: "var(--color-purple-600)" }} />
+              <span>Add a class</span>
             </button>
           </div>
         </div>

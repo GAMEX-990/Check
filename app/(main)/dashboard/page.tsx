@@ -12,6 +12,7 @@ import { ClassData } from '@/types/classDetailTypes';
 import ClassSection from '@/components/UserInterface/ClassSection';
 import Loader from '@/components/Loader/Loader';
 import AttendanceSummaryModal from '@/components/AttendanceSummary/AttendanceSummaryModal';
+import { Menu } from 'lucide-react';
 
 export default function DashboardPage() {
   const [currectPang, setCurrectPang] = useState<'myclass' | 'class' | 'view'>('myclass');
@@ -20,7 +21,8 @@ export default function DashboardPage() {
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const router = useRouter();
   const [showWelcome, setShowWelcome] = useState(false);
-  const WELCOME_KEY = "welcome_shown_v1";
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const WELCOME_KEY = 'welcome_dont_show_again_v1';
 
 
   // ✅ แก้ไข: ใช้ useCallback เพื่อป้องกัน re-render
@@ -118,19 +120,21 @@ export default function DashboardPage() {
   // === FIRST-VISIT POPUP (per browser) ===
   const closeWelcome = useCallback(() => {
     try {
-      localStorage.setItem(WELCOME_KEY, "1");
+      if (dontShowAgain) {
+        localStorage.setItem(WELCOME_KEY, 'hide');
+      }
     } catch { }
     setShowWelcome(false);
-  }, []);
+  }, [dontShowAgain]);
 
   useEffect(() => {
-    // แสดงหลังจากอนุญาตให้เข้า (allowed === true) เพื่อไม่ชนกับหน้า Loader/ห้ามเข้า
     if (allowed === true) {
       try {
-        const seen = localStorage.getItem(WELCOME_KEY);
-        if (!seen) setShowWelcome(true);
+        const pref = localStorage.getItem(WELCOME_KEY);
+        setShowWelcome(pref !== 'hide');
       } catch {
-        // ถ้า localStorage ใช้ไม่ได้ ก็ข้าม
+        // ถ้า localStorage ใช้ไม่ได้ ให้แสดงไว้ก่อน
+        setShowWelcome(true);
       }
     }
   }, [allowed]);
@@ -191,18 +195,29 @@ export default function DashboardPage() {
             <p className="mt-2 text-gray-600">
               ใช้งานครั้งแรก! คุณสามารถสร้างคลาส หรือสแกน QR เพื่อเข้าร่วมคลาสได้จากหน้านี้
             </p>
+
             <div className="mt-4 space-y-2 text-sm text-gray-500 md:hidden">
-              <p>• ไปที่แท็บ “3 ขีด” เพื่อสร้างคลาส</p>
+              <p className='flex items-center'>• ไปที่แท็บ “<Menu size={20} className='pt-1' />” เพื่อสร้างคลาส</p>
               <p>• ไปที่แท็บ “MyClass” เพื่อดูคลาสที่คุณสร้าง</p>
               <p>• ไปที่แท็บ “Class” เพื่อสแกน QR เข้าคลาส</p>
             </div>
-            <div className="mt-4 space-y-2 text-sm text-gray-500 md:block hidden">
-              <p>• ไปที่แท็บ “Home” เพื่อกลับหน้าหลัก</p>
+            <div className="mt-4 space-y-2 text-sm text-gray-500 hidden md:block">
               <p>• ไปที่แท็บ “Scan QR” เพื่อสแกน QR เข้าคลาส</p>
               <p>• ไปที่แท็บ “Add a class” เพื่อสร้างคลาสเรียน</p>
               <p>• ไปที่แท็บ “MyClass” เพื่อดูคลาสที่คุณสร้าง</p>
-              <p>• ไปที่แท็บ “Class” เพื่อดูคลาสที่คุณข้าร่วม</p>
+              <p>• ไปที่แท็บ “Class” เพื่อดูคลาสที่คุณเข้าร่วม</p>
             </div>
+
+            {/* ✅ Checkbox "ไม่ต้องแสดงอีก" */}
+            <label className="mt-4 flex items-center gap-2 text-sm text-gray-600">
+              <input
+                type="checkbox"
+                className="h-4 w-4"
+                checked={dontShowAgain}
+                onChange={(e) => setDontShowAgain(e.target.checked)}
+              />
+              ไม่ต้องแสดงอีก
+            </label>
 
             <div className="mt-6 flex items-center justify-end gap-3">
               <button

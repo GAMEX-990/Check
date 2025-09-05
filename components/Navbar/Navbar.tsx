@@ -60,7 +60,7 @@ const Navbar = () => {
     }, []);
 
     const navLinks = user ? [
-        { name: 'Home', href: '/dashboard', icon: <Home size={25} /> },
+        
     ] : [
         { name: 'Home', href: '/', icon: <Home size={18} /> },
         { name: 'About Us', href: '/about', icon: <Info size={18} /> },

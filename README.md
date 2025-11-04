@@ -1,6 +1,6 @@
 ## วิธีใช่โปรเจ็คนี้คือ
-ไอสัส npm i อย่างเดียวพอจบ
-## พวกนี้ไม่ต้องไปติดตั้งนะแค่บอกว่าใช้ไรมั้ง มีแค่ npm i พอ
+npm i 
+## พวกนี้ไม่ต้องไปติดตั้งแค่บอกว่าใช้ไรมั้ง มีแค่ npm i 
 ## shadcn
 - [shadcn](https://ui.shadcn.com/docs/installation/next) - อันนี้ shadcn เป็นพวกปุ่มสวยๆโง่ๆ
 - [sonner](https://ui.shadcn.com/docs/components/sonner) - อันนีเป็นตัวแสดงสถานะเวลา Login หรืออะไรก็ตามแต่
